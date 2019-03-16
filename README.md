@@ -1,5 +1,7 @@
 # VideoPlayerTrimmer
 
+[![Build status](https://build.appcenter.ms/v0.1/apps/1e1996af-bbd1-4be2-9c07-feb2c6e363b9/branches/master/badge)](https://appcenter.ms)
+
 Odtwarzacz filmów z opcją zapamiętywania ulubionych scen, wycięcia ich i udostępnienia.
 
 Lista funkcji:
