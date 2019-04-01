@@ -5,7 +5,7 @@ using VideoPlayerTrimmer.Framework;
 
 namespace VideoPlayerTrimmer.Models
 {
-    public class Folder : BindableBase
+    public class FolderItem : BindableBase
     {
         public string FolderName { get; set; }
 

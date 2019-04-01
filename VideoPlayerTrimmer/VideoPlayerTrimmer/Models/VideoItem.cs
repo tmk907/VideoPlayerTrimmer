@@ -5,7 +5,7 @@ using VideoPlayerTrimmer.Framework;
 
 namespace VideoPlayerTrimmer.Models
 {
-    public class VideoFile : BindableBase
+    public class VideoItem : BindableBase
     {
         public string FilePath { get; set; }
 
