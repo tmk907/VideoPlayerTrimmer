@@ -2,7 +2,9 @@
 using Microsoft.AppCenter.Analytics;
 using Microsoft.AppCenter.Crashes;
 using System;
+using System.IO;
 using System.Threading.Tasks;
+using VideoPlayerTrimmer.Database;
 using VideoPlayerTrimmer.Views;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
@@ -31,6 +33,19 @@ namespace VideoPlayerTrimmer
         }
 
         public static AppShell Shell => Current.MainPage as AppShell;
+
+        private static VideoDatabase database;
+        public static VideoDatabase Database
+        {
+            get
+            {
+                if (database == null)
+                {
+                    database = new VideoDatabase(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "database.db3"));
+                }
+                return database;
+            }
+        }
 
         public static Task GoToAsync(string pageName)
         {
