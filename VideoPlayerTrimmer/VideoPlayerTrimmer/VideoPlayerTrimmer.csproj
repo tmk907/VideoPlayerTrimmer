@@ -16,6 +16,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Plugin.Permissions" Version="3.0.0.12" />
     <PackageReference Include="Xamarin.Essentials" Version="1.1.0" />
     <PackageReference Include="Xamarin.Forms" Version="4.0.0.232914-pre6" />
   </ItemGroup>
@@ -31,7 +32,6 @@
 
   <ItemGroup>
     <Folder Include="Database\" />
-    <Folder Include="Services\" />
   </ItemGroup>
 
   <ItemGroup>

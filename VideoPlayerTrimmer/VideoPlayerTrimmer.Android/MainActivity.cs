@@ -1,13 +1,18 @@
 ﻿using System;
 
 using Android.App;
-using Android.Content.PM;
 using Android.Runtime;
 using Android.Views;
 using Android.Widget;
 using Android.OS;
 using Plugin.CurrentActivity;
 using Xamarin.Forms;
+using Plugin.Permissions;
+using Plugin.Permissions.Abstractions;
+using System.Threading.Tasks;
+using Android.Content.PM;
+using VideoPlayerTrimmer.Services;
+using VideoPlayerTrimmer.Droid.Services;
 
 namespace VideoPlayerTrimmer.Droid
 {
@@ -36,6 +41,7 @@ namespace VideoPlayerTrimmer.Droid
         public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Android.Content.PM.Permission[] grantResults)
         {
             Xamarin.Essentials.Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
+            PermissionsImplementation.Current.OnRequestPermissionsResult(requestCode, permissions, grantResults);
 
             base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
         }
@@ -47,7 +53,7 @@ namespace VideoPlayerTrimmer.Droid
 
         private void RegisterPlatformServices()
         {
-            //DependencyService.Register
+            DependencyService.Register<IMediaScanner, MediaScannerImpl>();
         }
     }
 }
