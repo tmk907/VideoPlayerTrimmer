@@ -6,6 +6,7 @@ using System.IO;
 using System.Threading.Tasks;
 using VideoPlayerTrimmer.Database;
 using VideoPlayerTrimmer.Views;
+using Xamarin.Essentials;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 
@@ -17,6 +18,7 @@ namespace VideoPlayerTrimmer
         public App()
         {
             InitializeComponent();
+            VersionTracking.Track();
             RegisterRoutes();
             RegisterServices();
             MainPage = new AppShell();
@@ -41,7 +43,10 @@ namespace VideoPlayerTrimmer
             {
                 if (database == null)
                 {
-                    database = new VideoDatabase(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "database.db3"));
+                    var dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "database.db3");
+                    var dbSetup = new DatabaseSetup(dbPath);
+                    dbSetup.PerformMigrations();
+                    database = new VideoDatabase(dbPath);
                 }
                 return database;
             }
