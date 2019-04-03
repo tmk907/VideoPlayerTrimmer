@@ -53,7 +53,7 @@ namespace VideoPlayerTrimmer.Droid
 
         private void RegisterPlatformServices()
         {
-            DependencyService.Register<IMediaScanner, MediaScannerImpl>();
+            App.Container.Register<IMediaScanner, MediaScannerImpl>();
         }
     }
 }

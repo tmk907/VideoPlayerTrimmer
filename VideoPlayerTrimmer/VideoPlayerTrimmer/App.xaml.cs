@@ -4,7 +4,10 @@ using Microsoft.AppCenter.Crashes;
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using TinyIoC;
 using VideoPlayerTrimmer.Database;
+using VideoPlayerTrimmer.Services;
+using VideoPlayerTrimmer.ViewModels;
 using VideoPlayerTrimmer.Views;
 using Xamarin.Essentials;
 using Xamarin.Forms;
@@ -68,7 +71,9 @@ namespace VideoPlayerTrimmer
 
         private void RegisterServices()
         {
-            //DependencyService.Register
+            Container.Register<VideoDatabase>(Database);
+            Container.Register<IVideoLibrary, VideoLibrary>().AsSingleton();
+            Container.Register<FoldersViewModel>();
         }
 
         protected override void OnStart()
@@ -90,5 +95,7 @@ namespace VideoPlayerTrimmer
         {
             // Handle when your app resumes
         }
+
+        public static TinyIoCContainer Container => TinyIoCContainer.Current;
     }
 }
