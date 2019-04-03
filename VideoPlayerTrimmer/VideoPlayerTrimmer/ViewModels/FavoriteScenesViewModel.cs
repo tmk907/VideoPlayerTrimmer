@@ -4,9 +4,10 @@ using System.Threading.Tasks;
 using VideoPlayerTrimmer.Framework;
 using VideoPlayerTrimmer.Models;
 using VideoPlayerTrimmer.Services;
+
 namespace VideoPlayerTrimmer.ViewModels
 {
-    public class SettingsViewModel : BaseViewModel
+    public class FavoriteScenesViewModel : BaseViewModel
     {
     }
 }

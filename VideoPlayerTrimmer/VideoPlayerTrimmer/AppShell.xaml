@@ -25,7 +25,7 @@
             <ShellContent ContentTemplate="{DataTemplate views:FoldersPage}"/>
         </ShellSection>
         <ShellSection Title="Favourites">
-            <ShellContent ContentTemplate="{DataTemplate views:FavouriteScenesPage}"/>
+            <ShellContent ContentTemplate="{DataTemplate views:FavoriteScenesPage}"/>
         </ShellSection>
         <ShellSection Title="Settings">
             <ShellContent ContentTemplate="{DataTemplate views:SettingsPage}"/>

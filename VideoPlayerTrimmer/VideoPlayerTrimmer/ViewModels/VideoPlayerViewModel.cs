@@ -1,10 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
+using System.Collections.ObjectModel;
+using System.Threading.Tasks;
+using VideoPlayerTrimmer.Framework;
+using VideoPlayerTrimmer.Models;
+using VideoPlayerTrimmer.Services;
 
 namespace VideoPlayerTrimmer.ViewModels
 {
-    class VideoPlayerViewModel
+    public class VideoPlayerViewModel : BaseViewModel
     {
     }
 }

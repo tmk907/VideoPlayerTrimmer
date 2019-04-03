@@ -32,7 +32,7 @@ namespace VideoPlayerTrimmer
             Routing.RegisterRoute(PageNames.Folders, typeof(FoldersPage));
             Routing.RegisterRoute(PageNames.Videos, typeof(VideosPage));
             Routing.RegisterRoute(PageNames.Player, typeof(VideoPlayerPage));
-            Routing.RegisterRoute(PageNames.Favourites, typeof(FavouriteScenesPage));
+            Routing.RegisterRoute(PageNames.Favourites, typeof(FavoriteScenesPage));
             Routing.RegisterRoute(PageNames.Trimmer, typeof(TrimmerPage));
             Routing.RegisterRoute(PageNames.Settings, typeof(SettingsPage));
         }
@@ -73,7 +73,13 @@ namespace VideoPlayerTrimmer
         {
             Container.Register<VideoDatabase>(Database);
             Container.Register<IVideoLibrary, VideoLibrary>().AsSingleton();
+
+            Container.Register<FavoriteScenesViewModel>();
             Container.Register<FoldersViewModel>();
+            Container.Register<SettingsViewModel>();
+            Container.Register<TrimmerViewModel>();
+            Container.Register<VideoPlayerPage>();
+            Container.Register<VideosViewModel>();
         }
 
         protected override void OnStart()

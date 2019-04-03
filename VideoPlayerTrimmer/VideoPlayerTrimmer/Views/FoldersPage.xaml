@@ -1,9 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<views:ForldersContentPage xmlns="http://xamarin.com/schemas/2014/forms"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-        xmlns:views="clr-namespace:VideoPlayerTrimmer.Views"
-                           xmlns:models="clr-namespace:VideoPlayerTrimmer.Models"
-             x:Class="VideoPlayerTrimmer.Views.FoldersPage">
+<views:FoldersContentPage
+    xmlns="http://xamarin.com/schemas/2014/forms"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:views="clr-namespace:VideoPlayerTrimmer.Views"
+    xmlns:models="clr-namespace:VideoPlayerTrimmer.Models"
+    x:Class="VideoPlayerTrimmer.Views.FoldersPage">
+    
     <ContentPage.Content>
         <CollectionView
             EmptyView="No items"
@@ -19,4 +21,4 @@
             </CollectionView.ItemTemplate>
         </CollectionView>
     </ContentPage.Content>
-</views:ForldersContentPage>
+</views:FoldersContentPage>

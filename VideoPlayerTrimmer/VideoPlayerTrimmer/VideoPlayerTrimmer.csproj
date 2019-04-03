@@ -35,7 +35,7 @@
     <EmbeddedResource Update="AppShell.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
-    <EmbeddedResource Update="Views\FavouriteScenesPage.xaml">
+    <EmbeddedResource Update="Views\FavoriteScenesPage.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Update="Views\FoldersPage.xaml">
@@ -57,5 +57,11 @@
 
   <ItemGroup>
     <Folder Include="TinyIoC\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Views\FavoriteScenesPage.xaml.cs">
+      <DependentUpon>FavoriteScenesPage.xaml</DependentUpon>
+    </Compile>
   </ItemGroup>
 </Project>

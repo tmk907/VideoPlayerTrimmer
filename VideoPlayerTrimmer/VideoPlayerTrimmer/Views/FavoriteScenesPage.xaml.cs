@@ -10,15 +10,15 @@ using Xamarin.Forms.Xaml;
 
 namespace VideoPlayerTrimmer.Views
 {
-    public class FoldersContentPage : BaseContentPage<FoldersViewModel> { }
+    public class FavoriteScenesContentPage : BaseContentPage<FavoriteScenesViewModel> { }
 
     [XamlCompilation(XamlCompilationOptions.Compile)]
-    public partial class FoldersPage : FoldersContentPage
+    public partial class FavoriteScenesPage : FavoriteScenesContentPage
     {
-        public FoldersPage()
+        public FavoriteScenesPage()
         {
             InitializeComponent();
-            BindingContext = App.Container.Resolve<FoldersViewModel>();
+            BindingContext = App.Container.Resolve<FavoriteScenesViewModel>();
         }
     }
 }
