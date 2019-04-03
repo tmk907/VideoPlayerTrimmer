@@ -6,7 +6,8 @@ namespace VideoPlayerTrimmer.Database.Models
     {
         [PrimaryKey, AutoIncrement]
         public int SavedSceneId { get; set; }
+        [NotNull]
+        public int VideoId { get; set; }
         public int FavSceneId { get; set; }
-        public int MediaStoreId { get; set; }
     }
 }

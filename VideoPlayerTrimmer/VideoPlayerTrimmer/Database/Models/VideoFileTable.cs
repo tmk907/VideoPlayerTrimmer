@@ -5,8 +5,9 @@ namespace VideoPlayerTrimmer.Database.Models
 {
     public class VideoFileTable
     {
-        [PrimaryKey]
-        public int MediaStoreId { get; set; }
+        [PrimaryKey, AutoIncrement]
+        public int VideoId { get; set; }
+        public long MediaStoreId { get; set; }
         public string FilePath { get; set; }
         public string FileName { get; set; }
         public string Directory { get; set; }
@@ -18,5 +19,6 @@ namespace VideoPlayerTrimmer.Database.Models
         public bool IsNew { get; set; }
         [Indexed]
         public bool IsDeleted { get; set; }
+        public TimeSpan Position { get; set; }
     }
 }

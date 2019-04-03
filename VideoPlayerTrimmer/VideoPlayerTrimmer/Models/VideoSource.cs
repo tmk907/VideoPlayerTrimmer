@@ -12,7 +12,7 @@ namespace VideoPlayerTrimmer.Models
         public DateTime DateAdded { get; set; }
         public DateTime DateModified { get; set; }
         public TimeSpan Duration { get; set; }
-        public long Id { get; set; }
+        public long MediaStoreId { get; set; }
         public long SizeInBytes { get; set; }
         public string Title { get; set; }
     }

@@ -18,8 +18,17 @@ namespace VideoPlayerTrimmer.Database
             connection = new SQLiteAsyncConnection(dbPath);
         }
 
-        public async Task<List<T>> Get<T>(Expression<Func<T,bool>> order, Expression<Func<T,bool>> condition) where T: new()
+        public async Task<T> GetFirst<T>(Expression<Func<T, bool>> condition) where T : new()
         {
+            return await connection.Table<T>().FirstOrDefaultAsync(condition);
+        }
+
+        public async Task<List<T>> Get<T>(Expression<Func<T,object>> order, Expression<Func<T,bool>> condition = null) where T: new()
+        {
+            if (condition == null)
+            {
+                return await connection.Table<T>().OrderBy(order).ToListAsync();
+            }
             return await connection.Table<T>().Where(condition).OrderBy(order).ToListAsync();
         }
 
@@ -42,6 +51,17 @@ namespace VideoPlayerTrimmer.Database
         public async Task Update<T>(T item)
         {
             await connection.UpdateAsync(item);
+        }
+
+        public async Task UpdateAll<T>(IEnumerable<T> items)
+        {
+            await connection.RunInTransactionAsync(tran =>
+            {
+                foreach (var item in items)
+                {
+                    tran.Update(item);
+                }
+            });
         }
 
         public async Task Delete<T>(T item)

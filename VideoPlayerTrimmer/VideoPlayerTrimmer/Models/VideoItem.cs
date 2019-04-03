@@ -7,11 +7,15 @@ namespace VideoPlayerTrimmer.Models
 {
     public class VideoItem : BindableBase
     {
+        public int VideoId { get; set; }
+
         public string FilePath { get; set; }
 
         public string FileName { get; set; }
 
         public string FolderPath { get; set; }
+
+        public long MediaStoreId { get; set; }
 
         private bool isNew;
         public bool IsNew
@@ -20,6 +24,10 @@ namespace VideoPlayerTrimmer.Models
             set { SetProperty(ref isNew, value); }
         }
 
+        public string Title { get; set; }
+
         public TimeSpan Duration { get; set; }
+
+        public VideoItemPreferences Preferences { get; set; }
     }
 }

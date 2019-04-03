@@ -51,7 +51,7 @@ namespace VideoPlayerTrimmer.Droid.Services
                     videoSource.DateModified = dateModifiedTimestamp.DateTimeFromUnixTimestamp();
                     videoSource.Duration = TimeSpan.FromMilliseconds(
                         cursor.GetLong(cursor.GetColumnIndexOrThrow(MediaStore.Video.VideoColumns.Duration)));
-                    videoSource.Id = cursor.GetLong(cursor.GetColumnIndexOrThrow(MediaStore.Video.VideoColumns.Id));
+                    videoSource.MediaStoreId = cursor.GetLong(cursor.GetColumnIndexOrThrow(MediaStore.Video.VideoColumns.Id));
                     videoSource.SizeInBytes = cursor.GetLong(cursor.GetColumnIndexOrThrow(MediaStore.Video.VideoColumns.Size));
                     videoSource.Title = cursor.GetString(cursor.GetColumnIndexOrThrow(MediaStore.Video.VideoColumns.Title));
                     videoSources.Add(videoSource);
