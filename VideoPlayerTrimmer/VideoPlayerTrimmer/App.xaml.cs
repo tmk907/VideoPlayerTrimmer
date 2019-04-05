@@ -7,7 +7,6 @@ using Prism.Ioc;
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using TinyIoC;
 using VideoPlayerTrimmer.Database;
 using VideoPlayerTrimmer.Services;
 using VideoPlayerTrimmer.ViewModels;
