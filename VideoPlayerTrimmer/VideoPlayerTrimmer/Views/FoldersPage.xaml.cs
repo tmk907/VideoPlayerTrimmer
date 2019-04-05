@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using VideoPlayerTrimmer.Framework;
+using VideoPlayerTrimmer.Models;
 using VideoPlayerTrimmer.ViewModels;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
@@ -18,7 +19,6 @@ namespace VideoPlayerTrimmer.Views
         public FoldersPage()
         {
             InitializeComponent();
-            BindingContext = App.Container.Resolve<FoldersViewModel>();
         }
     }
 }

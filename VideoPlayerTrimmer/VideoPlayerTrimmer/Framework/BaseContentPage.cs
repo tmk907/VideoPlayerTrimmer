@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Xamarin.Forms;
+﻿using Xamarin.Forms;
 
 namespace VideoPlayerTrimmer.Framework
 {
@@ -16,8 +13,6 @@ namespace VideoPlayerTrimmer.Framework
         protected override void OnAppearing()
         {
             base.OnAppearing();
-
-            //NavigationProxy.Inner = App.NavigationRoot?.NavigationProxy;
 
             if (!isAlreadyInitialized)
             {

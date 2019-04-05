@@ -13,6 +13,8 @@ using System.Threading.Tasks;
 using Android.Content.PM;
 using VideoPlayerTrimmer.Services;
 using VideoPlayerTrimmer.Droid.Services;
+using Prism;
+using Prism.Ioc;
 
 namespace VideoPlayerTrimmer.Droid
 {
@@ -33,9 +35,7 @@ namespace VideoPlayerTrimmer.Droid
             global::Xamarin.Forms.Forms.SetFlags(new[] { "CollectionView_Experimental", "Shell_Experimental" });
             global::Xamarin.Forms.Forms.Init(this, savedInstanceState);
 
-            RegisterPlatformServices();
-
-            LoadApplication(new App());
+            LoadApplication(new App(new AndroidInitializer()));
         }
 
         public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Android.Content.PM.Permission[] grantResults)
@@ -50,10 +50,13 @@ namespace VideoPlayerTrimmer.Droid
         {
             CrossCurrentActivity.Current.Init(this, savedInstanceState);
         }
+    }
 
-        private void RegisterPlatformServices()
+    public class AndroidInitializer : IPlatformInitializer
+    {
+        public void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            App.Container.Register<IMediaScanner, MediaScannerImpl>();
+            containerRegistry.Register<IMediaScanner, MediaScannerImpl>();
         }
     }
 }

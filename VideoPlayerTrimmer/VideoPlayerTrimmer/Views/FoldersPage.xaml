@@ -4,21 +4,22 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:views="clr-namespace:VideoPlayerTrimmer.Views"
     xmlns:models="clr-namespace:VideoPlayerTrimmer.Models"
+    xmlns:b="clr-namespace:Prism.Behaviors;assembly=Prism.Forms"
     x:Class="VideoPlayerTrimmer.Views.FoldersPage">
     
     <ContentPage.Content>
-        <CollectionView
-            EmptyView="No items"
-            ItemSizingStrategy="MeasureFirstItem"
+        <ListView
             ItemsSource="{Binding Folders}"
-            SelectionMode="Single">
-            <CollectionView.ItemTemplate>
+            SelectionMode="None"
+            >
+            <ListView.Behaviors>
+                <b:EventToCommandBehavior EventName="ItemTapped" Command="{Binding ItemTappedCommand}" EventArgsParameterPath="Item"/>
+            </ListView.Behaviors>
+            <ListView.ItemTemplate>
                 <DataTemplate>
-                    <StackLayout>
-                        <Label Text="{Binding FolderName}"/>
-                    </StackLayout>
+                    <TextCell Text="{Binding FolderName}"/>
                 </DataTemplate>
-            </CollectionView.ItemTemplate>
-        </CollectionView>
+            </ListView.ItemTemplate>
+        </ListView>
     </ContentPage.Content>
 </views:FoldersContentPage>

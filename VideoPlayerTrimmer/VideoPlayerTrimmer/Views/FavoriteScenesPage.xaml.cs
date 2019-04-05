@@ -18,7 +18,6 @@ namespace VideoPlayerTrimmer.Views
         public FavoriteScenesPage()
         {
             InitializeComponent();
-            BindingContext = App.Container.Resolve<FavoriteScenesViewModel>();
         }
     }
 }

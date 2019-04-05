@@ -4,10 +4,13 @@
              xmlns:views="clr-namespace:VideoPlayerTrimmer.Views"
              x:Class="VideoPlayerTrimmer.Views.VideosPage">
     <ContentPage.Content>
-        <StackLayout>
-            <Label Text="Welcome to Xamarin.Forms!"
-                VerticalOptions="CenterAndExpand" 
-                HorizontalOptions="CenterAndExpand" />
-        </StackLayout>
+        <ListView
+            ItemsSource="{Binding VideoItems}">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <TextCell Text="{Binding Title}"/>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
     </ContentPage.Content>
 </views:VideosContentPage>

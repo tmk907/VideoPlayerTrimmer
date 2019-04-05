@@ -18,7 +18,6 @@ namespace VideoPlayerTrimmer.Views
         public VideoPlayerPage()
         {
             InitializeComponent();
-            BindingContext = App.Container.Resolve<VideoPlayerViewModel>();
         }
     }
 }
