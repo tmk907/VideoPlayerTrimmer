@@ -28,13 +28,13 @@ namespace VideoPlayerTrimmer
         {
             InitializeComponent();
             VersionTracking.Track();
-
-            await NavigationService.NavigateAsync("NavigationPage/folders");
+            await NavigationService.NavigateAsync("NavigationPage/HomePage?selectedTab=folders");
         }
 
         protected override void RegisterTypes(IContainerRegistry containerRegistry)
         {
             containerRegistry.RegisterForNavigation<NavigationPage>();
+            containerRegistry.RegisterForNavigation<HomePage>();
             containerRegistry.RegisterForNavigation<FavoriteScenesPage, FavoriteScenesViewModel>(PageNames.Favourites);
             containerRegistry.RegisterForNavigation<FoldersPage, FoldersViewModel>(PageNames.Folders);
             containerRegistry.RegisterForNavigation<SettingsPage, SettingsViewModel>(PageNames.Settings);
