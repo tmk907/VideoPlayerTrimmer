@@ -29,8 +29,10 @@ namespace VideoPlayerTrimmer
             InitializeComponent();
             VersionTracking.Track();
             await NavigationService.NavigateAsync("NavigationPage/HomePage?selectedTab=folders");
-        }
 
+            var a = Container.Resolve<MediaPlayerService>();
+        }
+        
         protected override void RegisterTypes(IContainerRegistry containerRegistry)
         {
             containerRegistry.RegisterForNavigation<NavigationPage>();
@@ -66,7 +68,7 @@ namespace VideoPlayerTrimmer
         {
             containerRegistry.RegisterInstance<VideoDatabase>(Database);
             containerRegistry.RegisterSingleton<IVideoLibrary, VideoLibrary>();
-
+            containerRegistry.RegisterSingleton<MediaPlayerService>();
         }
 
         protected override void OnStart()

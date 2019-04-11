@@ -2,12 +2,32 @@
 <views:VideoPlayerContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:views="clr-namespace:VideoPlayerTrimmer.Views"
+                              xmlns:vlc="clr-namespace:LibVLCSharp.Forms.Shared;assembly=LibVLCSharp.Forms"
              x:Class="VideoPlayerTrimmer.Views.VideoPlayerPage">
     <ContentPage.Content>
-        <StackLayout>
-            <Label Text="Welcome to Xamarin.Forms!"
-                VerticalOptions="CenterAndExpand" 
-                HorizontalOptions="CenterAndExpand" />
-        </StackLayout>
+        <Grid>
+            <Grid x:Name="VideoPlayerGrid">
+                <vlc:VideoView x:Name="VideoView"
+                               MediaPlayer="{Binding MediaPlayer}"
+                               MediaPlayerChanged="MediaPlayerChanged" Grid.Row="0" Grid.Column="0"/>
+            </Grid>
+            <StackLayout>
+                <Button
+                    MinimumHeightRequest="50"
+                    MinimumWidthRequest="80"
+                    Text="fullscr"
+                    Command="{Binding FullScreenCommand}"
+                    />
+                <Button 
+                
+                    VerticalOptions="End"
+                    WidthRequest="100"
+                    MinimumWidthRequest="100"
+                    HeightRequest="50" 
+                    Text="PlayPause"
+                    Command="{Binding PlayPauseCommand}"/>
+            </StackLayout>
+
+        </Grid>
     </ContentPage.Content>
 </views:VideoPlayerContentPage>

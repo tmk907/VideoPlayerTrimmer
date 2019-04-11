@@ -15,6 +15,7 @@ using VideoPlayerTrimmer.Services;
 using VideoPlayerTrimmer.Droid.Services;
 using Prism;
 using Prism.Ioc;
+using LibVLCSharp.Forms.Shared;
 
 namespace VideoPlayerTrimmer.Droid
 {
@@ -28,6 +29,7 @@ namespace VideoPlayerTrimmer.Droid
 
             base.OnCreate(savedInstanceState);
 
+            LibVLCSharpFormsRenderer.Init();
             InitRenderersAndServices(savedInstanceState);
 
             Xamarin.Essentials.Platform.Init(this, savedInstanceState);
@@ -50,6 +52,22 @@ namespace VideoPlayerTrimmer.Droid
         {
             CrossCurrentActivity.Current.Init(this, savedInstanceState);
         }
+
+        protected override void OnPause()
+        {
+            base.OnPause();
+
+            MessagingCenter.Send("app", "OnPause");
+
+        }
+
+        protected override void OnRestart()
+        {
+            base.OnRestart();
+
+            MessagingCenter.Send("app", "OnRestart");
+        }
+
     }
 
     public class AndroidInitializer : IPlatformInitializer
