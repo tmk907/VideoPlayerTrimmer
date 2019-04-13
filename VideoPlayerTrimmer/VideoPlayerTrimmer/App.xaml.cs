@@ -5,6 +5,7 @@ using Prism;
 using Prism.DryIoc;
 using Prism.Ioc;
 using System;
+using System.Linq;
 using System.IO;
 using System.Threading.Tasks;
 using VideoPlayerTrimmer.Database;
@@ -83,12 +84,29 @@ namespace VideoPlayerTrimmer
 
         protected override void OnSleep()
         {
-            // Handle when your app sleeps
+            App.DebugLog("1");
+            base.OnSleep();
+            App.DebugLog("2");
         }
 
         protected override void OnResume()
         {
-            // Handle when your app resumes
+            App.DebugLog("1");
+            base.OnResume();
+            App.DebugLog("2");
+        }
+
+        public static void DebugLog(string arg, [System.Runtime.CompilerServices.CallerFilePath] string filePath = "", [System.Runtime.CompilerServices.CallerMemberName] string methodName = "")
+        {
+            var callerTypeName = filePath.Split(new char[] { '\\' }, StringSplitOptions.RemoveEmptyEntries).Last();
+            callerTypeName = callerTypeName.Remove(callerTypeName.Length - 3);
+            System.Diagnostics.Debug.WriteLine("LOG: {0}.{1}() {2}", callerTypeName, methodName, arg);
+        }
+        
+        public static void DebugLog(LoggerArgs args, [System.Runtime.CompilerServices.CallerFilePath] string filePath = "", [System.Runtime.CompilerServices.CallerMemberName] string methodName = "")
+        {
+            var callerTypeName = Path.GetFileNameWithoutExtension(filePath);
+            DebugLog(callerTypeName, methodName, args.ToString());
         }
     }
 }
