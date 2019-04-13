@@ -52,22 +52,6 @@ namespace VideoPlayerTrimmer.Droid
         {
             CrossCurrentActivity.Current.Init(this, savedInstanceState);
         }
-
-        protected override void OnPause()
-        {
-            base.OnPause();
-
-            MessagingCenter.Send("app", "OnPause");
-
-        }
-
-        protected override void OnRestart()
-        {
-            base.OnRestart();
-
-            MessagingCenter.Send("app", "OnRestart");
-        }
-
     }
 
     public class AndroidInitializer : IPlatformInitializer

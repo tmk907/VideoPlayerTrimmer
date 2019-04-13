@@ -10,19 +10,21 @@ namespace VideoPlayerTrimmer.Framework
 
         protected virtual T ViewModel => BindingContext as T;
 
-        protected override void OnAppearing()
+        protected override async void OnAppearing()
         {
+            App.DebugLog("");
             base.OnAppearing();
 
             if (!isAlreadyInitialized)
             {
-                ViewModel.InitializeAsync();
+                await ViewModel.InitializeAsync();
                 isAlreadyInitialized = true;
             }
         }
 
         protected override void OnDisappearing()
         {
+            App.DebugLog("");
             base.OnDisappearing();
 
             if (!isAlreadyUninitialized)

@@ -11,7 +11,7 @@ using VideoPlayerTrimmer.Services;
 
 namespace VideoPlayerTrimmer.ViewModels
 {
-    public class VideoPlayerViewModel : BaseViewModel, INavigatingAware, IApplicationLifecycleAware
+    public class VideoPlayerViewModel : BaseViewModel, INavigationAware, IApplicationLifecycleAware
     {
         private readonly INavigationService navigationService;
         private readonly MediaPlayerService playerService;
@@ -20,6 +20,7 @@ namespace VideoPlayerTrimmer.ViewModels
 
         public VideoPlayerViewModel(INavigationService navigationService, MediaPlayerService playerService)
         {
+            App.DebugLog("");
             this.navigationService = navigationService;
             this.playerService = playerService;
             PlayPauseCommand = new DelegateCommand(() => TogglePlayPause());
@@ -40,54 +41,111 @@ namespace VideoPlayerTrimmer.ViewModels
             filePath = parameters.GetValue<string>(NavigationParameterNames.VideoPath);
         }
 
-        public override Task InitializeAsync()
+        public void OnNavigatedTo(INavigationParameters parameters) { }
+
+        public void OnNavigatedFrom(INavigationParameters parameters)
         {
-            MediaPlayer = playerService.GetMediaPlayer(filePath);
-            
-            return Task.CompletedTask;
+            UnInitMediaPlayer();
         }
 
-        public override Task UninitializeAsync()
+        public void OnResume()
         {
-            MediaPlayer.Pause();
+            App.DebugLog("");
+            InitMediaPlayer();
+        }
+
+        public void OnSleep()
+        {
+            App.DebugLog("");
+            UnInitMediaPlayer();
+            IsVideoViewInitialized = false;
+        }
+
+        public override Task InitializeAsync()
+        {
+            App.DebugLog("");
+            InitMediaPlayer();
             return Task.CompletedTask;
+        }
+        
+        private void InitMediaPlayer()
+        {
+            App.DebugLog("");
+            MediaPlayer = playerService.GetMediaPlayer(filePath);
+        }
+
+        private void UnInitMediaPlayer()
+        {
+            App.DebugLog("");
+            MediaPlayer.Pause();
+            position = MediaPlayer.Position;
+            MediaPlayer.Stop();
         }
 
         public DelegateCommand PlayPauseCommand { get; }
         public DelegateCommand FullScreenCommand { get; }
 
+        private float position = 0;
         private bool isPlaying => MediaPlayer.IsPlaying;
+        private bool isPausedByUser = false;
 
         public void TogglePlayPause()
         {
-            if (isPlaying) MediaPlayer.Pause();
-            else Play();
+            if (isPlaying)
+            {
+                Pause();
+                isPausedByUser = true;
+            }
+            else
+            {
+                Play();
+                isPausedByUser = false;
+            }
+        }
+
+        public void StartPlayingOrResume()
+        {
+            App.DebugLog("");
+            MediaPlayer.Playing += MediaPlayer_Playing;
+
+            MediaPlayer.Play();
+            MediaPlayer.Position = position;
+        }
+
+        private async void MediaPlayer_Playing(object sender, EventArgs e)
+        {
+            App.DebugLog("");
+            if (isPausedByUser)
+            {
+                // If Pause() is called without delay, videoview is black
+                MediaPlayer.Mute = true;
+                await Task.Delay(100);
+                MediaPlayer.Pause();
+                MediaPlayer.Mute = false;
+            }
+            MediaPlayer.Playing -= MediaPlayer_Playing;
         }
 
         private void Play()
         {
+            App.DebugLog("");
             if (IsVideoViewInitialized)
             {
+                App.DebugLog("VideViewInitialized");
                 MediaPlayer.Play();
             }
         }
 
-        public void Pause()
+        private void Pause()
         {
+            App.DebugLog("");
             MediaPlayer.Pause();
         }
 
         private void EnableFullscreen()
         {
-            MediaPlayer.ToggleFullscreen();
+            
         }
 
-        public void OnResume()
-        {
-        }
-
-        public void OnSleep()
-        {
-        }
     }
 }
