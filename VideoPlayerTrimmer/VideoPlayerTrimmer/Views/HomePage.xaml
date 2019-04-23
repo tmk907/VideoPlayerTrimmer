@@ -5,12 +5,13 @@
             xmlns:b="clr-namespace:Prism.Behaviors;assembly=Prism.Forms"
             xmlns:android="clr-namespace:Xamarin.Forms.PlatformConfiguration.AndroidSpecific;assembly=Xamarin.Forms.Core"
             android:TabbedPage.ToolbarPlacement="Bottom"
+			BarBackgroundColor="{OnPlatform Android=White}"
              x:Class="VideoPlayerTrimmer.Views.HomePage">
-    <views:FoldersPage Title="Folders"/>
-    <views:FavoriteScenesPage Title="Favorites"/>
-    <views:SettingsPage Title="Settings"/>
-    
-    <!--<NavigationPage Title="View A">
+  <views:FoldersPage Title="Folders"/>
+  <views:FavoriteScenesPage Title="Favorites"/>
+  <views:SettingsPage Title="Settings"/>
+
+  <!--<NavigationPage Title="View A">
         <NavigationPage.Behaviors>
             <b:NavigationPageActiveAwareBehavior />
         </NavigationPage.Behaviors>
