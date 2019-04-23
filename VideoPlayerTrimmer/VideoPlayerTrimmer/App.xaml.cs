@@ -15,6 +15,7 @@ using VideoPlayerTrimmer.Views;
 using Xamarin.Essentials;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
+using Plugin.Iconize;
 
 [assembly: XamlCompilation(XamlCompilationOptions.Compile)]
 namespace VideoPlayerTrimmer
@@ -29,6 +30,7 @@ namespace VideoPlayerTrimmer
         {
             InitializeComponent();
             VersionTracking.Track();
+            Plugin.Iconize.Iconize.With(new Plugin.Iconize.Fonts.EntypoPlusModule());
             await NavigationService.NavigateAsync("NavigationPage/HomePage?selectedTab=folders");
 
             var a = Container.Resolve<MediaPlayerService>();
@@ -36,8 +38,9 @@ namespace VideoPlayerTrimmer
         
         protected override void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            containerRegistry.RegisterForNavigation<NavigationPage>();
-            containerRegistry.RegisterForNavigation<HomePage>();
+            //containerRegistry.RegisterForNavigation<NavigationPage>();
+            containerRegistry.RegisterForNavigation<IconNavigationPage>(nameof(NavigationPage));
+            containerRegistry.RegisterForNavigation(typeof(HomePage), "HomePage");
             containerRegistry.RegisterForNavigation<FavoriteScenesPage, FavoriteScenesViewModel>(PageNames.Favourites);
             containerRegistry.RegisterForNavigation<FoldersPage, FoldersViewModel>(PageNames.Folders);
             containerRegistry.RegisterForNavigation<SettingsPage, SettingsViewModel>(PageNames.Settings);

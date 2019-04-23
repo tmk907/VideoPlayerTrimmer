@@ -1,31 +1,14 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<TabbedPage xmlns="http://xamarin.com/schemas/2014/forms"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+<ic:IconTabbedPage  xmlns="http://xamarin.com/schemas/2014/forms"
+            xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
             xmlns:views="clr-namespace:VideoPlayerTrimmer.Views"
             xmlns:b="clr-namespace:Prism.Behaviors;assembly=Prism.Forms"
+            xmlns:ic="clr-namespace:Plugin.Iconize;assembly=Plugin.Iconize"
             xmlns:android="clr-namespace:Xamarin.Forms.PlatformConfiguration.AndroidSpecific;assembly=Xamarin.Forms.Core"
             android:TabbedPage.ToolbarPlacement="Bottom"
-			BarBackgroundColor="{OnPlatform Android=White}"
-             x:Class="VideoPlayerTrimmer.Views.HomePage">
-  <views:FoldersPage Title="Folders"/>
-  <views:FavoriteScenesPage Title="Favorites"/>
-  <views:SettingsPage Title="Settings"/>
-
-  <!--<NavigationPage Title="View A">
-        <NavigationPage.Behaviors>
-            <b:NavigationPageActiveAwareBehavior />
-        </NavigationPage.Behaviors>
-        <x:Arguments>
-            <views:SettingsPage Title="View A" />
-        </x:Arguments>
-    </NavigationPage>
-    <NavigationPage Title="View b">
-        <NavigationPage.Behaviors>
-            <b:NavigationPageActiveAwareBehavior />
-        </NavigationPage.Behaviors>
-        <x:Arguments>
-            <views:FoldersPage Title="View f" />
-        </x:Arguments>
-    </NavigationPage>
-    <views:SettingsPage Title="Settings"/>-->
-</TabbedPage>
+            BarBackgroundColor="{OnPlatform Android=White}"
+            x:Class="VideoPlayerTrimmer.Views.HomePage">
+  <views:FoldersPage Title="Folders" Icon="ep-folder-video"/>
+  <views:FavoriteScenesPage Title="Favorites" Icon="ep-heart"/>
+  <views:SettingsPage Title="Settings" Icon="ep-cog"/>
+</ic:IconTabbedPage>

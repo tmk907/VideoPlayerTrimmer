@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Plugin.Iconize;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,7 +11,7 @@ using Xamarin.Forms.Xaml;
 namespace VideoPlayerTrimmer.Views
 {
     [XamlCompilation(XamlCompilationOptions.Compile)]
-    public partial class HomePage : TabbedPage
+    public partial class HomePage : IconTabbedPage
     {
         public HomePage()
         {

@@ -37,6 +37,8 @@ namespace VideoPlayerTrimmer.Droid
             global::Xamarin.Forms.Forms.SetFlags(new[] { "CollectionView_Experimental", "Shell_Experimental" });
             global::Xamarin.Forms.Forms.Init(this, savedInstanceState);
 
+            Plugin.Iconize.Iconize.Init(Resource.Id.toolbar, Resource.Id.sliding_tabs);
+
             LoadApplication(new App(new AndroidInitializer()));
         }
 
