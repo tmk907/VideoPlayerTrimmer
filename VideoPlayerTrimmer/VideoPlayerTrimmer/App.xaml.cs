@@ -28,6 +28,8 @@ namespace VideoPlayerTrimmer
 
         protected override async void OnInitialized()
         {
+            AdMaiora.RealXaml.Client.AppManager.Init(this);
+
             InitializeComponent();
             VersionTracking.Track();
             Plugin.Iconize.Iconize.With(new Plugin.Iconize.Fonts.EntypoPlusModule());
