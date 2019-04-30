@@ -5,10 +5,13 @@
     xmlns:views="clr-namespace:VideoPlayerTrimmer.Views"
     xmlns:models="clr-namespace:VideoPlayerTrimmer.Models"
     xmlns:b="clr-namespace:Prism.Behaviors;assembly=Prism.Forms"
+    xmlns:ic="clr-namespace:Plugin.Iconize;assembly=Plugin.Iconize"
     x:Class="VideoPlayerTrimmer.Views.FoldersPage">
     
     <ContentPage.Content>
         <ListView
+            HasUnevenRows="False"
+            RowHeight="60"
             ItemsSource="{Binding Folders}"
             SelectionMode="None"
             >
@@ -17,7 +20,44 @@
             </ListView.Behaviors>
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <TextCell Text="{Binding FolderName}"/>
+                    <ViewCell>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="80"/>
+                                <ColumnDefinition/>
+                            </Grid.ColumnDefinitions>
+                            <ic:IconImage Grid.Column="0" 
+                                          HeightRequest="30"
+                                          IconSize="50"
+                                          Icon="ep-folder-video"
+                                          IconColor="DarkOrange"/>
+                            <Grid Grid.Column="1" RowSpacing="0">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <Label
+                                    Grid.Row="0"
+                                    LineBreakMode="CharacterWrap"
+                                    MaxLines="2"
+                                    FontSize="16"
+                                    TextColor="Black"
+                                    Text="{Binding FolderName}"
+                                    VerticalTextAlignment="Center"/>
+                                <StackLayout Grid.Row="1" Orientation="Horizontal">
+                                    <Label Text="{Binding VideoCount}" VerticalTextAlignment="Center"/>
+                                    <ic:IconLabel Text="ep-video" VerticalTextAlignment="Center"/>
+                                    <Label
+                                        Text="NEW" 
+                                        FontSize="12"
+                                        FontAttributes="Bold"
+                                        TextColor="Red"
+                                        VerticalTextAlignment="Center"
+                                        IsVisible="{Binding AreNewVideos}"/>
+                                </StackLayout>
+                            </Grid>
+                        </Grid>
+                    </ViewCell>
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
