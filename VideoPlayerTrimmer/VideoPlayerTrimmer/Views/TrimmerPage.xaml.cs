@@ -17,6 +17,7 @@ namespace VideoPlayerTrimmer.Views
     {
         public TrimmerPage()
         {
+            AdMaiora.RealXaml.Client.AppManager.Init(this);
             InitializeComponent();
         }
     }
