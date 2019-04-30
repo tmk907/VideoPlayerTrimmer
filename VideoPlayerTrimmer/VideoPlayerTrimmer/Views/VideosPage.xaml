@@ -3,9 +3,19 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:views="clr-namespace:VideoPlayerTrimmer.Views"
              xmlns:b="clr-namespace:Prism.Behaviors;assembly=Prism.Forms"
+             xmlns:ic="clr-namespace:Plugin.Iconize;assembly=Plugin.Iconize"
+             xmlns:converters="clr-namespace:VideoPlayerTrimmer.Converters"
              x:Class="VideoPlayerTrimmer.Views.VideosPage">
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <converters:TimeSpanToVideoDurationConverter x:Key="DurationConverter" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
     <ContentPage.Content>
         <ListView
+            CachingStrategy="RecycleElement"
+            HasUnevenRows="False"
+            RowHeight="70"
             ItemsSource="{Binding VideoItems}"
             SelectionMode="None">
             <ListView.Behaviors>
@@ -13,7 +23,60 @@
             </ListView.Behaviors>
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <TextCell Text="{Binding Title}"/>
+                    <ViewCell>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <Grid Grid.Column="0" RowSpacing="0">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <BoxView 
+                                    Grid.RowSpan="2"
+                                    WidthRequest="106" Color="LightCoral"/>
+                                <FlexLayout Grid.Row="1"
+                                            Direction="Column"
+                                            AlignItems="End"
+                                            JustifyContent="End">
+                                    <Frame
+                                        CornerRadius="4"
+                                        Padding="4,0,4,0"
+                                        BackgroundColor="#88000000">
+                                        <Label
+                                            Text="NEW" 
+                                            FontSize="12"
+                                            FontAttributes="Bold"
+                                            TextColor="Red"
+                                            VerticalTextAlignment="Center"
+                                            IsVisible="{Binding IsNew}"/>
+                                    </Frame>
+                                    <Frame
+                                        CornerRadius="4"
+                                        Padding="4,0,4,0"
+                                        BackgroundColor="#88000000">
+                                        <Label          
+                                            FontSize="12"
+                                            TextColor="White"
+                                            VerticalTextAlignment="Center"
+                                            Text="{Binding Duration, Converter={StaticResource DurationConverter}}"/>
+                                    </Frame>
+                                    
+                                </FlexLayout>
+                            </Grid>
+                            <Label
+                                Grid.Column="1"
+                                LineBreakMode="TailTruncation"
+                                MaxLines="3"
+                                FontSize="16"
+                                TextColor="Black"
+                                Text="{Binding Title}"
+                                VerticalTextAlignment="Center"/>
+                        </Grid>
+                    </ViewCell>
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>

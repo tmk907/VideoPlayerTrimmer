@@ -14,6 +14,7 @@
             RowHeight="60"
             ItemsSource="{Binding Folders}"
             SelectionMode="None"
+            CachingStrategy="RecycleElement"
             >
             <ListView.Behaviors>
                 <b:EventToCommandBehavior EventName="ItemTapped" Command="{Binding ItemTappedCommand}" EventArgsParameterPath="Item"/>
@@ -38,7 +39,7 @@
                                 </Grid.RowDefinitions>
                                 <Label
                                     Grid.Row="0"
-                                    LineBreakMode="CharacterWrap"
+                                    LineBreakMode="TailTruncation"
                                     MaxLines="2"
                                     FontSize="16"
                                     TextColor="Black"
