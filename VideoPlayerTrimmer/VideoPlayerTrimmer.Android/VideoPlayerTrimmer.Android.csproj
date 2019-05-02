@@ -94,6 +94,7 @@
     <Compile Include="Services\BrightnessService.cs" />
     <Compile Include="Services\MediaScannerImpl.cs" />
     <Compile Include="Services\OrientationService.cs" />
+    <Compile Include="Services\StatusBarService.cs" />
     <Compile Include="Services\VolumeService.cs" />
   </ItemGroup>
   <ItemGroup>

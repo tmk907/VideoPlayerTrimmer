@@ -93,6 +93,7 @@ namespace VideoPlayerTrimmer.Droid
             containerRegistry.RegisterSingleton<IVolumeService, VolumeService>();
             containerRegistry.Register<IBrightnessService, BrightnessService>();
             containerRegistry.Register<IOrientationService, OrientationService>();
+            containerRegistry.Register<IStatusBarService, StatusBarService>();
         }
     }
 }
