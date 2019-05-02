@@ -1,6 +1,7 @@
 ﻿using System;
 
 using Android.App;
+using Android.Media;
 using Android.Runtime;
 using Android.Views;
 using Android.Widget;
@@ -16,12 +17,16 @@ using VideoPlayerTrimmer.Droid.Services;
 using Prism;
 using Prism.Ioc;
 using LibVLCSharp.Forms.Shared;
+using VideoPlayerTrimmer.Droid.BroadcastReceivers;
 
 namespace VideoPlayerTrimmer.Droid
 {
     [Activity(Label = "VideoPlayerTrimmer", Icon = "@mipmap/icon", Theme = "@style/MainTheme", MainLauncher = true, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
     public class MainActivity : global::Xamarin.Forms.Platform.Android.FormsAppCompatActivity
     {
+        public static string VolumeChangeMessage = "VolumeChangeMessage";
+
+        private VolumeChangeBroadcastReceiver volumeReceiver;
         protected override void OnCreate(Bundle savedInstanceState)
         {
             TabLayoutResource = Resource.Layout.Tabbar;
@@ -31,7 +36,8 @@ namespace VideoPlayerTrimmer.Droid
 
             LibVLCSharpFormsRenderer.Init();
             InitRenderersAndServices(savedInstanceState);
-
+            //volumeReceiver = new VolumeChangeBroadcastReceiver();
+            
             Xamarin.Essentials.Platform.Init(this, savedInstanceState);
 
             global::Xamarin.Forms.Forms.SetFlags(new[] { "CollectionView_Experimental", "Shell_Experimental" });
@@ -40,6 +46,29 @@ namespace VideoPlayerTrimmer.Droid
             Plugin.Iconize.Iconize.Init(Resource.Id.toolbar, Resource.Id.sliding_tabs);
 
             LoadApplication(new App(new AndroidInitializer()));
+        }
+
+        public override bool OnKeyDown([GeneratedEnum] Keycode keyCode, KeyEvent e)
+        {
+            if (keyCode == Keycode.VolumeUp || keyCode == Keycode.VolumeDown)
+            {
+                App.DebugLog("KEY volume");
+                MessagingCenter.Send(this, VolumeChangeMessage);
+            }
+            return base.OnKeyDown(keyCode, e);
+        }
+
+        protected override void OnResume()
+        {
+            base.OnResume();
+            this.VolumeControlStream = Stream.Music;
+            //RegisterReceiver(volumeReceiver, new Android.Content.IntentFilter("android.media.VOLUME_CHANGED_ACTION"));
+        }
+
+        protected override void OnPause()
+        {
+            //UnregisterReceiver(volumeReceiver);
+            base.OnPause();
         }
 
         public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Android.Content.PM.Permission[] grantResults)
@@ -61,6 +90,9 @@ namespace VideoPlayerTrimmer.Droid
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
             containerRegistry.Register<IMediaScanner, MediaScannerImpl>();
+            containerRegistry.RegisterSingleton<IVolumeService, VolumeService>();
+            containerRegistry.Register<IBrightnessService, BrightnessService>();
+            containerRegistry.Register<IOrientationService, OrientationService>();
         }
     }
 }
