@@ -20,8 +20,6 @@ namespace VideoPlayerTrimmer.Views
         public VideoPlayerPage()
         {
             AdMaiora.RealXaml.Client.AppManager.Init(this);
-            var a = Xamarin.Essentials.DeviceDisplay.MainDisplayInfo.Width;
-
             InitializeComponent();
             NavigationPage.SetHasNavigationBar(this, false);
         }
@@ -35,22 +33,6 @@ namespace VideoPlayerTrimmer.Views
         private void Slider_ValueChanged(object sender, ValueChangedEventArgs e)
         {
             ViewModel.SeekTo(e.NewValue);
-        }
-
-        private void RangeSliderVolume_UpperValueChanged(object sender, EventArgs e)
-        {
-            var slider = sender as RangeSlider;
-            App.DebugLog(slider.UpperValue.ToString());
-            ViewModel.Volume = (int)slider.UpperValue;
-            ViewModel.ApplyVolume();
-        }
-
-        private void RangeSliderBrightness_UpperValueChanged(object sender, EventArgs e)
-        {
-            var slider = sender as RangeSlider;
-            App.DebugLog(slider.UpperValue.ToString());
-            ViewModel.Brightness = (int)slider.UpperValue;
-            ViewModel.ApplyBrightness();
         }
 
         private int initialVolume;
@@ -101,7 +83,7 @@ namespace VideoPlayerTrimmer.Views
         private int CalculateValue(double totalChange, int value, int maxValue)
         {
             double minimumChange = 30;
-            bool decrease = totalChange < 0;
+            bool decrease = totalChange > 0;
             totalChange = Math.Abs(totalChange);
             if (totalChange < minimumChange) return value;
             totalChange -= minimumChange;

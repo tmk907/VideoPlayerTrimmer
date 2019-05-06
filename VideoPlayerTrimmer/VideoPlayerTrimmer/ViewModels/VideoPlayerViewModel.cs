@@ -3,11 +3,16 @@ using Prism.AppModel;
 using Prism.Commands;
 using Prism.Navigation;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading.Tasks;
 using VideoPlayerTrimmer.Framework;
 using VideoPlayerTrimmer.Models;
 using VideoPlayerTrimmer.Services;
+using Xamarin.Forms;
 
 namespace VideoPlayerTrimmer.ViewModels
 {
@@ -36,7 +41,6 @@ namespace VideoPlayerTrimmer.ViewModels
             this.orientationService = orientationService;
             this.statusBarService = statusBarService;
             PlayPauseCommand = new DelegateCommand(() => TogglePlayPause());
-            FullScreenCommand = new DelegateCommand(() => EnableFullscreen());
             SeekToCommand = new DelegateCommand<object>((seconds) => SeekTo(seconds));
             ToggleFavoriteCommand = new DelegateCommand(() => ToggleFavorite());
             ToggleControlsVisibilityCommand = new DelegateCommand(() => ToggleControlsVisibility());
@@ -44,7 +48,7 @@ namespace VideoPlayerTrimmer.ViewModels
             Volume = volumeController.GetVolume();
             volumeController.VolumeChanged += VolumeController_VolumeChanged;
             Brightness = Settings.VideoBrightness;
-            ApplyBrightness();
+            favoriteScenes = new FavoritesCollection(favoriteSceneDuration);
         }       
 
         private MediaPlayer mediaPlayer;
@@ -63,14 +67,14 @@ namespace VideoPlayerTrimmer.ViewModels
 
         public void OnNavigatedTo(INavigationParameters parameters) { }
 
-        public void OnNavigatedFrom(INavigationParameters parameters)
-        {
-            UnInitMediaPlayer();
-        }
+        public void OnNavigatedFrom(INavigationParameters parameters) { }
 
         public void OnResume()
         {
             App.DebugLog("");
+            statusBarService.IsVisible = false;
+            orientationService.ChangeToLandscape();
+            ApplyBrightness();
             InitMediaPlayer();
         }
 
@@ -86,22 +90,30 @@ namespace VideoPlayerTrimmer.ViewModels
             App.DebugLog("");
             statusBarService.IsVisible = false;
             orientationService.ChangeToLandscape();
+            ApplyBrightness();
             videoItem = await videoLibrary.GetVideoItemAsync(filePath);
             Title = videoItem.Title;
             if (String.IsNullOrWhiteSpace(Title))
             {
                 Title = videoItem.FileName;
             }
+            lastPosition = (long)videoItem.Preferences.Position.TotalMilliseconds;
+            var favScenes = await videoLibrary.GetFavoriteScenes(videoItem.VideoId);
+            favoriteScenes = new FavoritesCollection(favoriteSceneDuration, favScenes);
             InitMediaPlayer();
         }
 
-        public override Task UninitializeAsync()
+        public override async Task UninitializeAsync()
         {
-            videoLibrary.MarkAsPlayed(videoItem.VideoId);
+            App.DebugLog("");
+            UnInitMediaPlayer();
+            await videoLibrary.MarkAsPlayedAsync(videoItem);
+            videoItem.Preferences.Position = CurrentTime;
+            await videoLibrary.SaveVideoItemPreferences(videoItem);
+            await videoLibrary.SaveFavoriteScenes(videoItem.VideoId, favoriteScenes.Select(s => s.Value));
             statusBarService.IsVisible = true;
             brightnessController.RestoreBrightness();
             orientationService.RestoreOrientation();
-            return base.UninitializeAsync();
         }
 
         private void InitMediaPlayer()
@@ -113,16 +125,37 @@ namespace VideoPlayerTrimmer.ViewModels
             MediaPlayer.Paused += MediaPlayer_Paused;
             MediaPlayer.EndReached += MediaPlayer_EndReached;
             MediaPlayer.EncounteredError += MediaPlayer_EncounteredError;
+            MediaPlayer.SnapshotTaken += MediaPlayer_SnapshotTaken;
+        }
+
+        private void UnInitMediaPlayer()
+        {
+            App.DebugLog("");
+            MediaPlayer.Pause();
+            lastPosition = MediaPlayer.Time;
+            MediaPlayer.Stop();
+
+            MediaPlayer.TimeChanged -= MediaPlayer_TimeChanged;
+            MediaPlayer.Playing -= MediaPlayer_Playing1;
+            MediaPlayer.Paused -= MediaPlayer_Paused;
+            MediaPlayer.EndReached -= MediaPlayer_EndReached;
+            MediaPlayer.EncounteredError -= MediaPlayer_EncounteredError;
+            MediaPlayer.SnapshotTaken -= MediaPlayer_SnapshotTaken;
         }
 
         private void MediaPlayer_EndReached(object sender, EventArgs e)
         {
-          
+            App.DebugLog("");
         }
 
         private void MediaPlayer_EncounteredError(object sender, EventArgs e)
         {
             App.DebugLog("");
+        }
+
+        private void MediaPlayer_SnapshotTaken(object sender, MediaPlayerSnapshotTakenEventArgs e)
+        {
+            App.DebugLog(e.Filename);
         }
 
         private void MediaPlayer_Paused(object sender, EventArgs e)
@@ -135,27 +168,12 @@ namespace VideoPlayerTrimmer.ViewModels
             OnPlaybackStateChange(true);
         }
 
-        private void UnInitMediaPlayer()
-        {
-            App.DebugLog("");
-            MediaPlayer.Pause();
-            lastPosition = MediaPlayer.Position;
-            MediaPlayer.Stop();
-
-            MediaPlayer.TimeChanged -= MediaPlayer_TimeChanged;
-            MediaPlayer.Playing -= MediaPlayer_Playing1;
-            MediaPlayer.Paused -= MediaPlayer_Paused;
-            MediaPlayer.EndReached -= MediaPlayer_EndReached;
-            MediaPlayer.EncounteredError -= MediaPlayer_EncounteredError;
-        }
-
         public DelegateCommand PlayPauseCommand { get; }
-        public DelegateCommand FullScreenCommand { get; }
         public DelegateCommand<object> SeekToCommand { get;}
         public DelegateCommand ToggleFavoriteCommand { get; }
         public DelegateCommand ToggleControlsVisibilityCommand { get; }
 
-        private float lastPosition = 0;
+        private long lastPosition = 0;
         private bool isPausedByUser = false;
 
         private void TogglePlayPause()
@@ -179,7 +197,7 @@ namespace VideoPlayerTrimmer.ViewModels
             MediaPlayer.Playing += MediaPlayer_Playing;
 
             MediaPlayer.Play();
-            MediaPlayer.Position = lastPosition;
+            MediaPlayer.Time = lastPosition;
         }
 
         private async void MediaPlayer_Playing(object sender, EventArgs e)
@@ -201,6 +219,7 @@ namespace VideoPlayerTrimmer.ViewModels
         private void MediaPlayer_TimeChanged(object sender, MediaPlayerTimeChangedEventArgs e)
         {
             CurrentTime = TimeSpan.FromMilliseconds(e.Time);
+            ShowIsFavorite(currentTime);
         }
 
         private void Play()
@@ -222,8 +241,6 @@ namespace VideoPlayerTrimmer.ViewModels
         private void Next() { }
 
         private void Previous() { }
-
-        private void EnableFullscreen() { }
 
         private void OnPlaybackStateChange(bool isPlaying)
         {
@@ -354,8 +371,41 @@ namespace VideoPlayerTrimmer.ViewModels
             ShowControls = !ShowControls;
         }
 
+
+        private TimeSpan favoriteSceneDuration = TimeSpan.FromSeconds(5);
+        private FavoritesCollection favoriteScenes;
+
+        private void ShowIsFavorite(TimeSpan position)
+        {
+            if (favoriteScenes.IsFavorite(position))
+            {
+                IsFavorite = true;
+            }
+            else
+            {
+                IsFavorite = false;
+            }
+        }
+
         private void ToggleFavorite()
         {
+            if (IsFavorite)
+            {
+                favoriteScenes.RemoveFavorite(currentTime);
+            }
+            else
+            {
+                string fileName = GetHashString(videoItem.FilePath + currentTime.ToString());
+                string path = System.IO.Path.Combine(Xamarin.Essentials.FileSystem.AppDataDirectory, Configuration.SnaphotsFolderName, fileName);
+
+                favoriteScenes.AddFavorite(new FavoriteScene()
+                {
+                    Position = currentTime,
+                    ThumbnailPath = "",
+                    SnapshotPath = path
+                });
+                MediaPlayer.TakeSnapshot(0, path, 0, 0);
+            }
             IsFavorite = !IsFavorite;
         }
 
@@ -375,6 +425,65 @@ namespace VideoPlayerTrimmer.ViewModels
                     MediaPlayer.Time = newTime;
                 }
             }
+        }
+
+
+        public static byte[] GetHash(string inputString)
+        {
+            HashAlgorithm algorithm = SHA256.Create();
+            return algorithm.ComputeHash(Encoding.UTF8.GetBytes(inputString));
+        }
+
+        public static string GetHashString(string inputString)
+        {
+            StringBuilder sb = new StringBuilder();
+            foreach (byte b in GetHash(inputString))
+                sb.Append(b.ToString("X2"));
+
+            return sb.ToString();
+        }
+    }
+
+    public class FavoritesCollection : Dictionary<TimeSpan, FavoriteScene>
+    {
+        public FavoritesCollection(TimeSpan interval)
+        {
+            Interval = interval;
+        }
+
+        public FavoritesCollection(TimeSpan interval, IEnumerable<FavoriteScene> scenes)
+        {
+            Interval = interval;
+            foreach(var scene in scenes)
+            {
+                this.AddFavorite(scene);
+            }
+        }
+
+        public TimeSpan Interval { get; set; } = TimeSpan.FromSeconds(5);
+
+        private TimeSpan FindIntervalBeginning(TimeSpan value)
+        {
+            var seconds = Interval.TotalSeconds * Math.Floor(value.TotalSeconds / Interval.TotalSeconds);
+            return TimeSpan.FromSeconds(seconds);
+        }
+        
+        public void AddFavorite(FavoriteScene scene)
+        {
+            var key = FindIntervalBeginning(scene.Position);
+            this[key] = scene;
+        }
+
+        public void RemoveFavorite(TimeSpan position)
+        {
+            var key = FindIntervalBeginning(position);
+            this.Remove(key);
+        }
+
+        public bool IsFavorite(TimeSpan position)
+        {
+            var key = FindIntervalBeginning(position);
+            return this.ContainsKey(key);
         }
     }
 }

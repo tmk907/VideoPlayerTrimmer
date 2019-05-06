@@ -33,6 +33,7 @@ namespace VideoPlayerTrimmer
             InitializeComponent();
             VersionTracking.Track();
             Plugin.Iconize.Iconize.With(new Plugin.Iconize.Fonts.EntypoPlusModule());
+            FirstTimeSetup();
             await NavigationService.NavigateAsync("NavigationPage/HomePage?selectedTab=folders");
 
             var a = Container.Resolve<MediaPlayerService>();
@@ -99,6 +100,18 @@ namespace VideoPlayerTrimmer
             App.DebugLog("1");
             base.OnResume();
             App.DebugLog("2");
+        }
+
+        private void FirstTimeSetup()
+        {
+            if (VersionTracking.IsFirstLaunchEver)
+            {
+                var directoryPath = Path.Combine(FileSystem.AppDataDirectory, Configuration.FavoriteThumbnailsFolderName);
+                if (!Directory.Exists(directoryPath))
+                {
+                    Directory.CreateDirectory(directoryPath);
+                }
+            }
         }
 
         public static void DebugLog(string arg, [System.Runtime.CompilerServices.CallerFilePath] string filePath = "", [System.Runtime.CompilerServices.CallerMemberName] string methodName = "")

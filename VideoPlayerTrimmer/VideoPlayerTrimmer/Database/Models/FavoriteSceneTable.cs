@@ -7,10 +7,11 @@ namespace VideoPlayerTrimmer.Database.Models
     {
         [PrimaryKey, AutoIncrement]
         public int FavSceneId { get; set; }
+        
         [NotNull]
         public int VideoId { get; set; }
-        public TimeSpan Timestamp { get; set; }
-        public bool IsSaved { get; set; }
+        [NotNull]
+        public TimeSpan Position { get; set; }
         public string ThumbnailPath { get; set; }
     }
 }

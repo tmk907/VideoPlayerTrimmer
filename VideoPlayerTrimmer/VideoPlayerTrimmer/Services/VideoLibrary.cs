@@ -28,7 +28,7 @@ namespace VideoPlayerTrimmer.Services
         public async Task Refresh()
         {
             await libraryUpdater.UpdateAsync();
-            var videos = await database.Get<VideoFileTable>(e => e.VideoId, e => !e.IsDeleted);
+            var videos = await database.GetAsync<VideoFileTable>(e => e.VideoId, e => !e.IsDeleted);
             folderItems.Clear();
             videoItems.Clear();
             foreach(var directoryGroup in videos.GroupBy(e => e.Directory))
@@ -70,16 +70,35 @@ namespace VideoPlayerTrimmer.Services
             return videoItems.Where(e => e.FolderPath == folderPath).ToList();
         }
 
-        public void MarkAsPlayed(int videoId)
+        public async Task MarkAsPlayedAsync(VideoItem video)
         {
-            throw new NotImplementedException();
+            video.IsNew = false;
+            await database.UpdateIsNewAsync(video.VideoId, false);
         }
 
         public async Task SaveVideoItemPreferences(VideoItem videoItem)
         {
-            var videoFileTable = await database.GetFirst<VideoFileTable>(e => e.VideoId == videoItem.VideoId);
+            var videoFileTable = await database.GetFirstAsync<VideoFileTable>(e => e.VideoId == videoItem.VideoId);
             videoFileTable.Position = videoItem.Preferences.Position;
-            await database.Update(videoFileTable);
+            await database.UpdateAsync(videoFileTable);
+        }
+
+        public async Task<IEnumerable<FavoriteScene>> GetFavoriteScenes(int videoId)
+        {
+            var list = await database.GetAsync<FavoriteSceneTable>(s => s.Position, s => s.VideoId == videoId);
+            return list.Select(s => new FavoriteScene() { Position = s.Position, ThumbnailPath = s.ThumbnailPath });
+        }
+
+        public async Task SaveFavoriteScenes(int videoId, IEnumerable<FavoriteScene> scenes)
+        {
+            await database.DeleteAsync<FavoriteSceneTable>(s => s.VideoId == videoId);
+            var list = scenes.Select(s => new FavoriteSceneTable()
+            {
+                Position = s.Position,
+                ThumbnailPath = s.ThumbnailPath,
+                VideoId = videoId
+            });
+            await database.InsertAllAsync(list);
         }
     }
 }

@@ -22,7 +22,7 @@ namespace VideoPlayerTrimmer.Services
         public async Task UpdateAsync()
         {
             var videoSources = await mediaScanner.ScanVideosAsync();
-            var oldVideos = (await database.Get<VideoFileTable>(v => v.MediaStoreId)).ToDictionary(e => e.MediaStoreId);
+            var oldVideos = (await database.GetAsync<VideoFileTable>(v => v.MediaStoreId)).ToDictionary(e => e.MediaStoreId);
             var idsToDelete = oldVideos.ToDictionary(e => e.Key, e => true);
             var newVideos = new List<VideoFileTable>();
             foreach(var source in videoSources)
@@ -59,8 +59,8 @@ namespace VideoPlayerTrimmer.Services
             {
                 video.IsDeleted = true;
             }
-            await database.InsertAll(newVideos);
-            await database.UpdateAll(videosToDelete);
+            await database.InsertAllAsync(newVideos);
+            await database.UpdateAllAsync(videosToDelete);
         }
     }
 }
