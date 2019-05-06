@@ -2,22 +2,124 @@
 <views:VideoPlayerContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:views="clr-namespace:VideoPlayerTrimmer.Views"
-                              xmlns:ic="clr-namespace:Plugin.Iconize;assembly=Plugin.Iconize"
-                              xmlns:vlc="clr-namespace:LibVLCSharp.Forms.Shared;assembly=LibVLCSharp.Forms"
+             xmlns:ic="clr-namespace:Plugin.Iconize;assembly=Plugin.Iconize"
+             xmlns:b="clr-namespace:Prism.Behaviors;assembly=Prism.Forms"
+             xmlns:vlc="clr-namespace:LibVLCSharp.Forms.Shared;assembly=LibVLCSharp.Forms"
+             xmlns:converters="clr-namespace:VideoPlayerTrimmer.Converters"
+             xmlns:slider="clr-namespace:Xamarin.RangeSlider.Forms;assembly=Xamarin.RangeSlider.Forms"
              x:Class="VideoPlayerTrimmer.Views.VideoPlayerPage">
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <converters:TimeSpanToVideoDurationConverter x:Key="DurationConverter" />
+            <converters:TimeSpanToSecondsConverter x:Key="ToSecondsConverter"/>
+            <converters:BoolToFavoriteIconConverter x:Key="ToFavoriteIconConverter"/>
+            <Color x:Key="SemiTransparent">#AA000000</Color>
+        </ResourceDictionary>
+    </ContentPage.Resources>
     <ContentPage.Content>
-        <Grid>
-            <Grid x:Name="VideoPlayerGrid">
-                <vlc:VideoView x:Name="VideoView"
-                               MediaPlayer="{Binding MediaPlayer}"
-                               MediaPlayerChanged="MediaPlayerChanged" Grid.Row="0" Grid.Column="0"/>
+        <Grid x:Name="VideoPlayerGrid">
+            <vlc:VideoView x:Name="VideoView"
+                            MediaPlayer="{Binding MediaPlayer}"
+                            MediaPlayerChanged="MediaPlayerChanged" Grid.Row="0" Grid.Column="0"/>
+            <Grid BackgroundColor="Transparent">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Label
+                    Grid.ColumnSpan="2" Grid.Row="0"
+                    IsVisible="{Binding ShowControls}"
+                    FontSize="Large"
+                    BackgroundColor="{StaticResource SemiTransparent}" 
+                    Text="{Binding Title}"
+                    HorizontalTextAlignment="Start" />
+                <Grid Grid.Column="0" Grid.Row="1">
+                    <Grid ColumnSpacing="10" VerticalOptions="Center" IsVisible="{Binding IsVolumeIndicatorVisible}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+                        <ic:IconLabel BackgroundColor="{StaticResource SemiTransparent}" Text="ep-controller-volume" FontSize="40" TextColor="White" Grid.Column="0" HorizontalOptions="End"/>
+                        <Label BackgroundColor="{StaticResource SemiTransparent}" Text="{Binding Volume}" FontSize="30" TextColor="White" Grid.Column="1" HorizontalOptions="Start"/>
+                    </Grid>
+                    <Grid x:Name="BrighnessGrid" BackgroundColor="Transparent">
+                        <Grid.GestureRecognizers>
+                            <PanGestureRecognizer PanUpdated="BrightnessPanUpdated"/>
+                            <TapGestureRecognizer Command="{Binding ToggleControlsVisibilityCommand}"/>
+                        </Grid.GestureRecognizers>
+                    </Grid>
+                </Grid>
+                <Grid Grid.Column="1" Grid.Row="1">
+                    <Grid BackgroundColor="{StaticResource SemiTransparent}" ColumnSpacing="10" VerticalOptions="Center" IsVisible="{Binding IsBrightnessIndicatorVisible}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+                        <ic:IconLabel Text="ep-adjust" FontSize="40" TextColor="White" Grid.Column="0" HorizontalOptions="End"/>
+                        <Label Text="{Binding Brightness}" FontSize="30" TextColor="White" Grid.Column="1" HorizontalOptions="Start"/>
+                    </Grid>
+                    <Grid x:Name="VolumeGrid" BackgroundColor="Transparent">
+                        <Grid.GestureRecognizers>
+                            <PanGestureRecognizer PanUpdated="VolumePanUpdated"/>
+                            <TapGestureRecognizer Command="{Binding ToggleControlsVisibilityCommand}"/>
+                        </Grid.GestureRecognizers>
+                    </Grid>
+                </Grid>
+                <Grid
+                    Grid.ColumnSpan="2" Grid.Row="2"
+                    IsVisible="{Binding ShowControls}"
+                    BackgroundColor="{StaticResource SemiTransparent}" 
+                    HeightRequest="100">
+                    <Grid.RowDefinitions>
+                        <RowDefinition/>
+                        <RowDefinition Height="60"/>
+                    </Grid.RowDefinitions>
+                    <FlexLayout Grid.Row="0" Direction="Row">
+                        <Label 
+                                TextColor="White" 
+                                Text="{Binding CurrentTime, Converter={StaticResource DurationConverter}}"
+                                VerticalTextAlignment="Center"/>
+                        <Slider 
+                                FlexLayout.Grow="1"
+                                Minimum="0" 
+                                VerticalOptions="Center"
+                                Margin="0,4,0,0"
+                                Maximum="{Binding TotalTime, Converter={StaticResource ToSecondsConverter}, ConverterParameter=1}"
+                                Value="{Binding CurrentTime, Converter={StaticResource ToSecondsConverter}, Mode=OneWay}"
+                                ValueChanged="Slider_ValueChanged"/>
+                        <Label 
+                                TextColor="White" 
+                                Text="{Binding TotalTime, Converter={StaticResource DurationConverter}}"
+                                VerticalTextAlignment="Center"/>
+                    </FlexLayout>
+                    <FlexLayout Grid.Row="1" Direction="Row" JustifyContent="Center">
+                        <ic:IconButton Text="{Binding PlayPauseIcon}"
+                                        FontSize="28"
+                                        BackgroundColor="#80111111"
+                                        TextColor="White"
+                                        WidthRequest="80"
+                                        BorderColor="White"
+                                        BorderWidth="1"
+                                        Margin="4"
+                            Command="{Binding PlayPauseCommand}"/>
+                        <ic:IconButton 
+                            Command="{Binding ToggleFavoriteCommand}"
+                            FontSize="28"
+                            Margin="4"
+                            BackgroundColor="Transparent"
+                            TextColor="White"
+                            WidthRequest="80"
+                            BorderColor="White"
+                            BorderWidth="1"
+                            Text="{Binding IsFavorite, Converter={StaticResource ToFavoriteIconConverter}}"/>
+                    </FlexLayout>
+                </Grid>
             </Grid>
-            <StackLayout>
-                <ic:IconButton Text="en-play"
-                    Command="{Binding PlayPauseCommand}"/>
-
-            </StackLayout>
-
         </Grid>
     </ContentPage.Content>
 </views:VideoPlayerContentPage>
