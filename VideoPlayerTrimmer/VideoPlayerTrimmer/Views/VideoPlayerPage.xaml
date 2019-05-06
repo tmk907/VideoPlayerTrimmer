@@ -37,6 +37,7 @@
                     FontSize="Large"
                     BackgroundColor="{StaticResource SemiTransparent}" 
                     Text="{Binding Title}"
+                    TextColor="White"
                     HorizontalTextAlignment="Start" />
                 <Grid Grid.Column="0" Grid.Row="1">
                     <Grid ColumnSpacing="10" VerticalOptions="Center" IsVisible="{Binding IsVolumeIndicatorVisible}">
@@ -55,13 +56,13 @@
                     </Grid>
                 </Grid>
                 <Grid Grid.Column="1" Grid.Row="1">
-                    <Grid BackgroundColor="{StaticResource SemiTransparent}" ColumnSpacing="10" VerticalOptions="Center" IsVisible="{Binding IsBrightnessIndicatorVisible}">
+                    <Grid ColumnSpacing="10" VerticalOptions="Center" IsVisible="{Binding IsBrightnessIndicatorVisible}">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition/>
                             <ColumnDefinition/>
                         </Grid.ColumnDefinitions>
-                        <ic:IconLabel Text="ep-adjust" FontSize="40" TextColor="White" Grid.Column="0" HorizontalOptions="End"/>
-                        <Label Text="{Binding Brightness}" FontSize="30" TextColor="White" Grid.Column="1" HorizontalOptions="Start"/>
+                        <ic:IconLabel BackgroundColor="{StaticResource SemiTransparent}" Text="ep-adjust" FontSize="40" TextColor="White" Grid.Column="0" HorizontalOptions="End"/>
+                        <Label BackgroundColor="{StaticResource SemiTransparent}" Text="{Binding Brightness}" FontSize="30" TextColor="White" Grid.Column="1" HorizontalOptions="Start"/>
                     </Grid>
                     <Grid x:Name="VolumeGrid" BackgroundColor="Transparent">
                         <Grid.GestureRecognizers>

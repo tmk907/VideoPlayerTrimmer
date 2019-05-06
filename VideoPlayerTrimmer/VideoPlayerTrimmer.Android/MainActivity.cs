@@ -44,7 +44,7 @@ namespace VideoPlayerTrimmer.Droid
             global::Xamarin.Forms.Forms.Init(this, savedInstanceState);
 
             Plugin.Iconize.Iconize.Init(Resource.Id.toolbar, Resource.Id.sliding_tabs);
-
+            Android.Glide.Forms.Init();
             LoadApplication(new App(new AndroidInitializer()));
         }
 

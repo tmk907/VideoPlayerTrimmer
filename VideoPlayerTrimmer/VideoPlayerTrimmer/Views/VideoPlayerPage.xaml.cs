@@ -89,7 +89,7 @@ namespace VideoPlayerTrimmer.Views
             totalChange -= minimumChange;
 
             double maxChange = VolumeGrid.Height;
-            double maxValueChange = 10;
+            double maxValueChange = 15;
             double heightPerValue = (maxChange - minimumChange) / maxValueChange;
 
             int valueChange = (int)Math.Round(totalChange / heightPerValue);
