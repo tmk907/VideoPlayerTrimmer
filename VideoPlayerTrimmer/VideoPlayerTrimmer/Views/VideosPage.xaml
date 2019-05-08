@@ -31,51 +31,49 @@
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition/>
                             </Grid.ColumnDefinitions>
-                            
-                            <Grid Grid.Column="0" RowSpacing="0">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition/>
-                                    <RowDefinition Height="Auto"/>
-                                </Grid.RowDefinitions>
-                                <Frame HeightRequest="70" WidthRequest="106" Margin="4"
-                                                          Padding="0" IsClippedToBounds="True" Grid.RowSpan="2" HasShadow="True">
-                                    <Image
-                                        Aspect="AspectFill">
+                            <Frame Grid.Column="0" 
+                                   HeightRequest="70" WidthRequest="106" Margin="2"
+                                   Padding="0" IsClippedToBounds="True" HasShadow="True">
+                                <Grid Grid.Column="0" RowSpacing="0">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <Image Grid.RowSpan="2" Aspect="AspectFill">
                                         <Image.Source>
                                             <FileImageSource File="{Binding FilePath}"/>
                                         </Image.Source>
                                     </Image>
-                                </Frame>
-                                <FlexLayout Grid.Row="1"
-                                            IsVisible="False"
-                                            Direction="Column"
-                                            AlignItems="End"
-                                            JustifyContent="End">
-                                    <Frame
-                                        CornerRadius="4"
-                                        Padding="4,0,4,0"
-                                        BackgroundColor="#88000000">
-                                        <Label
-                                            Text="NEW" 
-                                            FontSize="12"
-                                            FontAttributes="Bold"
-                                            TextColor="Red"
-                                            VerticalTextAlignment="Center"
-                                            IsVisible="{Binding IsNew}"/>
+                                    <FlexLayout Grid.Row="1"
+                                                IsVisible="True"
+                                                Direction="Column"
+                                                AlignItems="End"
+                                                JustifyContent="End">
+                                        <Frame
+                                            IsVisible="{Binding IsNew}"
+                                            CornerRadius="4"
+                                            Padding="4,0,4,0"
+                                            BackgroundColor="#88000000">
+                                            <Label
+                                                Text="NEW" 
+                                                FontSize="12"
+                                                FontAttributes="Bold"
+                                                TextColor="Red"
+                                                VerticalTextAlignment="Center"/>
+                                        </Frame>
+                                        <Frame
+                                            CornerRadius="4"
+                                            Padding="4,0,4,0"
+                                            BackgroundColor="#88000000">
+                                            <Label          
+                                                FontSize="12"
+                                                TextColor="White"
+                                                VerticalTextAlignment="Center"
+                                                Text="{Binding Duration, Converter={StaticResource DurationConverter}}"/>
                                     </Frame>
-                                    <Frame
-                                        CornerRadius="4"
-                                        Padding="4,0,4,0"
-                                        BackgroundColor="#88000000">
-                                        <Label          
-                                            FontSize="12"
-                                            TextColor="White"
-                                            VerticalTextAlignment="Center"
-                                            Text="{Binding Duration, Converter={StaticResource DurationConverter}}"/>
-                                    </Frame>
-                                    
-                                </FlexLayout>
-                            </Grid>
+                                    </FlexLayout>
+                                </Grid>
+                            </Frame>
                             <Label
                                 Grid.Column="1"
                                 LineBreakMode="TailTruncation"
