@@ -7,6 +7,7 @@
              xmlns:vlc="clr-namespace:LibVLCSharp.Forms.Shared;assembly=LibVLCSharp.Forms"
              xmlns:converters="clr-namespace:VideoPlayerTrimmer.Converters"
              xmlns:slider="clr-namespace:Xamarin.RangeSlider.Forms;assembly=Xamarin.RangeSlider.Forms"
+             x:Name="PlayerPage"
              x:Class="VideoPlayerTrimmer.Views.VideoPlayerPage">
     <ContentPage.Resources>
         <ResourceDictionary>
@@ -14,6 +15,21 @@
             <converters:TimeSpanToSecondsConverter x:Key="ToSecondsConverter"/>
             <converters:BoolToFavoriteIconConverter x:Key="ToFavoriteIconConverter"/>
             <Color x:Key="SemiTransparent">#AA000000</Color>
+            <Style x:Key="HeaderLabel" TargetType="Label">
+                <Setter Property="FontSize" Value="17"/>
+                <Setter Property="TextColor" Value="White"/>
+            </Style>
+            <Style x:Key="DescriptionLabel" TargetType="Label">
+                <Setter Property="TextColor" Value="White"/>
+                <Setter Property="FontSize" Value="15"/>
+                <Setter Property="Margin" Value="4,8,0,0"/>
+            </Style>
+            <Style x:Key="ValueLabel" TargetType="Label">
+                <Setter Property="TextColor" Value="White"/>
+                <Setter Property="FontSize" Value="14"/>
+                <Setter Property="LineBreakMode" Value="CharacterWrap"/>
+                <Setter Property="Margin" Value="16,0,0,0"/>
+            </Style>
         </ResourceDictionary>
     </ContentPage.Resources>
     <ContentPage.Content>
@@ -99,6 +115,26 @@
                                 VerticalTextAlignment="Center"/>
                     </FlexLayout>
                     <FlexLayout Grid.Row="1" Direction="Row" JustifyContent="Center">
+                        <ic:IconButton 
+                            Command="{Binding ToggleAudioTracksCommand}"
+                            Text="ep-note"
+                            FontSize="28"
+                            BackgroundColor="#80111111"
+                            TextColor="White"
+                            WidthRequest="80"
+                            BorderColor="White"
+                            BorderWidth="1"
+                            Margin="4" />
+                        <ic:IconButton 
+                            Command="{Binding ToggleSubtitlesCommand}"
+                            Text="ep-message"
+                            FontSize="28"
+                            BackgroundColor="#80111111"
+                            TextColor="White"
+                            WidthRequest="80"
+                            BorderColor="White"
+                            BorderWidth="1"
+                            Margin="4"/>
                         <ic:IconButton Text="{Binding PlayPauseIcon}"
                                         FontSize="28"
                                         BackgroundColor="#80111111"
@@ -118,9 +154,116 @@
                             BorderColor="White"
                             BorderWidth="1"
                             Text="{Binding IsFavorite, Converter={StaticResource ToFavoriteIconConverter}}"/>
+                        <ic:IconButton 
+                            Command="{Binding ToggleMediaInfoCommand}"
+                            Text="ep-info"
+                            FontSize="28"
+                            BackgroundColor="#80111111"
+                            TextColor="White"
+                            WidthRequest="80"
+                            BorderColor="White"
+                            BorderWidth="1"
+                            Margin="4"/>
                     </FlexLayout>
                 </Grid>
             </Grid>
+            <ContentView IsVisible="{Binding IsMediaInfoPopupVisible}" BackgroundColor="Transparent">
+                <ContentView.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding ToggleMediaInfoCommand}"/>
+                </ContentView.GestureRecognizers>
+                <ScrollView WidthRequest="400" Margin="12" Padding="12"
+                            HorizontalOptions="Center" BackgroundColor="#EE111111">
+                    <StackLayout Orientation="Vertical">
+                        <Label Text="Info" Style="{StaticResource HeaderLabel}"/>
+                        <Label Text="Filename" Style="{StaticResource DescriptionLabel}"/>
+                        <Label Text="{Binding MediaInfo.FileName}" Style="{StaticResource ValueLabel}"/>
+                        <Label Text="Path" Style="{StaticResource DescriptionLabel}"/>
+                        <Label Text="{Binding MediaInfo.FilePath}" Style="{StaticResource ValueLabel}"/>
+                        <Label Text="Title" Style="{StaticResource DescriptionLabel}"/>
+                        <Label Text="{Binding MediaInfo.VideoTitle}" Style="{StaticResource ValueLabel}"/>
+                        <Label Text="Resolution" Style="{StaticResource DescriptionLabel}"/>
+                        <Label Text="{Binding MediaInfo.Resolution}" Style="{StaticResource ValueLabel}"/>
+                        <Label Text="Fps" Style="{StaticResource DescriptionLabel}"/>
+                        <Label Text="{Binding MediaInfo.Fps}" Style="{StaticResource ValueLabel}"/>
+                        <Label Text="Audio tracks" Style="{StaticResource DescriptionLabel}"/>
+                        <StackLayout BindableLayout.ItemsSource="{Binding MediaInfo.AudioTracks}">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate>
+                                    <Label Text="{Binding Name}" Style="{StaticResource ValueLabel}"/>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </StackLayout>
+                        <Label Text="Subtitles" Style="{StaticResource DescriptionLabel}"/>
+                        <StackLayout Orientation="Vertical" BindableLayout.ItemsSource="{Binding MediaInfo.Subtitles}">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate>
+                                    <Label Text="{Binding Name}" Style="{StaticResource ValueLabel}"/>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </StackLayout>
+                    </StackLayout>
+                </ScrollView>
+            </ContentView>
+            <ContentView IsVisible="{Binding IsSubtitlesPopupVisible}" BackgroundColor="Transparent">
+                <ContentView.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding ToggleSubtitlesCommand}"/>
+                </ContentView.GestureRecognizers>
+                <ScrollView WidthRequest="400" Margin="12" Padding="12"
+                            HorizontalOptions="Center" VerticalOptions="Center" BackgroundColor="#EE111111">
+                    <StackLayout Orientation="Vertical">
+                        <Label Text="Subtitles" Style="{StaticResource HeaderLabel}"/>
+                        <StackLayout BindableLayout.ItemsSource="{Binding Subtitles}">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid BackgroundColor="Transparent">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="30"/>
+                                            <ColumnDefinition/>
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.GestureRecognizers>
+                                            <TapGestureRecognizer Command="{Binding Source={x:Reference PlayerPage}, Path=BindingContext.SelectSubtitlesCommand}" CommandParameter="{Binding .}"/>
+                                        </Grid.GestureRecognizers>
+                                        <ic:IconLabel Grid.Column="0" Text="ep-check"  IsVisible="{Binding IsSelected}" 
+                                                      TextColor="White" FontSize="16" VerticalTextAlignment="End" />
+                                        <Label Grid.Column="1" Text="{Binding Name}" 
+                                               Style="{StaticResource DescriptionLabel}"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </StackLayout>
+                    </StackLayout>
+                </ScrollView>
+            </ContentView>
+            <ContentView IsVisible="{Binding IsAudioTracksPopupVisible}" BackgroundColor="Transparent">
+                <ContentView.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding ToggleAudioTracksCommand}"/>
+                </ContentView.GestureRecognizers>
+                <ScrollView WidthRequest="400" Margin="12" Padding="12"
+                            HorizontalOptions="Center" VerticalOptions="Center" BackgroundColor="#EE111111">
+                    <StackLayout Orientation="Vertical">
+                        <Label Text="Audio tracks" Style="{StaticResource HeaderLabel}"/>
+                        <StackLayout BindableLayout.ItemsSource="{Binding AudioTracks}">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="30"/>
+                                            <ColumnDefinition/>
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.GestureRecognizers>
+                                            <TapGestureRecognizer Command="{Binding Source={x:Reference PlayerPage}, Path=BindingContext.SelectAudioTrackCommand}" CommandParameter="{Binding .}"/>
+                                        </Grid.GestureRecognizers>
+                                        <ic:IconLabel Grid.Column="0" Text="ep-check"  IsVisible="{Binding IsSelected}" 
+                                                      TextColor="White" FontSize="16" VerticalTextAlignment="End" />
+                                        <Label Grid.Column="1" Text="{Binding Name}" 
+                                               Style="{StaticResource DescriptionLabel}"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </StackLayout>
+                    </StackLayout>
+                </ScrollView>
+            </ContentView>
         </Grid>
     </ContentPage.Content>
 </views:VideoPlayerContentPage>

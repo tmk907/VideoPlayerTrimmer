@@ -40,10 +40,14 @@ namespace VideoPlayerTrimmer.ViewModels
             this.brightnessController = brightnessController;
             this.orientationService = orientationService;
             this.statusBarService = statusBarService;
-            PlayPauseCommand = new DelegateCommand(() => TogglePlayPause());
-            SeekToCommand = new DelegateCommand<object>((seconds) => SeekTo(seconds));
-            ToggleFavoriteCommand = new DelegateCommand(() => ToggleFavorite());
-            ToggleControlsVisibilityCommand = new DelegateCommand(() => ToggleControlsVisibility());
+            PlayPauseCommand = new DelegateCommand(TogglePlayPause);
+            ToggleFavoriteCommand = new DelegateCommand(ToggleFavorite);
+            ToggleControlsVisibilityCommand = new DelegateCommand(ToggleControlsVisibility);
+            ToggleAudioTracksCommand = new DelegateCommand(ToggleAudioTracks);
+            ToggleSubtitlesCommand = new DelegateCommand(ToggleSubtitles);
+            ToggleMediaInfoCommand = new DelegateCommand(ToggleMediaInfo);
+            SelectSubtitlesCommand = new DelegateCommand<object>(SelectSubtitles, (e) => canChangeSubtitles);
+            SelectAudioTrackCommand = new DelegateCommand<object>(SelectAudioTrack, (e) => canChangeAudioTrack);
             MaxVolume = volumeController.GetMaxVolume();
             Volume = volumeController.GetVolume();
             volumeController.VolumeChanged += VolumeController_VolumeChanged;
@@ -109,6 +113,10 @@ namespace VideoPlayerTrimmer.ViewModels
             UnInitMediaPlayer();
             await videoLibrary.MarkAsPlayedAsync(videoItem);
             videoItem.Preferences.Position = CurrentTime;
+            if (currentTime >= totalTime)
+            {
+                videoItem.Preferences.Position = TimeSpan.Zero;
+            }
             await videoLibrary.SaveVideoItemPreferences(videoItem);
             await videoLibrary.SaveFavoriteScenes(videoItem.VideoId, favoriteScenes.Select(s => s.Value));
             statusBarService.IsVisible = true;
@@ -169,9 +177,14 @@ namespace VideoPlayerTrimmer.ViewModels
         }
 
         public DelegateCommand PlayPauseCommand { get; }
-        public DelegateCommand<object> SeekToCommand { get;}
         public DelegateCommand ToggleFavoriteCommand { get; }
         public DelegateCommand ToggleControlsVisibilityCommand { get; }
+        public DelegateCommand ToggleAudioTracksCommand { get; }
+        public DelegateCommand ToggleSubtitlesCommand { get; }
+        public DelegateCommand ToggleMediaInfoCommand { get; }
+        public DelegateCommand<object> SelectSubtitlesCommand { get; }
+        public DelegateCommand<object> SelectAudioTrackCommand { get; }
+
 
         private long lastPosition = 0;
         private bool isPausedByUser = false;
@@ -368,9 +381,22 @@ namespace VideoPlayerTrimmer.ViewModels
 
         private void ToggleControlsVisibility()
         {
-            ShowControls = !ShowControls;
+            if (IsPopupVisible)
+            {
+                IsAudioTracksPopupVisible = false;
+                IsSubtitlesPopupVisible = false;
+                IsMediaInfoPopupVisible = false;
+            }
+            else
+            {
+                ShowControls = !ShowControls;
+            }
         }
 
+        private bool IsPopupVisible
+        {
+            get { return IsAudioTracksPopupVisible || IsSubtitlesPopupVisible || IsMediaInfoPopupVisible; }
+        }
 
         private TimeSpan favoriteSceneDuration = TimeSpan.FromSeconds(5);
         private FavoritesCollection favoriteScenes;
@@ -427,6 +453,116 @@ namespace VideoPlayerTrimmer.ViewModels
             }
         }
 
+        private bool isAudioTracksPopupVisible = false;
+        public bool IsAudioTracksPopupVisible
+        {
+            get { return isAudioTracksPopupVisible; }
+            set { SetProperty(ref isAudioTracksPopupVisible, value); }
+        }
+
+        public ObservableCollection<AudioTrackInfo> AudioTracks { get; } = new ObservableCollection<AudioTrackInfo>();
+
+        private bool canChangeAudioTrack = false;
+
+        private void SelectAudioTrack(object audioTrackInfo)
+        {
+            canChangeAudioTrack = false;
+            var selected = (AudioTrackInfo)audioTrackInfo;
+            foreach (var audio in AudioTracks)
+            {
+                audio.IsSelected = false;
+            }
+            selected.IsSelected = true;
+            MediaPlayer.SetAudioTrack(selected.Id);
+            canChangeAudioTrack = true;
+        }
+
+        public void ToggleAudioTracks()
+        {
+            if (AudioTracks.Count == 0)
+            {
+                foreach(var item in MediaPlayer.AudioTrackDescription)
+                {
+                    AudioTracks.Add(new AudioTrackInfo() { Id = item.Id, Name = item.Name });
+                }
+                AudioTracks.SingleOrDefault(a => a.Id == MediaPlayer.AudioTrack).IsSelected = true;
+            }
+            IsAudioTracksPopupVisible = !IsAudioTracksPopupVisible;
+        }
+
+        private bool isSubtitlesPopupVisible = false;
+        public bool IsSubtitlesPopupVisible
+        {
+            get { return isSubtitlesPopupVisible; }
+            set { SetProperty(ref isSubtitlesPopupVisible, value); }
+        }
+
+        public ObservableCollection<SubtitleInfo> Subtitles { get; } = new ObservableCollection<SubtitleInfo>();
+
+        private bool canChangeSubtitles = true;
+
+        private void SelectSubtitles(object subtitleInfo)
+        {
+            canChangeSubtitles = false;
+            var selected = (SubtitleInfo)subtitleInfo;
+            foreach (var sub in Subtitles)
+            {
+                sub.IsSelected = false;
+            }
+            selected.IsSelected = true;
+            MediaPlayer.SetSpu(selected.Id);
+            canChangeSubtitles = true;
+        }
+
+        public void ToggleSubtitles()
+        {
+            if (Subtitles.Count == 0)
+            {
+                foreach (var item in MediaPlayer.SpuDescription)
+                {
+                    Subtitles.Add(new SubtitleInfo() { Id = item.Id, Name = item.Name });
+                }
+                Subtitles.SingleOrDefault(a => a.Id == MediaPlayer.Spu).IsSelected = true;
+            }
+            IsSubtitlesPopupVisible = !IsSubtitlesPopupVisible;
+        }
+
+        private bool isMediaInfoPopupVisible = false;
+        public bool IsMediaInfoPopupVisible
+        {
+            get { return isMediaInfoPopupVisible; }
+            set { SetProperty(ref isMediaInfoPopupVisible, value); }
+        }
+
+        private MediaInfo mediaInfo;
+        public MediaInfo MediaInfo
+        {
+            get { return mediaInfo; }
+            set { SetProperty(ref mediaInfo, value); }
+        }
+
+        public void ToggleMediaInfo()
+        {
+            IsMediaInfoPopupVisible = !IsMediaInfoPopupVisible;
+            if (IsMediaInfoPopupVisible && mediaInfo == null)
+            {
+                var mi = new MediaInfo();
+                mi.FileName = videoItem.FileName;
+                mi.FilePath = videoItem.FilePath;
+                mi.VideoTitle = title;
+                mi.Fps = MediaPlayer.Fps;
+                TimeSpan.FromMilliseconds(MediaPlayer.Length);
+                mi.AudioTracks = MediaPlayer.AudioTrackDescription.Where(s => s.Id != -1)
+                    .Select(a => new AudioTrackInfo() { Id = a.Id, Name = a.Name }).ToList();
+                mi.Subtitles = MediaPlayer.SpuDescription.Where(s => s.Id != -1)
+                    .Select(s => new SubtitleInfo() { Id = s.Id, Name = s.Name }).ToList();
+                uint width = 0;
+                uint height = 0;
+                MediaPlayer.Size(0, ref width, ref height);
+                mi.Resolution = width + "x" + height;
+                MediaInfo = mi;
+            }
+        }
 
         public static byte[] GetHash(string inputString)
         {
@@ -441,6 +577,43 @@ namespace VideoPlayerTrimmer.ViewModels
                 sb.Append(b.ToString("X2"));
 
             return sb.ToString();
+        }
+    }
+
+    public class MediaInfo : BindableBase
+    {
+        public string FileName { get; set; }
+        public string FilePath { get; set; }
+        public string VideoTitle { get; set; }
+        public float Fps { get; set; }
+        public List<AudioTrackInfo> AudioTracks { get; set; }
+        public List<SubtitleInfo> Subtitles { get; set; }
+        public string Resolution { get; set; }
+
+    }
+
+    public class AudioTrackInfo : BindableBase
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        private bool isSelected = false;
+        public bool IsSelected
+        {
+            get { return isSelected; }
+            set { SetProperty(ref isSelected, value); }
+        }
+    }
+
+    public class SubtitleInfo : BindableBase
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+
+        private bool isSelected = false;
+        public bool IsSelected
+        {
+            get { return isSelected; }
+            set { SetProperty(ref isSelected, value); }
         }
     }
 
