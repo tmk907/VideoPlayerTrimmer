@@ -37,6 +37,7 @@ namespace VideoPlayerTrimmer.Droid.Services
                 }
                 else
                 {
+                    window.ClearFlags(WindowManagerFlags.ForceNotFullscreen);
                     window.AddFlags(WindowManagerFlags.Fullscreen);
                     window.AddFlags(WindowManagerFlags.KeepScreenOn);
                 }
