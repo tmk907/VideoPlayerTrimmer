@@ -29,21 +29,26 @@ namespace VideoPlayerTrimmer.Services
         {
             await libraryUpdater.UpdateAsync();
             var videos = await database.GetAsync<VideoFileTable>(e => e.VideoId, e => !e.IsDeleted);
-            folderItems.Clear();
             videoItems.Clear();
-            foreach(var directoryGroup in videos.GroupBy(e => e.Directory))
-            {
-                folderItems.Add(new FolderItem()
-                {
-                    AreNewVideos = directoryGroup.Any(e => e.IsNew),
-                    FolderName = Path.GetFileName(directoryGroup.Key),
-                    FolderPath = directoryGroup.Key,
-                    VideoCount = directoryGroup.Count()
-                });
-            }
             foreach(var video in videos)
             {
                 videoItems.Add(video.ToVideoItem());
+            }
+            RefreshFolders();
+        }
+
+        private void RefreshFolders()
+        {
+            folderItems.Clear();
+            foreach(var group in videoItems.GroupBy(v => v.FolderPath))
+            {
+                folderItems.Add(new FolderItem()
+                {
+                    AreNewVideos = group.Any(e => e.IsNew),
+                    FolderName = Path.GetFileName(group.Key),
+                    FolderPath = group.Key,
+                    VideoCount = group.Count()
+                });
             }
         }
 
@@ -52,6 +57,10 @@ namespace VideoPlayerTrimmer.Services
             if (folderItems.Count == 0 || forceUpdate)
             {
                 await Refresh();
+            }
+            else
+            {
+                RefreshFolders();
             }
             return folderItems;
         }
@@ -63,7 +72,7 @@ namespace VideoPlayerTrimmer.Services
 
         public async Task<List<VideoItem>> GetVideoItemsAsync(string folderPath, bool forceUpdate = false)
         {
-            if (folderItems.Count == 0 || forceUpdate)
+            if (videoItems.Count == 0 || forceUpdate)
             {
                 await Refresh();
             }
