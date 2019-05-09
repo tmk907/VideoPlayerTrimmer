@@ -101,7 +101,14 @@ namespace VideoPlayerTrimmer.ViewModels
             {
                 Title = videoItem.FileName;
             }
-            lastPosition = (long)videoItem.Preferences.Position.TotalMilliseconds;
+            if (Settings.ResumePlayback)
+            {
+                lastPosition = (long)videoItem.Preferences.Position.TotalMilliseconds;
+            }
+            else
+            {
+                lastPosition = 0;
+            }
             var favScenes = await videoLibrary.GetFavoriteScenes(videoItem.VideoId);
             favoriteScenes = new FavoritesCollection(favoriteSceneDuration, favScenes);
             InitMediaPlayer();

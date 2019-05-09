@@ -24,6 +24,12 @@ namespace VideoPlayerTrimmer.Services
         public MediaPlayer GetMediaPlayer(string filePath)
         {
             var media = new Media(LibVLC, filePath);
+            if (Settings.UseHardwareAcceleration)
+            {
+                var configuration = new MediaConfiguration();
+                configuration.EnableHardwareDecoding();
+                media.AddOption(configuration);
+            }
             var mediaPlayer = new MediaPlayer(media);
             return mediaPlayer;
         }
