@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentView xmlns="http://xamarin.com/schemas/2014/forms" 
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="VideoPlayerTrimmer.Controls.SettingsEntry"
+             x:Name="this">
+    <ContentView.ControlTemplate>
+        <ControlTemplate>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="{Binding Source={x:Reference this}, Path=ControlWidth}"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Label Grid.Column="0" Grid.Row="0" 
+                       Style="{Binding Source={x:Reference this}, Path=HeaderStyle}"
+                       Text="{Binding Source={x:Reference this}, Path=Header}"/>
+                <Label Grid.Column="0" Grid.Row="1"
+                       Style="{Binding Source={x:Reference this}, Path=DescriptionStyle}"
+                       Text="{Binding Source={x:Reference this}, Path=Description}"/>
+                <ContentPresenter Grid.Column="1" Grid.Row="0" Grid.RowSpan="2"/>
+                <BoxView Grid.Row="2" Grid.ColumnSpan="2"
+                    HeightRequest="1" BackgroundColor="Black" IsVisible="{Binding Source={x:Reference this}, Path=IsLineVisible}"/>
+            </Grid>
+        </ControlTemplate>
+    </ContentView.ControlTemplate>
+</ContentView>

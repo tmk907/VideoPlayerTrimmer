@@ -13,6 +13,16 @@ namespace VideoPlayerTrimmer.Services
             set { Preferences.Set(nameof(VideoBrightness), value); }
         }
 
+        public static bool ResumePlayback
+        {
+            get { return Preferences.Get(nameof(ResumePlayback), true); }
+            set { Preferences.Set(nameof(ResumePlayback), value); }
+        }
 
+        public static bool UseHardwareAcceleration
+        {
+            get { return Preferences.Get(nameof(UseHardwareAcceleration), false); }
+            set { Preferences.Set(nameof(UseHardwareAcceleration), value); }
+        }
     }
 }
