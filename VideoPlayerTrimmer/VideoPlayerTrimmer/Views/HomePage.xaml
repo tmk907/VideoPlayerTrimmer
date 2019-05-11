@@ -10,5 +10,6 @@
             x:Class="VideoPlayerTrimmer.Views.HomePage">
   <views:FoldersPage Title="Folders" Icon="ep-folder-video"/>
   <views:FavoriteScenesPage Title="Favorites" Icon="ep-heart"/>
+  <views:TrimmerPage Title="Editor" Icon="ep-clapperboard"/>
   <views:SettingsPage Title="Settings" Icon="ep-cog"/>
 </ic:IconTabbedPage>

@@ -5,8 +5,8 @@ namespace VideoPlayerTrimmer.Framework
     public abstract class BaseContentPage<T> : ContentPage
         where T : BaseViewModel
     {
-        private bool isAlreadyInitialized;
-        private bool isAlreadyUninitialized;
+        private bool firstTimeAppearing = true;
+        private bool firstTimeDisappearing = true;
 
         protected virtual T ViewModel => BindingContext as T;
 
@@ -15,10 +15,12 @@ namespace VideoPlayerTrimmer.Framework
             App.DebugLog("");
             base.OnAppearing();
 
-            if (!isAlreadyInitialized)
+            await ViewModel.OnAppearingAsync(firstTimeAppearing);
+
+            if (firstTimeAppearing)
             {
-                await ViewModel.InitializeAsync();
-                isAlreadyInitialized = true;
+                
+                firstTimeAppearing = false;
             }
         }
 
@@ -27,10 +29,11 @@ namespace VideoPlayerTrimmer.Framework
             App.DebugLog("");
             base.OnDisappearing();
 
-            if (!isAlreadyUninitialized)
+            ViewModel.OnDisappearingAsync(firstTimeDisappearing);
+
+            if (firstTimeDisappearing)
             {
-                ViewModel.UninitializeAsync();
-                isAlreadyUninitialized = true;
+                firstTimeDisappearing = true;
             }
         }
     }

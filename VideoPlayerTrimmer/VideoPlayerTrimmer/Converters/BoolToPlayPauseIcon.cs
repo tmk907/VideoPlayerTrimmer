@@ -6,19 +6,24 @@ using Xamarin.Forms;
 
 namespace VideoPlayerTrimmer.Converters
 {
-    class TimeSpanToSecondsConverter : IValueConverter
+    class BoolToPlayPauseIcon : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            var position = (TimeSpan)value;
-            double offset = parameter == null ? 0 : 1;
-            return position.TotalSeconds + offset;
+            bool isPlaying = (bool)value;
+            if (isPlaying)
+            {
+                return "ep-controller-paus";
+            }
+            else
+            {
+                return "ep-controller-play";
+            }
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            float seconds = (float)value;
-            return TimeSpan.FromSeconds(seconds);
+            throw new NotImplementedException();
         }
     }
 }

@@ -76,7 +76,14 @@ namespace VideoPlayerTrimmer.Services
             {
                 await Refresh();
             }
-            return videoItems.Where(e => e.FolderPath == folderPath).ToList();
+            if (String.IsNullOrWhiteSpace(folderPath))
+            {
+                return videoItems.ToList();
+            }
+            else
+            {
+                return videoItems.Where(e => e.FolderPath == folderPath).ToList();
+            }
         }
 
         public async Task MarkAsPlayedAsync(VideoItem video)

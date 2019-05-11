@@ -10,6 +10,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using VideoPlayerTrimmer.Framework;
+using VideoPlayerTrimmer.MediaHelpers;
 using VideoPlayerTrimmer.Models;
 using VideoPlayerTrimmer.Services;
 using Xamarin.Forms;
@@ -89,46 +90,53 @@ namespace VideoPlayerTrimmer.ViewModels
             IsVideoViewInitialized = false;
         }
 
-        public override async Task InitializeAsync()
+        public override async Task OnAppearingAsync(bool firstTime)
         {
-            App.DebugLog("");
-            statusBarService.IsVisible = false;
-            orientationService.ChangeToLandscape();
-            ApplyBrightness();
-            videoItem = await videoLibrary.GetVideoItemAsync(filePath);
-            Title = videoItem.Title;
-            if (String.IsNullOrWhiteSpace(Title))
+            App.DebugLog(firstTime.ToString());
+            if (firstTime)
             {
-                Title = videoItem.FileName;
+                statusBarService.IsVisible = false;
+                orientationService.ChangeToLandscape();
+                ApplyBrightness();
+
+                videoItem = await videoLibrary.GetVideoItemAsync(filePath);
+                Title = videoItem.Title;
+                if (String.IsNullOrWhiteSpace(Title))
+                {
+                    Title = videoItem.FileName;
+                }
+                if (Settings.ResumePlayback)
+                {
+                    lastPosition = (long)videoItem.Preferences.Position.TotalMilliseconds;
+                }
+                else
+                {
+                    lastPosition = 0;
+                }
+                var favScenes = await videoLibrary.GetFavoriteScenes(videoItem.VideoId);
+                favoriteScenes = new FavoritesCollection(favoriteSceneDuration, favScenes);
+                InitMediaPlayer();
             }
-            if (Settings.ResumePlayback)
-            {
-                lastPosition = (long)videoItem.Preferences.Position.TotalMilliseconds;
-            }
-            else
-            {
-                lastPosition = 0;
-            }
-            var favScenes = await videoLibrary.GetFavoriteScenes(videoItem.VideoId);
-            favoriteScenes = new FavoritesCollection(favoriteSceneDuration, favScenes);
-            InitMediaPlayer();
         }
 
-        public override async Task UninitializeAsync()
+        public override async Task OnDisappearingAsync(bool firstTime)
         {
-            App.DebugLog("");
-            UnInitMediaPlayer();
-            await videoLibrary.MarkAsPlayedAsync(videoItem);
-            videoItem.Preferences.Position = CurrentTime;
-            if (currentTime >= totalTime)
+            App.DebugLog(firstTime.ToString());
+            if (firstTime)
             {
-                videoItem.Preferences.Position = TimeSpan.Zero;
+                UnInitMediaPlayer();
+                await videoLibrary.MarkAsPlayedAsync(videoItem);
+                videoItem.Preferences.Position = CurrentTime;
+                if (currentTime >= totalTime)
+                {
+                    videoItem.Preferences.Position = TimeSpan.Zero;
+                }
+                await videoLibrary.SaveVideoItemPreferences(videoItem);
+                await videoLibrary.SaveFavoriteScenes(videoItem.VideoId, favoriteScenes.Select(s => s.Value));
+                statusBarService.IsVisible = true;
+                brightnessController.RestoreBrightness();
+                orientationService.RestoreOrientation();
             }
-            await videoLibrary.SaveVideoItemPreferences(videoItem);
-            await videoLibrary.SaveFavoriteScenes(videoItem.VideoId, favoriteScenes.Select(s => s.Value));
-            statusBarService.IsVisible = true;
-            brightnessController.RestoreBrightness();
-            orientationService.RestoreOrientation();
         }
 
         private void InitMediaPlayer()
@@ -214,6 +222,7 @@ namespace VideoPlayerTrimmer.ViewModels
         public void StartPlayingOrResume()
         {
             App.DebugLog("");
+            IsVideoViewInitialized = true;
             MediaPlayer.Playing += MediaPlayer_Playing;
 
             MediaPlayer.Play();
@@ -393,6 +402,7 @@ namespace VideoPlayerTrimmer.ViewModels
                 IsAudioTracksPopupVisible = false;
                 IsSubtitlesPopupVisible = false;
                 IsMediaInfoPopupVisible = false;
+                ShowControls = false;
             }
             else
             {
@@ -459,6 +469,8 @@ namespace VideoPlayerTrimmer.ViewModels
                 }
             }
         }
+
+        #region Audio,subtitles,info
 
         private bool isAudioTracksPopupVisible = false;
         public bool IsAudioTracksPopupVisible
@@ -529,7 +541,11 @@ namespace VideoPlayerTrimmer.ViewModels
                 {
                     Subtitles.Add(new SubtitleInfo() { Id = item.Id, Name = item.Name });
                 }
-                Subtitles.SingleOrDefault(a => a.Id == MediaPlayer.Spu).IsSelected = true;
+                var sub = Subtitles.SingleOrDefault(a => a.Id == MediaPlayer.Spu);
+                if (sub != null)
+                {
+                    sub.IsSelected = true;
+                }
             }
             IsSubtitlesPopupVisible = !IsSubtitlesPopupVisible;
         }
@@ -571,6 +587,8 @@ namespace VideoPlayerTrimmer.ViewModels
             }
         }
 
+        #endregion
+
         public static byte[] GetHash(string inputString)
         {
             HashAlgorithm algorithm = SHA256.Create();
@@ -584,43 +602,6 @@ namespace VideoPlayerTrimmer.ViewModels
                 sb.Append(b.ToString("X2"));
 
             return sb.ToString();
-        }
-    }
-
-    public class MediaInfo : BindableBase
-    {
-        public string FileName { get; set; }
-        public string FilePath { get; set; }
-        public string VideoTitle { get; set; }
-        public float Fps { get; set; }
-        public List<AudioTrackInfo> AudioTracks { get; set; }
-        public List<SubtitleInfo> Subtitles { get; set; }
-        public string Resolution { get; set; }
-
-    }
-
-    public class AudioTrackInfo : BindableBase
-    {
-        public int Id { get; set; }
-        public string Name { get; set; }
-        private bool isSelected = false;
-        public bool IsSelected
-        {
-            get { return isSelected; }
-            set { SetProperty(ref isSelected, value); }
-        }
-    }
-
-    public class SubtitleInfo : BindableBase
-    {
-        public int Id { get; set; }
-        public string Name { get; set; }
-
-        private bool isSelected = false;
-        public bool IsSelected
-        {
-            get { return isSelected; }
-            set { SetProperty(ref isSelected, value); }
         }
     }
 

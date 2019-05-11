@@ -2,12 +2,142 @@
 <views:TrimmerContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:views="clr-namespace:VideoPlayerTrimmer.Views"
-             x:Class="VideoPlayerTrimmer.Views.TrimmerPage">
+                          xmlns:ic="clr-namespace:Plugin.Iconize;assembly=Plugin.Iconize"
+                          xmlns:slider="clr-namespace:Xamarin.RangeSlider.Forms;assembly=Xamarin.RangeSlider.Forms"
+                          xmlns:vlc="clr-namespace:LibVLCSharp.Forms.Shared;assembly=LibVLCSharp.Forms"
+                          xmlns:converters="clr-namespace:VideoPlayerTrimmer.Converters"
+             x:Class="VideoPlayerTrimmer.Views.TrimmerPage"
+                          Title="Trimmer">
+    <ContentPage.Resources>
+        <Color x:Key="SemiTransparent">#AA000000</Color>
+        <converters:BoolToFavoriteIconConverter x:Key="ToFavIcon"/>
+        <converters:BoolToPlayPauseIcon x:Key="ToPlayPauseIcon"/>
+        <converters:TimeSpanToVideoDurationConverter x:Key="ToDuration"/>
+        <converters:TimeSpanToSecondsConverter x:Key="ToSeconds"/>
+    </ContentPage.Resources>
+    <ContentPage.ToolbarItems>
+        <ic:IconToolbarItem Icon="ep-folder" IconColor="White" Clicked="Open_Clicked"/>
+        <ic:IconToolbarItem Icon="ep-save" IconColor="White" Clicked="Save_Clicked"/>
+    </ContentPage.ToolbarItems>
     <ContentPage.Content>
-        <StackLayout>
-            <Label Text="Welcome to Xamarin.Forms!"
-                VerticalOptions="CenterAndExpand" 
-                HorizontalOptions="CenterAndExpand" />
-        </StackLayout>
+        <Grid>
+            <StackLayout Orientation="Vertical" Spacing="0">
+                <FlexLayout x:Name="flexLayout" Direction="Column">
+                    <Grid>
+                        <vlc:VideoView
+                            x:Name="videoView"
+                            MediaPlayer="{Binding MediaHelper.MediaPlayer}"
+                            MediaPlayerChanged="VideoView_MediaPlayerChanged"
+                            WidthRequest="600"
+                            HeightRequest="200"
+                        />
+                        <Frame 
+                            WidthRequest="110" HeightRequest="70" 
+                            BackgroundColor="{StaticResource SemiTransparent}"
+                            Padding="0"
+                            HorizontalOptions="Center"
+                            VerticalOptions="Center">
+                            <StackLayout Orientation="Vertical" Spacing="2">
+                                <Label Text="{Binding CurrentPosition, Converter={StaticResource ToDuration}}"
+                                       TextColor="White"
+                                       VerticalOptions="End"
+                                       HorizontalTextAlignment="Center"
+                                       VerticalTextAlignment="Center"/>
+                                <StackLayout Orientation="Horizontal" HorizontalOptions="Center">
+                                    <ic:IconButton 
+                                        BackgroundColor="Transparent"
+                                        TextColor="White"
+                                        BorderColor="White"
+                                        BorderWidth="1"
+                                        Command="{Binding JumpToStartCommand}" 
+                                        WidthRequest="50"
+                                        Text="ep-controller-jump-to-start"/>
+                                    <ic:IconButton 
+                                        BackgroundColor="Transparent"
+                                        TextColor="White"
+                                        BorderColor="White"
+                                        BorderWidth="1"
+                                        WidthRequest="50"
+                                        Command="{Binding TogglePlayPauseCommand}" 
+                                        Text="{Binding IsPlaying, Converter={StaticResource ToPlayPauseIcon}}"/>
+                                </StackLayout>
+                            </StackLayout>
+                        </Frame>
+                    </Grid>
+                    <StackLayout Orientation="Vertical" BackgroundColor="Brown">
+                        <StackLayout Orientation="Horizontal" HorizontalOptions="Center" BackgroundColor="Yellow">
+                            <ic:IconButton Command="{Binding GoToPrevFavSceneCommand}" 
+                               Text="ep-arrow-long-left"
+                               WidthRequest="50"/>
+                            <ic:IconLabel Text="{Binding IsFavoriteScene, Converter={StaticResource ToFavIcon}}" 
+                              VerticalOptions="Center"
+                              FontSize="22"/>
+                            <ic:IconButton Command="{Binding GoToNextFavSceneCommand}" 
+                               Text="ep-arrow-long-right"
+                               WidthRequest="50"/>
+                        </StackLayout>
+                        <Grid Margin="12" BackgroundColor="Green">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                            </Grid.RowDefinitions>
+                            <StackLayout Orientation="Horizontal" Grid.Column="0" Grid.Row="0">
+                                <Label Text="Start" 
+                       VerticalTextAlignment="Center" 
+                       WidthRequest="40"/>
+                                <Label Text="{Binding StartPosition, Converter={StaticResource ToDuration}}" 
+                       HorizontalTextAlignment="End"
+                       VerticalTextAlignment="Center"
+                       WidthRequest="80"/>
+                                <ic:IconButton Command="{Binding DecrementPositionCommand}" CommandParameter="A" 
+                               Text="ep-minus"
+                               WidthRequest="50"/>
+                                <ic:IconButton Command="{Binding IncrementPositionCommand}" CommandParameter="A" 
+                               Text="ep-plus"
+                               WidthRequest="50"/>
+                            </StackLayout>
+                            <StackLayout Orientation="Horizontal" Grid.Column="0" Grid.Row="1">
+                                <Label Text="End" 
+                       VerticalTextAlignment="Center" 
+                       WidthRequest="40"/>
+                                <Label Text="{Binding EndPosition, Converter={StaticResource ToDuration}}" 
+                       HorizontalTextAlignment="End"
+                       VerticalTextAlignment="Center"
+                       WidthRequest="80"/>
+                                <ic:IconButton Command="{Binding DecrementPositionCommand}" CommandParameter="B" 
+                               Text="ep-minus"
+                               WidthRequest="50"/>
+                                <ic:IconButton Command="{Binding IncrementPositionCommand}" CommandParameter="B" 
+                               Text="ep-plus"
+                               WidthRequest="50"/>
+
+                            </StackLayout>
+                            <Picker Grid.Column="1" Grid.RowSpan="2"
+                        ItemsSource="{Binding OffsetOptions}" SelectedItem="{Binding SelectedOffsetOption}"
+                        VerticalOptions="Center"
+                        HorizontalOptions="Center"
+                        WidthRequest="80"/>
+                        </Grid>
+                    </StackLayout>
+                </FlexLayout>
+                <slider:RangeSlider
+                    Margin="0,8,0,8"
+                    BackgroundColor="Red"
+                    BarHeight="6"
+                    MinimumValue="0"
+                    MaximumValue="{Binding TotalDuration, Converter={StaticResource ToSeconds}}"
+                    LowerValue="{Binding StartPosition, Converter={StaticResource ToSeconds}}"
+                    UpperValue="{Binding EndPosition, Converter={StaticResource ToSeconds}}"
+                    StepValue="1"
+                    StepValueContinuously="True"/>
+            </StackLayout>
+            <Grid BackgroundColor="{StaticResource SemiTransparent}" IsVisible="{Binding NoFileSelected}">
+                <Button Clicked="Open_Clicked" Text="Choose video" HorizontalOptions="Center" VerticalOptions="Center"/>
+            </Grid>
+        </Grid>
     </ContentPage.Content>
 </views:TrimmerContentPage>

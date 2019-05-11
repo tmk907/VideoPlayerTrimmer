@@ -23,18 +23,28 @@ namespace VideoPlayerTrimmer.ViewModels
         }
 
         public string Directory { get; set; }
+
+        private bool backToTrimmer = false;
+
         public ObservableRangeCollection<VideoItem> VideoItems { get; set; } = new ObservableRangeCollection<VideoItem>();
 
         public Command ItemTappedCommand { get; set; }
 
-        public override async Task InitializeAsync()
+        public override async Task OnAppearingAsync(bool firstTime)
         {
-            await LoadDataAsync();
+            if (firstTime)
+            {
+                await LoadDataAsync();
+            }
         }
 
         public void OnNavigatingTo(INavigationParameters parameters)
         {
             Directory = (string)parameters[NavigationParameterNames.Directory];
+            if (parameters.ContainsKey(NavigationParameterNames.GoBack))
+            {
+                backToTrimmer = parameters.GetValue<bool>(NavigationParameterNames.GoBack);
+            }
         }
 
         private async Task LoadDataAsync()
@@ -46,9 +56,16 @@ namespace VideoPlayerTrimmer.ViewModels
 
         public async Task NavigateToPlayerPage(VideoItem item)
         {
-            var parameter = new NavigationParameters();
-            parameter.Add(NavigationParameterNames.VideoPath, item.FilePath);
-            await navigationService.NavigateAsync(PageNames.Player, parameter);
+            var parameters = new NavigationParameters();
+            parameters.Add(NavigationParameterNames.VideoPath, item.FilePath);
+            if (backToTrimmer)
+            {
+                await navigationService.GoBackAsync(parameters);
+            }
+            else
+            {
+                await navigationService.NavigateAsync(PageNames.Player, parameters);
+            }
         }
     }
 }

@@ -41,7 +41,7 @@ namespace VideoPlayerTrimmer.ViewModels
 
         public Command ItemTappedCommand { get; set; }
 
-        public override async Task InitializeAsync()
+        public override async Task OnAppearingAsync(bool firstTime)
         {
             var list = await videoLibrary.GetFolderItemsAsync(true);
             Folders.Clear();

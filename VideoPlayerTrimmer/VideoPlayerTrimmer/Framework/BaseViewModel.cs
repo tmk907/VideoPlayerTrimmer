@@ -7,9 +7,9 @@ namespace VideoPlayerTrimmer.Framework
 {
     public abstract class BaseViewModel : BindableBase
     {
-        public virtual Task InitializeAsync() => Task.CompletedTask;
+        public virtual Task OnAppearingAsync(bool firstTime) => Task.CompletedTask;
 
-        public virtual Task UninitializeAsync() => Task.CompletedTask;
+        public virtual Task OnDisappearingAsync(bool firstTime) => Task.CompletedTask;
 
         private bool isBusy;
         public bool IsBusy

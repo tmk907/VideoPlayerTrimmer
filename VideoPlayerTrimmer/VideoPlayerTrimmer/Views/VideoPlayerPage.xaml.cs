@@ -26,7 +26,6 @@ namespace VideoPlayerTrimmer.Views
 
         private void MediaPlayerChanged(object sender, System.EventArgs e)
         {
-            ViewModel.IsVideoViewInitialized = true;
             ViewModel.StartPlayingOrResume();
         }
 
