@@ -263,3 +263,6 @@ __pycache__/
 # my
 secrets.json
 Secrets.cs
+/vlc longhelp.txt
+/vlc help.txt
+/vlc help -H.txt
