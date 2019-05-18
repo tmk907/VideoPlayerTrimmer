@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using VideoPlayerTrimmer.Framework;
 
@@ -12,6 +13,10 @@ namespace VideoPlayerTrimmer.Models
         public string FilePath { get; set; }
 
         public string FileName { get; set; }
+
+        public string FileNameWithoutExtension { get { return Path.GetFileNameWithoutExtension(FilePath); } }
+
+        public string Directory { get { return Path.GetDirectoryName(FilePath); } }
 
         public string FolderPath { get; set; }
 

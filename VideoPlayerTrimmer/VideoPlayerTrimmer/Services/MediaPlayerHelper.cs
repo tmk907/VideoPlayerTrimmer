@@ -11,9 +11,9 @@ namespace VideoPlayerTrimmer.Services
     public class MediaPlayerHelper : BindableBase
     {
         private readonly MediaPlayerService playerService;
-        public MediaPlayerHelper()
+        public MediaPlayerHelper(MediaPlayerService playerService)
         {
-            playerService = new MediaPlayerService();
+            this.playerService = playerService;
         }
 
         public event EventHandler MediaPlayerReady;
@@ -70,11 +70,13 @@ namespace VideoPlayerTrimmer.Services
 
         private void MediaPlayer_Playing(object sender, EventArgs e)
         {
+            App.DebugLog("");
             OnPlaybackStateChanged(PlaybackState.Playing);
         }
 
         private void MediaPlayer_Paused(object sender, EventArgs e)
         {
+            App.DebugLog("");
             OnPlaybackStateChanged(PlaybackState.Paused);
         }
 
@@ -89,6 +91,8 @@ namespace VideoPlayerTrimmer.Services
             MediaPlayer.EncounteredError -= MediaPlayer_EncounteredError;
             MediaPlayer.SnapshotTaken -= MediaPlayer_SnapshotTaken;
             MediaPlayer.Stop();
+            MediaPlayer.Dispose();
+            MediaPlayer = null;
             OnPlaybackStateChanged(PlaybackState.Stopped);
         }
 

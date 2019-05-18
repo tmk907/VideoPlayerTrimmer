@@ -14,13 +14,14 @@ namespace VideoPlayerTrimmer.ViewModels
 {
     public class TrimmerViewModel : BaseViewModel, INavigationAware
     {
-        public TrimmerViewModel(IVideoLibrary videoLibrary, INavigationService navigationService)
+        public TrimmerViewModel(IVideoLibrary videoLibrary, INavigationService navigationService, MediaPlayerService playerService)
         {
             App.DebugLog("");
             this.videoLibrary = videoLibrary;
             this.navigationService = navigationService;
+            this.playerService = playerService;
 
-            MediaHelper = new MediaPlayerHelper();
+            MediaHelper = new MediaPlayerHelper(playerService);
             MediaHelper.IsPausedByUser = true;
             MediaHelper.MediaPlayerReady += MediaPlayerHelper_MediaPlayerReady;
             MediaHelper.PlaybackStateChanged += MediaHelper_PlaybackStateChanged;
@@ -32,7 +33,7 @@ namespace VideoPlayerTrimmer.ViewModels
             JumpToStartCommand = new DelegateCommand(() => JumpToStart());
             TogglePlayPauseCommand = new DelegateCommand(TogglePlayPause);
 
-            OffsetOptions = new List<OffsetOption>()
+            OffsetOptions = new ObservableCollection<OffsetOption>()
             {
                 new OffsetOption("1 sec", TimeSpan.FromSeconds(1)),
                 new OffsetOption("10 sec", TimeSpan.FromSeconds(10)),
@@ -54,7 +55,17 @@ namespace VideoPlayerTrimmer.ViewModels
         private void MediaPlayerHelper_MediaPlayerReady(object sender, EventArgs e)
         {
             var t = TimeSpan.FromMilliseconds(MediaHelper.MediaPlayer.Length);
-            if(t.TotalMilliseconds!= totalDuration.TotalMilliseconds)
+            if (MediaHelper.MediaPlayer.Fps > 0)
+            {
+                var frameDuration = 1.0 / MediaHelper.MediaPlayer.Fps;
+                var f = OffsetOptions.FirstOrDefault(o => o.Name == "1 Frame");
+                if (f != null)
+                {
+                    OffsetOptions.Remove(f);
+                }
+                OffsetOptions.Add(new OffsetOption("1 Frame", TimeSpan.FromSeconds(frameDuration)));
+            }
+            if (t.TotalMilliseconds!= totalDuration.TotalMilliseconds)
             {
 
             }
@@ -132,7 +143,7 @@ namespace VideoPlayerTrimmer.ViewModels
             set { SetProperty(ref selectedOffsetOption, value); }
         }
 
-        public List<OffsetOption> OffsetOptions { get; }
+        public ObservableCollection<OffsetOption> OffsetOptions { get; }
 
         public DelegateCommand GoToPrevFavSceneCommand { get; }
         public DelegateCommand GoToNextFavSceneCommand { get; }
@@ -254,11 +265,13 @@ namespace VideoPlayerTrimmer.ViewModels
             {
                 await OpenFileAsync();
             }
+            MediaHelper.TimeChanged += MediaHelper_TimeChanged;
         }
 
         public override Task OnDisappearingAsync(bool firstTime)
         {
             App.DebugLog("");
+            MediaHelper.TimeChanged -= MediaHelper_TimeChanged;
             MediaHelper.UnInitMediaPlayer();
             return Task.CompletedTask;
         }
@@ -267,6 +280,7 @@ namespace VideoPlayerTrimmer.ViewModels
         private VideoItem videoItem;
         private readonly IVideoLibrary videoLibrary;
         private readonly INavigationService navigationService;
+        private readonly MediaPlayerService playerService;
 
         private async Task OpenFileAsync()
         {
@@ -276,8 +290,6 @@ namespace VideoPlayerTrimmer.ViewModels
             var list = await videoLibrary.GetFavoriteScenes(videoItem.VideoId);
             favoriteScenes.AddRange(list);
             MediaHelper.InitMediaPlayer(filePath);
-            MediaHelper.TimeChanged += MediaHelper_TimeChanged;
-            MediaHelper.MediaPlayer.Media.AddOption(":repeat");
         }
 
         public async Task ChooseVideoAsync()
@@ -289,7 +301,32 @@ namespace VideoPlayerTrimmer.ViewModels
 
         public async Task SaveVideoAsync()
         {
+            int start = (int)startPosition.TotalSeconds;
+            int end = (int)endPosition.TotalSeconds;
+            string startFull = start + "." + startPosition.Milliseconds.ToString("D3");
+            string endFull = end + "." + endPosition.Milliseconds.ToString("D3");
+            string outputFilename = $"{videoItem.FileNameWithoutExtension}-{start}-{end}.mp4";
+            string outputPath = System.IO.Path.Combine(videoItem.FolderPath, outputFilename);
+            var mp = playerService.GetMediaPlayerForTrimming(videoItem.FilePath, outputPath, startFull, endFull);
+            mp.Play();
+            mp.EndReached += Mp_EndReached;
+            while (true)
+            {
+                await Task.Delay(1000);
+                if (!mp.IsPlaying)
+                {
+                    break;
+                }
+            }
+            mp.Stop();
+            App.DebugLog("stopped");
+            mp.EndReached -= Mp_EndReached;
+            mp.Dispose();
+        }
 
+        private void Mp_EndReached(object sender, EventArgs e)
+        {
+            App.DebugLog("Video saved");
         }
     }
 
