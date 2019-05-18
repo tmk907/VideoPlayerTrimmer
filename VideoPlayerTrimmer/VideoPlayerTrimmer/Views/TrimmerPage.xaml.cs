@@ -41,7 +41,10 @@ namespace VideoPlayerTrimmer.Views
 
         private void VideoView_MediaPlayerChanged(object sender, LibVLCSharp.Shared.MediaPlayerChangedEventArgs e)
         {
-            ViewModel.MediaHelper.StartPlayingOrResume();
+            if (e.NewMediaPlayer != null)
+            {
+                ViewModel.MediaHelper.StartPlayingOrResume();
+            }
         }
 
         private async void Open_Clicked(object sender, EventArgs e)

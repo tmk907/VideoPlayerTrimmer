@@ -24,9 +24,12 @@ namespace VideoPlayerTrimmer.Views
             NavigationPage.SetHasNavigationBar(this, false);
         }
 
-        private void MediaPlayerChanged(object sender, System.EventArgs e)
+        private void MediaPlayerChanged(object sender, LibVLCSharp.Shared.MediaPlayerChangedEventArgs e)
         {
-            ViewModel.StartPlayingOrResume();
+            if (e.NewMediaPlayer != null)
+            {
+                ViewModel.StartPlayingOrResume();
+            }
         }
 
         private void Slider_ValueChanged(object sender, ValueChangedEventArgs e)
