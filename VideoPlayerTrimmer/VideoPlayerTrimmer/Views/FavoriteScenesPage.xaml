@@ -2,12 +2,72 @@
 <views:FavoriteScenesContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:views="clr-namespace:VideoPlayerTrimmer.Views"
+             xmlns:converters="clr-namespace:VideoPlayerTrimmer.Converters"
              x:Class="VideoPlayerTrimmer.Views.FavoriteScenesPage">
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <converters:TimeSpanToVideoDurationConverter x:Key="DurationConverter" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
     <ContentPage.Content>
-        <StackLayout>
-            <Label Text="Welcome to Xamarin.Forms!"
-                VerticalOptions="CenterAndExpand" 
-                HorizontalOptions="CenterAndExpand" />
-        </StackLayout>
+        <ListView
+            CachingStrategy="RecycleElement"
+            HasUnevenRows="False"
+            RowHeight="70"
+            IsGroupingEnabled="True"
+            ItemsSource="{Binding GroupedFavoriteScenes}"
+            SeparatorVisibility="None"
+            SelectionMode="None">
+            <ListView.GroupHeaderTemplate>
+                <DataTemplate>
+                    <ViewCell>
+                        <Label Text="{Binding VideoTitle}" />
+                    </ViewCell>
+                </DataTemplate>
+            </ListView.GroupHeaderTemplate>
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <ViewCell>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition/>
+                            </Grid.ColumnDefinitions>
+                            <Frame Grid.Column="0" 
+                                   HeightRequest="70" WidthRequest="106" Margin="2"
+                                   Padding="0" IsClippedToBounds="True" HasShadow="True">
+                                <Grid Grid.Column="0" RowSpacing="0">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <Image Grid.RowSpan="2" Aspect="AspectFill">
+                                        <Image.Source>
+                                            <FileImageSource File="{Binding SnapshotPath}"/>
+                                        </Image.Source>
+                                    </Image>
+                                    <FlexLayout Grid.Row="1"
+                                                IsVisible="True"
+                                                Direction="Column"
+                                                AlignItems="End"
+                                                JustifyContent="End">
+                                        <Frame
+                                            CornerRadius="4"
+                                            Padding="4,0,4,0"
+                                            BackgroundColor="#88000000">
+                                            <Label          
+                                                FontSize="12"
+                                                TextColor="White"
+                                                VerticalTextAlignment="Center"
+                                                Text="{Binding Position, Converter={StaticResource DurationConverter}}"/>
+                                        </Frame>
+                                    </FlexLayout>
+                                </Grid>
+                            </Frame>
+                        </Grid>
+                    </ViewCell>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
     </ContentPage.Content>
 </views:FavoriteScenesContentPage>
