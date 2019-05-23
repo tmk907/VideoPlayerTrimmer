@@ -14,13 +14,14 @@ namespace VideoPlayerTrimmer.ViewModels
 {
     public class TrimmerViewModel : BaseViewModel, INavigationAware
     {
-        public TrimmerViewModel(IVideoLibrary videoLibrary, INavigationService navigationService, MediaPlayerService playerService)
+        public TrimmerViewModel(IVideoLibrary videoLibrary, INavigationService navigationService, 
+            MediaPlayerService playerService, IFFmpegService fFmpegService)
         {
             App.DebugLog("");
             this.videoLibrary = videoLibrary;
             this.navigationService = navigationService;
             this.playerService = playerService;
-
+            this.ffmpegService = fFmpegService;
             MediaHelper = new MediaPlayerHelper(playerService);
             MediaHelper.IsPausedByUser = true;
             MediaHelper.MediaPlayerReady += MediaPlayerHelper_MediaPlayerReady;
@@ -255,7 +256,11 @@ namespace VideoPlayerTrimmer.ViewModels
         public void OnNavigatingTo(INavigationParameters parameters)
         {
             App.DebugLog("");
-            filePath = parameters.GetValue<string>(NavigationParameterNames.VideoPath);
+            var filePathParam = parameters.GetValue<string>(NavigationParameterNames.VideoPath);
+            if (!String.IsNullOrEmpty(filePathParam))
+            {
+                filePath = filePathParam;
+            }
         }
 
         public override async Task OnAppearingAsync(bool firstTime)
@@ -281,6 +286,7 @@ namespace VideoPlayerTrimmer.ViewModels
         private readonly IVideoLibrary videoLibrary;
         private readonly INavigationService navigationService;
         private readonly MediaPlayerService playerService;
+        private readonly IFFmpegService ffmpegService;
 
         private async Task OpenFileAsync()
         {
@@ -290,6 +296,7 @@ namespace VideoPlayerTrimmer.ViewModels
             var list = await videoLibrary.GetFavoriteScenes(videoItem.VideoId);
             favoriteScenes.AddRange(list);
             MediaHelper.InitMediaPlayer(filePath);
+            //await ffmpegService.Test(filePath);
         }
 
         public async Task ChooseVideoAsync()
@@ -300,6 +307,12 @@ namespace VideoPlayerTrimmer.ViewModels
         }
 
         public async Task SaveVideoAsync()
+        {
+            //await SaveUsingVLCAsync();
+            await TrimUsingFFmpeg();
+        }
+
+        private async Task SaveUsingVLCAsync()
         {
             int start = (int)startPosition.TotalSeconds;
             int end = (int)endPosition.TotalSeconds;
@@ -327,6 +340,39 @@ namespace VideoPlayerTrimmer.ViewModels
         private void Mp_EndReached(object sender, EventArgs e)
         {
             App.DebugLog("Video saved");
+        }
+
+        private async Task TrimUsingFFmpeg()
+        {
+            DateTime startTime = DateTime.Now;
+            int start = (int)startPosition.TotalSeconds;
+            int end = (int)endPosition.TotalSeconds;
+
+            string startFull = start + "." + startPosition.Milliseconds.ToString("D3");
+            string endFull = end + "." + endPosition.Milliseconds.ToString("D3");
+            string outputFilename = $"{videoItem.FileNameWithoutExtension}-{start}-{end} 2.mp4";
+            string outputPath = System.IO.Path.Combine(videoItem.FolderPath, outputFilename);
+
+            var commands = new List<string>();
+            commands.Add("-y");
+            commands.Add("-ss");
+            commands.Add(startPosition.ToString("g").Replace(',', '.'));
+            commands.Add("-i");
+            commands.Add(videoItem.FilePath);
+            commands.Add("-to");
+            commands.Add(endPosition.ToString("g").Replace(',', '.'));
+            commands.Add("-copyts");
+            commands.Add("-c:v");
+            commands.Add("libx264");
+            commands.Add("-preset");
+            commands.Add("superfast");
+            commands.Add("-c:a");
+            commands.Add("aac");
+            commands.Add("-avoid_negative_ts");
+            commands.Add("1");
+            commands.Add(outputPath);
+            await ffmpegService.Trim(commands.ToArray());
+            App.DebugLog((DateTime.Now - startTime).ToString("g"));
         }
     }
 

@@ -5,7 +5,9 @@ VisualStudioVersion = 15.0.28307.438
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VideoPlayerTrimmer.Android", "VideoPlayerTrimmer\VideoPlayerTrimmer.Android\VideoPlayerTrimmer.Android.csproj", "{5DC4DC66-C569-4F91-9FF9-0A7A15099DAD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VideoPlayerTrimmer", "VideoPlayerTrimmer\VideoPlayerTrimmer\VideoPlayerTrimmer.csproj", "{D93F1A4F-D050-404A-8669-7B1AEC19ABFE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VideoPlayerTrimmer", "VideoPlayerTrimmer\VideoPlayerTrimmer\VideoPlayerTrimmer.csproj", "{D93F1A4F-D050-404A-8669-7B1AEC19ABFE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FFBinding2", "FFBinding2\FFBinding2.csproj", "{BB40B076-48F2-4848-AAE3-67CB0B9D1ACE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -25,6 +27,10 @@ Global
 		{D93F1A4F-D050-404A-8669-7B1AEC19ABFE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D93F1A4F-D050-404A-8669-7B1AEC19ABFE}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D93F1A4F-D050-404A-8669-7B1AEC19ABFE}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{BB40B076-48F2-4848-AAE3-67CB0B9D1ACE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BB40B076-48F2-4848-AAE3-67CB0B9D1ACE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BB40B076-48F2-4848-AAE3-67CB0B9D1ACE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BB40B076-48F2-4848-AAE3-67CB0B9D1ACE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

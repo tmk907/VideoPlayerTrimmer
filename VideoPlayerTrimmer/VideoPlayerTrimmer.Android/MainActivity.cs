@@ -94,6 +94,7 @@ namespace VideoPlayerTrimmer.Droid
             containerRegistry.Register<IBrightnessService, BrightnessService>();
             containerRegistry.Register<IOrientationService, OrientationService>();
             containerRegistry.Register<IStatusBarService, StatusBarService>();
+            containerRegistry.Register<IFFmpegService, FFmpegService2>();
         }
     }
 }
