@@ -103,6 +103,7 @@
     <Compile Include="Resources\Resource.designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\BrightnessService.cs" />
+    <Compile Include="Services\FFmpegConverter.cs" />
     <Compile Include="Services\FFmpegService2.cs" />
     <Compile Include="Services\MediaScannerImpl.cs" />
     <Compile Include="Services\OrientationService.cs" />

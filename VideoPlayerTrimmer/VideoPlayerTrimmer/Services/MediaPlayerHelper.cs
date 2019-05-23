@@ -160,7 +160,7 @@ namespace VideoPlayerTrimmer.Services
 
         public void SeekTo(TimeSpan position)
         {
-            if (MediaPlayer.IsSeekable)
+            if (MediaPlayer!=null && MediaPlayer.IsSeekable)
             {
                 long newTime = (long)position.TotalMilliseconds;
                 if (newTime > MediaPlayer.Length)

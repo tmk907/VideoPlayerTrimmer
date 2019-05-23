@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using VideoPlayerTrimmer.Extensions;
 using VideoPlayerTrimmer.Framework;
 using VideoPlayerTrimmer.MediaHelpers;
 using VideoPlayerTrimmer.Models;
@@ -15,13 +16,17 @@ namespace VideoPlayerTrimmer.ViewModels
     public class TrimmerViewModel : BaseViewModel, INavigationAware
     {
         public TrimmerViewModel(IVideoLibrary videoLibrary, INavigationService navigationService, 
-            MediaPlayerService playerService, IFFmpegService fFmpegService)
+            MediaPlayerService playerService, IFFmpegConverter fFmpegConverter)
         {
             App.DebugLog("");
             this.videoLibrary = videoLibrary;
             this.navigationService = navigationService;
             this.playerService = playerService;
-            this.ffmpegService = fFmpegService;
+            this.fFmpegConverter = fFmpegConverter;
+            fFmpegConverter.ConversionProgressChanged += FFmpegConverter_ProgressChanged;
+            fFmpegConverter.ConversionStarted += FFmpegConverter_ConversionStarted;
+            fFmpegConverter.ConversionEnded += FFmpegConverter_ConversionEnded;
+
             MediaHelper = new MediaPlayerHelper(playerService);
             MediaHelper.IsPausedByUser = true;
             MediaHelper.MediaPlayerReady += MediaPlayerHelper_MediaPlayerReady;
@@ -45,6 +50,33 @@ namespace VideoPlayerTrimmer.ViewModels
 
             EndPosition = TimeSpan.FromMinutes(1);
             TotalDuration = EndPosition;
+        }
+
+        private void FFmpegConverter_ConversionEnded(object sender, EventArgs e)
+        {
+            Xamarin.Essentials.MainThread.BeginInvokeOnMainThread(()=>
+            {
+                IsConverting = false;
+                App.DebugLog("FFmpegConverter_ConversionEnded IsConverting");
+            });
+        }
+
+        private void FFmpegConverter_ConversionStarted(object sender, EventArgs e)
+        {
+            Xamarin.Essentials.MainThread.BeginInvokeOnMainThread(() =>
+            {
+                IsConverting = true;
+                App.DebugLog("FFmpegConverter_ConversionStarted IsConverting");
+            });
+        }
+
+        private void FFmpegConverter_ProgressChanged(object sender, int e)
+        {
+            Xamarin.Essentials.MainThread.BeginInvokeOnMainThread(() =>
+            {
+                IsConverting = true;
+                App.DebugLog("FFmpegConverter_ProgressChanged IsConverting");
+            });
         }
 
         private void MediaHelper_TimeChanged(object sender, LibVLCSharp.Shared.MediaPlayerTimeChangedEventArgs e)
@@ -97,12 +129,11 @@ namespace VideoPlayerTrimmer.ViewModels
             set
             {
                 SetProperty(ref endPosition, value);
-                //if (MediaHelper.MediaPlayer != null)
-                //{
-                //    MediaHelper.MediaPlayer.Media.AddOption(":stop-time=" + (int)EndPosition.TotalSeconds);
-                //}
+                MediaHelper.SeekTo(endPosition);
             }
         }
+
+        public TimeSpan SelectedDuration { get => endPosition - startPosition; }
 
         private TimeSpan currentPosition;
         public TimeSpan CurrentPosition
@@ -145,6 +176,27 @@ namespace VideoPlayerTrimmer.ViewModels
         }
 
         public ObservableCollection<OffsetOption> OffsetOptions { get; }
+
+        private bool saveToGif = false;
+        public bool SaveToGif
+        {
+            get { return saveToGif; }
+            set { SetProperty(ref saveToGif, value); }
+        }
+
+        private bool fastTrim = true;
+        public bool FastTrim
+        {
+            get { return fastTrim; }
+            set { SetProperty(ref fastTrim, value); }
+        }
+
+        private bool isConverting = false;
+        public bool IsConverting
+        {
+            get { return isConverting; }
+            set { SetProperty(ref isConverting, value); }
+        }
 
         public DelegateCommand GoToPrevFavSceneCommand { get; }
         public DelegateCommand GoToNextFavSceneCommand { get; }
@@ -286,7 +338,7 @@ namespace VideoPlayerTrimmer.ViewModels
         private readonly IVideoLibrary videoLibrary;
         private readonly INavigationService navigationService;
         private readonly MediaPlayerService playerService;
-        private readonly IFFmpegService ffmpegService;
+        private readonly IFFmpegConverter fFmpegConverter;
 
         private async Task OpenFileAsync()
         {
@@ -308,8 +360,23 @@ namespace VideoPlayerTrimmer.ViewModels
 
         public async Task SaveVideoAsync()
         {
-            //await SaveUsingVLCAsync();
-            await TrimUsingFFmpeg();
+            IsConverting = true;
+            if (fastTrim)
+            {
+                await SaveUsingVLCAsync();
+            }
+            else
+            {
+                if (saveToGif && SelectedDuration.TotalSeconds < 20)
+                {
+                    await SaveAsGif();
+                }
+                else
+                {
+                    await ConvertVideo();
+                }
+            }
+            IsConverting = false;
         }
 
         private async Task SaveUsingVLCAsync()
@@ -318,9 +385,9 @@ namespace VideoPlayerTrimmer.ViewModels
             int end = (int)endPosition.TotalSeconds;
             string startFull = start + "." + startPosition.Milliseconds.ToString("D3");
             string endFull = end + "." + endPosition.Milliseconds.ToString("D3");
-            string outputFilename = $"{videoItem.FileNameWithoutExtension}-{start}-{end}.mp4";
+            string outputFilename = $"{videoItem.FileNameWithoutExtension} [{startPosition.ToVideoDuration()}].mp4";
             string outputPath = System.IO.Path.Combine(videoItem.FolderPath, outputFilename);
-            var mp = playerService.GetMediaPlayerForTrimming(videoItem.FilePath, outputPath, startFull, endFull);
+            var mp = playerService.GetMediaPlayerForTrimming(videoItem.FilePath, outputPath, start, end);
             mp.Play();
             mp.EndReached += Mp_EndReached;
             while (true)
@@ -342,37 +409,23 @@ namespace VideoPlayerTrimmer.ViewModels
             App.DebugLog("Video saved");
         }
 
-        private async Task TrimUsingFFmpeg()
+        private async Task ConvertVideo()
         {
-            DateTime startTime = DateTime.Now;
             int start = (int)startPosition.TotalSeconds;
-            int end = (int)endPosition.TotalSeconds;
-
-            string startFull = start + "." + startPosition.Milliseconds.ToString("D3");
-            string endFull = end + "." + endPosition.Milliseconds.ToString("D3");
-            string outputFilename = $"{videoItem.FileNameWithoutExtension}-{start}-{end} 2.mp4";
+            string outputFilename = $"{videoItem.FileNameWithoutExtension} [{startPosition.ToVideoDuration()}].mp4";
             string outputPath = System.IO.Path.Combine(videoItem.FolderPath, outputFilename);
 
-            var commands = new List<string>();
-            commands.Add("-y");
-            commands.Add("-ss");
-            commands.Add(startPosition.ToString("g").Replace(',', '.'));
-            commands.Add("-i");
-            commands.Add(videoItem.FilePath);
-            commands.Add("-to");
-            commands.Add(endPosition.ToString("g").Replace(',', '.'));
-            commands.Add("-copyts");
-            commands.Add("-c:v");
-            commands.Add("libx264");
-            commands.Add("-preset");
-            commands.Add("superfast");
-            commands.Add("-c:a");
-            commands.Add("aac");
-            commands.Add("-avoid_negative_ts");
-            commands.Add("1");
-            commands.Add(outputPath);
-            await ffmpegService.Trim(commands.ToArray());
-            App.DebugLog((DateTime.Now - startTime).ToString("g"));
+            var options = new FFmpegToVideoConversionOptions(startPosition, endPosition, videoItem.FilePath, outputPath);
+            await fFmpegConverter.CovertToVideo(options);
+        }
+
+        private async Task SaveAsGif()
+        {
+            int start = (int)startPosition.TotalSeconds;
+            string outputFilename = $"{videoItem.FileNameWithoutExtension} [{startPosition.ToVideoDuration()}].gif";
+            string outputPath = System.IO.Path.Combine(videoItem.FolderPath, outputFilename);
+            var options = new FFmpegToGifConversionOptions(startPosition, endPosition, videoItem.FilePath, outputPath);
+            await fFmpegConverter.ConvertToGif(options);
         }
     }
 

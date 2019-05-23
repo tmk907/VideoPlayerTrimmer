@@ -64,8 +64,8 @@
                             </StackLayout>
                         </Frame>
                     </Grid>
-                    <StackLayout Orientation="Vertical" BackgroundColor="Brown">
-                        <StackLayout Orientation="Horizontal" HorizontalOptions="Center" BackgroundColor="Yellow">
+                    <StackLayout Orientation="Vertical">
+                        <StackLayout Orientation="Horizontal" HorizontalOptions="Center">
                             <ic:IconButton Command="{Binding GoToPrevFavSceneCommand}" 
                                Text="ep-arrow-long-left"
                                WidthRequest="50"/>
@@ -76,7 +76,7 @@
                                Text="ep-arrow-long-right"
                                WidthRequest="50"/>
                         </StackLayout>
-                        <Grid Margin="12" BackgroundColor="Green">
+                        <Grid Margin="12">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition/>
                                 <ColumnDefinition Width="Auto"/>
@@ -126,7 +126,6 @@
                 </FlexLayout>
                 <slider:RangeSlider
                     Margin="0,8,0,8"
-                    BackgroundColor="Red"
                     BarHeight="6"
                     MinimumValue="0"
                     MaximumValue="{Binding TotalDuration, Converter={StaticResource ToSeconds}}"
@@ -134,10 +133,20 @@
                     UpperValue="{Binding EndPosition, Converter={StaticResource ToSeconds}}"
                     StepValue="1"
                     StepValueContinuously="True"/>
+                <StackLayout Orientation="Horizontal">
+                    <Label Text="Fast trimming"/>
+                    <Switch IsToggled="{Binding FastTrim}"/>
+                </StackLayout>
+                <StackLayout Orientation="Horizontal">
+                    <Label Text="Save as gif"/>
+                    <Switch IsToggled="{Binding SaveToGif}"/>
+                </StackLayout>
             </StackLayout>
             <Grid BackgroundColor="{StaticResource SemiTransparent}" IsVisible="{Binding NoFileSelected}">
                 <Button Clicked="Open_Clicked" Text="Choose video" HorizontalOptions="Center" VerticalOptions="Center"/>
             </Grid>
+            <ActivityIndicator IsVisible="{Binding IsConverting}" IsRunning="{Binding IsConverting}"
+                    VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand" />
         </Grid>
     </ContentPage.Content>
 </views:TrimmerContentPage>
