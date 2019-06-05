@@ -20,8 +20,8 @@
                         <ColumnDefinition/>
                         <ColumnDefinition Width="50"/>
                     </Grid.ColumnDefinitions>
-                    <BoxView x:Name="SearchBox"  Grid.Column="0"/>
-                    <!--<asb:AutoSuggestBox
+                    <!-- <BoxView x:Name="SearchBox"  Grid.Column="0"/> -->
+                    <asb:AutoSuggestBox
                         x:Name="SearchBox"
                         Grid.Column="0"
                         Unfocused="SearchBox_Unfocused"
@@ -31,7 +31,7 @@
                         DisplayMemberPath="Title"
                         TextChanged="AutoSuggestBox_TextChanged"
                         TextColor="White"
-                        QuerySubmitted="AutoSuggestBox_QuerySubmitted"/>-->
+                        QuerySubmitted="AutoSuggestBox_QuerySubmitted"/>
                     <ic:IconButton 
                         x:Name="SearchButton" 
                         Grid.Column="1" 
