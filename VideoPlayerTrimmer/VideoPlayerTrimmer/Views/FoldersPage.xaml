@@ -6,38 +6,82 @@
     xmlns:models="clr-namespace:VideoPlayerTrimmer.Models"
     xmlns:b="clr-namespace:Prism.Behaviors;assembly=Prism.Forms"
     xmlns:ic="clr-namespace:Plugin.Iconize;assembly=Plugin.Iconize"
+    xmlns:asb="clr-namespace:dotMorten.Xamarin.Forms;assembly=dotMorten.Xamarin.Forms.AutoSuggestBox"
     x:Class="VideoPlayerTrimmer.Views.FoldersPage">
-    
     <ContentPage.Content>
-        <ListView
-            HasUnevenRows="False"
-            RowHeight="60"
-            ItemsSource="{Binding Folders}"
-            SelectionMode="None"
-            CachingStrategy="RecycleElement"
-            >
-            <ListView.Behaviors>
-                <b:EventToCommandBehavior EventName="ItemTapped" Command="{Binding ItemTappedCommand}" EventArgsParameterPath="Item"/>
-            </ListView.Behaviors>
-            <ListView.ItemTemplate>
-                <DataTemplate>
-                    <ViewCell>
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="80"/>
-                                <ColumnDefinition/>
-                            </Grid.ColumnDefinitions>
-                            <ic:IconImage Grid.Column="0" 
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <Frame Grid.Row="0" BackgroundColor="{StaticResource NavBarColor}" HeightRequest="{StaticResource NavBarHeight}" HasShadow="True" Padding="0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition Width="50"/>
+                    </Grid.ColumnDefinitions>
+                    <BoxView x:Name="SearchBox"  Grid.Column="0"/>
+                    <!--<asb:AutoSuggestBox
+                        x:Name="SearchBox"
+                        Grid.Column="0"
+                        Unfocused="SearchBox_Unfocused"
+                        IsVisible="False"
+                        Opacity="0"
+                        TextMemberPath="Title"
+                        DisplayMemberPath="Title"
+                        TextChanged="AutoSuggestBox_TextChanged"
+                        TextColor="White"
+                        QuerySubmitted="AutoSuggestBox_QuerySubmitted"/>-->
+                    <ic:IconButton 
+                        x:Name="SearchButton" 
+                        Grid.Column="1" 
+                        BackgroundColor="Transparent"
+                        Text="ep-magnifying-glass" 
+                        FontSize="26"
+                        TextColor="White"
+                        Clicked="SearchButton_Clicked"/>
+                    <ic:IconButton 
+                        x:Name="CancelButton" 
+                        Grid.Column="1" 
+                        IsVisible="False"
+                        Opacity="0"
+                        BackgroundColor="Transparent"
+                        Text="ep-cross" 
+                        FontSize="26"
+                        TextColor="White"
+                        Clicked="CancelButton_Clicked"/>
+                </Grid>
+            </Frame>
+            <ListView
+                Grid.Row="1"
+                HasUnevenRows="False"
+                RowHeight="60"
+                ItemsSource="{Binding Folders}"
+                SelectionMode="None"
+                CachingStrategy="RecycleElement"
+                >
+                <ListView.Behaviors>
+                    <b:EventToCommandBehavior EventName="ItemTapped" Command="{Binding ItemTappedCommand}" EventArgsParameterPath="Item"/>
+                </ListView.Behaviors>
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <ViewCell>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="80"/>
+                                    <ColumnDefinition/>
+                                </Grid.ColumnDefinitions>
+                                <ic:IconImage Grid.Column="0" 
                                           HeightRequest="30"
                                           IconSize="50"
                                           Icon="ep-folder-video"
                                           IconColor="DarkOrange"/>
-                            <Grid Grid.Column="1" RowSpacing="0">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition/>
-                                    <RowDefinition Height="Auto"/>
-                                </Grid.RowDefinitions>
-                                <Label
+                                <Grid Grid.Column="1" RowSpacing="0">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <Label
                                     Grid.Row="0"
                                     LineBreakMode="TailTruncation"
                                     MaxLines="2"
@@ -45,22 +89,23 @@
                                     TextColor="Black"
                                     Text="{Binding FolderName}"
                                     VerticalTextAlignment="Center"/>
-                                <StackLayout Grid.Row="1" Orientation="Horizontal">
-                                    <Label Text="{Binding VideoCount}" VerticalTextAlignment="Center"/>
-                                    <ic:IconLabel Text="ep-video" VerticalTextAlignment="Center"/>
-                                    <Label
+                                    <StackLayout Grid.Row="1" Orientation="Horizontal">
+                                        <Label Text="{Binding VideoCount}" VerticalTextAlignment="Center"/>
+                                        <ic:IconLabel Text="ep-video" VerticalTextAlignment="Center"/>
+                                        <Label
                                         Text="NEW" 
                                         FontSize="12"
                                         FontAttributes="Bold"
                                         TextColor="Red"
                                         VerticalTextAlignment="Center"
                                         IsVisible="{Binding AreNewVideos}"/>
-                                </StackLayout>
+                                    </StackLayout>
+                                </Grid>
                             </Grid>
-                        </Grid>
-                    </ViewCell>
-                </DataTemplate>
-            </ListView.ItemTemplate>
-        </ListView>
+                        </ViewCell>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </Grid>
     </ContentPage.Content>
 </views:FoldersContentPage>

@@ -55,7 +55,36 @@ namespace VideoPlayerTrimmer.ViewModels
         {
             var parameter = new NavigationParameters();
             parameter.Add(NavigationParameterNames.Directory, item.FolderPath);
-            await navigationService.NavigateAsync(PageNames.Videos, parameter);
+            await navigationService.NavigateAsync(PageNames.Videos, parameter, false);
+        }
+
+        public ObservableCollection<VideoItem> Results = new ObservableCollection<VideoItem>();
+
+        public void Search(string query)
+        {
+            var items = videoLibrary.SearchVideoItems(query);
+            Results.Clear();
+            foreach(var item in items)
+            {
+                Results.Add(item);
+            }
+        }
+
+        public async Task OnVideoSelected(object val)
+        {
+            VideoItem item;
+            if (val is VideoItem)
+            {
+                item = (VideoItem)val;
+            }
+            else
+            {
+                item = videoLibrary.SearchVideoItems(val as string).FirstOrDefault();
+            }
+
+            var parameter = new NavigationParameters();
+            parameter.Add(NavigationParameterNames.Directory, item.FolderPath);
+            await navigationService.NavigateAsync(PageNames.Videos, parameter, false);
         }
     }
 }

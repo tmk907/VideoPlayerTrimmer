@@ -16,7 +16,9 @@
         </Style>
     </ContentPage.Resources>
     <ContentPage.Content>
-        <ScrollView Margin="12,0,12,0">
+        <StackLayout Orientation="Vertical">
+            <Frame BackgroundColor="{StaticResource NavBarColor}" HeightRequest="{StaticResource NavBarHeight}" HasShadow="True" Padding="0"/>
+            <ScrollView Margin="12,0,12,0">
             <StackLayout Orientation="Vertical" Margin="0,12,0,12">
                 <controls:SettingsEntry Header="Resume playback" Description="If disabled video is played from beginning">
                     <Switch IsToggled="{Binding ResumePlayback}"/>
@@ -38,5 +40,6 @@
                 </Frame>
             </StackLayout>
         </ScrollView>
+        </StackLayout>
     </ContentPage.Content>
 </views:SettingsContentPage>

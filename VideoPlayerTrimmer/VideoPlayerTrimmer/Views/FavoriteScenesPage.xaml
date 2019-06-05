@@ -2,6 +2,7 @@
 <views:FavoriteScenesContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:views="clr-namespace:VideoPlayerTrimmer.Views"
+             xmlns:b="clr-namespace:Prism.Behaviors;assembly=Prism.Forms"
              xmlns:converters="clr-namespace:VideoPlayerTrimmer.Converters"
              x:Class="VideoPlayerTrimmer.Views.FavoriteScenesPage">
     <ContentPage.Resources>
@@ -10,64 +11,75 @@
         </ResourceDictionary>
     </ContentPage.Resources>
     <ContentPage.Content>
-        <ListView
-            CachingStrategy="RecycleElement"
-            HasUnevenRows="False"
-            RowHeight="70"
-            IsGroupingEnabled="True"
-            ItemsSource="{Binding GroupedFavoriteScenes}"
-            SeparatorVisibility="None"
-            SelectionMode="None">
-            <ListView.GroupHeaderTemplate>
-                <DataTemplate>
-                    <ViewCell>
-                        <Label Text="{Binding VideoTitle}" />
-                    </ViewCell>
-                </DataTemplate>
-            </ListView.GroupHeaderTemplate>
-            <ListView.ItemTemplate>
-                <DataTemplate>
-                    <ViewCell>
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition/>
-                            </Grid.ColumnDefinitions>
-                            <Frame Grid.Column="0" 
-                                   HeightRequest="70" WidthRequest="106" Margin="2"
-                                   Padding="0" IsClippedToBounds="True" HasShadow="True">
-                                <Grid Grid.Column="0" RowSpacing="0">
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition/>
-                                        <RowDefinition Height="Auto"/>
-                                    </Grid.RowDefinitions>
-                                    <Image Grid.RowSpan="2" Aspect="AspectFill">
-                                        <Image.Source>
-                                            <FileImageSource File="{Binding SnapshotPath}"/>
-                                        </Image.Source>
-                                    </Image>
-                                    <FlexLayout Grid.Row="1"
-                                                IsVisible="True"
-                                                Direction="Column"
-                                                AlignItems="End"
-                                                JustifyContent="End">
-                                        <Frame
-                                            CornerRadius="4"
-                                            Padding="4,0,4,0"
-                                            BackgroundColor="#88000000">
-                                            <Label          
-                                                FontSize="12"
-                                                TextColor="White"
-                                                VerticalTextAlignment="Center"
-                                                Text="{Binding Position, Converter={StaticResource DurationConverter}}"/>
-                                        </Frame>
-                                    </FlexLayout>
-                                </Grid>
-                            </Frame>
-                        </Grid>
-                    </ViewCell>
-                </DataTemplate>
-            </ListView.ItemTemplate>
-        </ListView>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <Frame Grid.Row="0" BackgroundColor="{StaticResource NavBarColor}" HeightRequest="{StaticResource NavBarHeight}" HasShadow="True" Padding="0"/>
+            <ListView
+                Grid.Row="1"
+                CachingStrategy="RecycleElement"
+                HasUnevenRows="False"
+                RowHeight="70"
+                IsGroupingEnabled="True"
+                ItemsSource="{Binding GroupedFavoriteScenes}"
+                SeparatorVisibility="None"
+                SelectionMode="None">
+                <ListView.Behaviors>
+                    <b:EventToCommandBehavior EventName="ItemTapped" Command="{Binding ItemTappedCommand}" EventArgsParameterPath="Item"/>
+                </ListView.Behaviors>
+                <ListView.GroupHeaderTemplate>
+                    <DataTemplate>
+                        <ViewCell>
+                            <Label Text="{Binding VideoTitle}" />
+                        </ViewCell>
+                    </DataTemplate>
+                </ListView.GroupHeaderTemplate>
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <ViewCell>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition/>
+                                </Grid.ColumnDefinitions>
+                                <Frame Grid.Column="0" 
+                                       HeightRequest="70" WidthRequest="106" Margin="2"
+                                       Padding="0" IsClippedToBounds="True" HasShadow="True">
+                                    <Grid Grid.Column="0" RowSpacing="0">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+                                        <Image Grid.RowSpan="2" Aspect="AspectFill">
+                                            <Image.Source>
+                                                <FileImageSource File="{Binding SnapshotPath}"/>
+                                            </Image.Source>
+                                        </Image>
+                                        <FlexLayout Grid.Row="1"
+                                                    IsVisible="True"
+                                                    Direction="Column"
+                                                    AlignItems="End"
+                                                    JustifyContent="End">
+                                            <Frame
+                                                CornerRadius="4"
+                                                Padding="4,0,4,0"
+                                                BackgroundColor="#88000000">
+                                                <Label          
+                                                    FontSize="12"
+                                                    TextColor="White"
+                                                    VerticalTextAlignment="Center"
+                                                    Text="{Binding Position, Converter={StaticResource DurationConverter}}"/>
+                                            </Frame>
+                                        </FlexLayout>
+                                    </Grid>
+                                </Frame>
+                            </Grid>
+                        </ViewCell>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </Grid>
     </ContentPage.Content>
 </views:FavoriteScenesContentPage>

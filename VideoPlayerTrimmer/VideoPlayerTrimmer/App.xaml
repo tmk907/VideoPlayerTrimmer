@@ -4,6 +4,9 @@
              xmlns:prism="clr-namespace:Prism.DryIoc;assembly=Prism.DryIoc.Forms"
              x:Class="VideoPlayerTrimmer.App">
     <Application.Resources>
-        
+        <ResourceDictionary>
+            <Color x:Key="NavBarColor">#2196F3</Color>
+            <x:Double x:Key="NavBarHeight">56</x:Double>
+        </ResourceDictionary>
     </Application.Resources>
 </prism:PrismApplication>

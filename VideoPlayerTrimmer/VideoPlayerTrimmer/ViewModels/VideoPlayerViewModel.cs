@@ -68,6 +68,11 @@ namespace VideoPlayerTrimmer.ViewModels
         public void OnNavigatingTo(INavigationParameters parameters)
         {
             filePath = parameters.GetValue<string>(NavigationParameterNames.VideoPath);
+            if (parameters.ContainsKey(NavigationParameterNames.Position))
+            {
+                var pos = parameters.GetValue<TimeSpan>(NavigationParameterNames.Position);
+                userPosition = (long)pos.TotalMilliseconds;
+            }
         }
 
         public void OnNavigatedTo(INavigationParameters parameters) { }
@@ -105,13 +110,20 @@ namespace VideoPlayerTrimmer.ViewModels
                 {
                     Title = videoItem.FileName;
                 }
-                if (Settings.ResumePlayback)
+                if (userPosition != 0)
                 {
-                    lastPosition = (long)videoItem.Preferences.Position.TotalMilliseconds;
+                    lastPosition = userPosition;
                 }
                 else
                 {
-                    lastPosition = 0;
+                    if (Settings.ResumePlayback)
+                    {
+                        lastPosition = (long)videoItem.Preferences.Position.TotalMilliseconds;
+                    }
+                    else
+                    {
+                        lastPosition = 0;
+                    }
                 }
                 var favScenes = await videoLibrary.GetFavoriteScenes(videoItem.VideoId);
                 favoriteScenes = new FavoritesCollection(favoriteSceneDuration, favScenes);
@@ -202,6 +214,7 @@ namespace VideoPlayerTrimmer.ViewModels
 
 
         private long lastPosition = 0;
+        private long userPosition = 0;
         private bool isPausedByUser = false;
 
         private void TogglePlayPause()
