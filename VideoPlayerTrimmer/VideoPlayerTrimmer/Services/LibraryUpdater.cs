@@ -23,6 +23,7 @@ namespace VideoPlayerTrimmer.Services
         {
             var videoSources = await mediaScanner.ScanVideosAsync();
             var oldVideos = (await database.GetAsync<VideoFileTable>(v => v.MediaStoreId)).ToDictionary(e => e.MediaStoreId);
+            bool notFirstScan = oldVideos.Count > 0;
             var idsToDelete = oldVideos.ToDictionary(e => e.Key, e => true);
             var newVideos = new List<VideoFileTable>();
             foreach(var source in videoSources)
@@ -46,7 +47,7 @@ namespace VideoPlayerTrimmer.Services
                         FileName = source.FileName,
                         FilePath = source.FilePath,
                         IsDeleted = false,
-                        IsNew = true,
+                        IsNew = true && notFirstScan,
                         MediaStoreId = source.MediaStoreId,
                         Position = TimeSpan.Zero,
                         SizeInBytes = (int)source.SizeInBytes,
@@ -61,6 +62,11 @@ namespace VideoPlayerTrimmer.Services
             }
             await database.InsertAllAsync(newVideos);
             await database.UpdateAllAsync(videosToDelete);
+        }
+
+        public void AddVideo(string path)
+        {
+            mediaScanner.AddVideo(path);
         }
     }
 }

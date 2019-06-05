@@ -9,5 +9,6 @@ namespace VideoPlayerTrimmer.Services
     public interface IMediaScanner
     {
         Task<List<VideoSource>> ScanVideosAsync();
+        void AddVideo(string path);
     }
 }

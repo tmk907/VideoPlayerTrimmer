@@ -10,6 +10,7 @@ using VideoPlayerTrimmer.Droid.Services;
 using VideoPlayerTrimmer.Services;
 using Xamarin.Forms;
 using VideoPlayerTrimmer.Models;
+using Android.Content;
 
 [assembly: Dependency(typeof(MediaScannerImpl))]
 namespace VideoPlayerTrimmer.Droid.Services
@@ -97,6 +98,13 @@ namespace VideoPlayerTrimmer.Droid.Services
             {
 
             }
+        }
+
+        public void AddVideo(string path)
+        {
+            Intent intent = new Intent(Intent.ActionMediaScannerScanFile);
+            intent.SetData(Android.Net.Uri.FromFile(new Java.IO.File(path)));
+            CrossCurrentActivity.Current.AppContext.SendBroadcast(intent);
         }
     }
 }

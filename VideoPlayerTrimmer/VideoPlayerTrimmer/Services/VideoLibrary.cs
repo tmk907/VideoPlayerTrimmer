@@ -86,6 +86,14 @@ namespace VideoPlayerTrimmer.Services
             }
         }
 
+        public List<VideoItem> SearchVideoItems(string title)
+        {
+            return videoItems.Where(v => 
+                v.Title.ToLowerInvariant().StartsWith(title.ToLowerInvariant()) ||
+                v.FileNameWithoutExtension.ToLowerInvariant().StartsWith(title.ToLowerInvariant()))
+                .ToList();
+        }
+
         public async Task MarkAsPlayedAsync(VideoItem video)
         {
             video.IsNew = false;
@@ -115,6 +123,11 @@ namespace VideoPlayerTrimmer.Services
                 VideoId = videoId
             });
             await database.InsertAllAsync(list);
+        }
+
+        public void AddVideo(string path)
+        {
+            libraryUpdater.AddVideo(path);
         }
     }
 }

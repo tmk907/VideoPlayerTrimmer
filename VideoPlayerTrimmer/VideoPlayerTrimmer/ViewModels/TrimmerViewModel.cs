@@ -57,6 +57,11 @@ namespace VideoPlayerTrimmer.ViewModels
             Xamarin.Essentials.MainThread.BeginInvokeOnMainThread(()=>
             {
                 IsConverting = false;
+                if (!String.IsNullOrEmpty(convertedVideoPath))
+                {
+                    videoLibrary.AddVideo(convertedVideoPath);
+                }
+                convertedVideoPath = null;
                 App.DebugLog("FFmpegConverter_ConversionEnded IsConverting");
             });
         }
@@ -385,7 +390,7 @@ namespace VideoPlayerTrimmer.ViewModels
             int end = (int)endPosition.TotalSeconds;
             string startFull = start + "." + startPosition.Milliseconds.ToString("D3");
             string endFull = end + "." + endPosition.Milliseconds.ToString("D3");
-            string outputFilename = $"{videoItem.FileNameWithoutExtension} [{startPosition.ToVideoDuration()}].mp4";
+            string outputFilename = $@"{videoItem.FileNameWithoutExtension} [{startPosition.ToVideoDuration()}].mp4";
             string outputPath = System.IO.Path.Combine(videoItem.FolderPath, outputFilename);
             var mp = playerService.GetMediaPlayerForTrimming(videoItem.FilePath, outputPath, start, end);
             mp.Play();
@@ -402,6 +407,7 @@ namespace VideoPlayerTrimmer.ViewModels
             App.DebugLog("stopped");
             mp.EndReached -= Mp_EndReached;
             mp.Dispose();
+            videoLibrary.AddVideo(outputPath);
         }
 
         private void Mp_EndReached(object sender, EventArgs e)
@@ -409,12 +415,13 @@ namespace VideoPlayerTrimmer.ViewModels
             App.DebugLog("Video saved");
         }
 
+        private string convertedVideoPath;
         private async Task ConvertVideo()
         {
             int start = (int)startPosition.TotalSeconds;
-            string outputFilename = $"{videoItem.FileNameWithoutExtension} [{startPosition.ToVideoDuration()}].mp4";
+            string outputFilename = $@"{videoItem.FileNameWithoutExtension} [{startPosition.ToVideoDuration()}].mp4";
             string outputPath = System.IO.Path.Combine(videoItem.FolderPath, outputFilename);
-
+            convertedVideoPath = outputPath;
             var options = new FFmpegToVideoConversionOptions(startPosition, endPosition, videoItem.FilePath, outputPath);
             await fFmpegConverter.CovertToVideo(options);
         }
@@ -422,7 +429,7 @@ namespace VideoPlayerTrimmer.ViewModels
         private async Task SaveAsGif()
         {
             int start = (int)startPosition.TotalSeconds;
-            string outputFilename = $"{videoItem.FileNameWithoutExtension} [{startPosition.ToVideoDuration()}].gif";
+            string outputFilename = $@"{videoItem.FileNameWithoutExtension} [{startPosition.ToVideoDuration()}].gif";
             string outputPath = System.IO.Path.Combine(videoItem.FolderPath, outputFilename);
             var options = new FFmpegToGifConversionOptions(startPosition, endPosition, videoItem.FilePath, outputPath);
             await fFmpegConverter.ConvertToGif(options);
