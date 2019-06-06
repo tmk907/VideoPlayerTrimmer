@@ -164,10 +164,10 @@
                         <Label Text="Fast trimming"/>
                         <Switch IsToggled="{Binding FastTrim}"/>
                     </StackLayout>
-                    <StackLayout Orientation="Horizontal">
+                    <!--<StackLayout Orientation="Horizontal">
                         <Label Text="Save as gif"/>
                         <Switch IsToggled="{Binding SaveToGif}"/>
-                    </StackLayout>
+                    </StackLayout>-->
                 </StackLayout>
                 <Grid BackgroundColor="{StaticResource SemiTransparent}" IsVisible="{Binding NoFileSelected}">
                     <Button Clicked="Open_Clicked" Text="Choose video" HorizontalOptions="Center" VerticalOptions="Center"/>
