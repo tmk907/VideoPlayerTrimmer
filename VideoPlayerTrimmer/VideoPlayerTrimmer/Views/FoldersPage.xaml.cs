@@ -50,16 +50,18 @@ namespace VideoPlayerTrimmer.Views
 
         private async void CancelButton_Clicked(object sender, EventArgs e)
         {
-            ((AutoSuggestBox)sender).Text = "";
+            SearchBox.Text = "";
             await HideSearchBox();
         }
 
         private async Task ShowSearchBox()
         {
             var a1 = SearchBox.FadeTo(1,200,Easing.SpringIn);
+            var a4 = TitleLabel.FadeTo(0, 200, Easing.SpringIn);
             var a2 = SearchButton.FadeTo(0, 200, Easing.SpringIn);
             var a3 = CancelButton.FadeTo(1, 200, Easing.SpringIn);
-            await Task.WhenAll(a1, a2, a3);
+            await Task.WhenAll(a1, a2, a3, a4);
+            TitleLabel.IsVisible = false;
             SearchBox.IsVisible = true;
             SearchButton.IsVisible = false;
             CancelButton.IsVisible = true;
@@ -68,9 +70,11 @@ namespace VideoPlayerTrimmer.Views
         private async Task HideSearchBox()
         {
             var a1 = SearchBox.FadeTo(0, 200, Easing.SpringOut);
+            var a4 = TitleLabel.FadeTo(1, 200, Easing.SpringOut);
             var a2 = SearchButton.FadeTo(1, 200, Easing.SpringOut);
             var a3 = CancelButton.FadeTo(0, 200, Easing.SpringOut);
-            await Task.WhenAll(a1, a2, a3);
+            await Task.WhenAll(a1, a2, a3, a4);
+            TitleLabel.IsVisible = true;
             SearchBox.IsVisible = false;
             SearchButton.IsVisible = true;
             CancelButton.IsVisible = false;

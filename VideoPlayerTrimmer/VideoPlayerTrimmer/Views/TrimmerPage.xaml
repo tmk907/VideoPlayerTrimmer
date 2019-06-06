@@ -34,6 +34,7 @@
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
+                    <Label Grid.Column="0" Text="Trimmer" TextColor="White" FontSize="20" Margin="24,0,0,0" VerticalTextAlignment="Center"/>
                     <ic:IconButton 
                         Grid.Column="1" 
                         Style="{StaticResource NavBarButtonStyle}"

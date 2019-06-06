@@ -6,7 +6,8 @@
              xmlns:ic="clr-namespace:Plugin.Iconize;assembly=Plugin.Iconize"
              xmlns:converters="clr-namespace:VideoPlayerTrimmer.Converters"
              xmlns:mycontrols="clr-namespace:VideoPlayerTrimmer.Controls"
-             x:Class="VideoPlayerTrimmer.Views.VideosPage">
+             x:Class="VideoPlayerTrimmer.Views.VideosPage"
+             Title="Videos">
     <ContentPage.Resources>
         <ResourceDictionary>
             <converters:TimeSpanToVideoDurationConverter x:Key="DurationConverter" />

@@ -16,7 +16,9 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition/>
             </Grid.RowDefinitions>
-            <Frame Grid.Row="0" BackgroundColor="{StaticResource NavBarColor}" HeightRequest="{StaticResource NavBarHeight}" HasShadow="True" Padding="0"/>
+            <Frame Grid.Row="0" BackgroundColor="{StaticResource NavBarColor}" HeightRequest="{StaticResource NavBarHeight}" HasShadow="True" Padding="0">
+                <Label Text="Favorites" TextColor="White" FontSize="20" Margin="24,0,0,0" VerticalTextAlignment="Center"/>
+            </Frame>
             <ListView
                 Grid.Row="1"
                 CachingStrategy="RecycleElement"

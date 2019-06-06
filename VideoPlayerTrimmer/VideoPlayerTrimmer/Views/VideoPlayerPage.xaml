@@ -6,7 +6,7 @@
              xmlns:b="clr-namespace:Prism.Behaviors;assembly=Prism.Forms"
              xmlns:vlc="clr-namespace:LibVLCSharp.Forms.Shared;assembly=LibVLCSharp.Forms"
              xmlns:converters="clr-namespace:VideoPlayerTrimmer.Converters"
-             xmlns:slider="clr-namespace:Xamarin.RangeSlider.Forms;assembly=Xamarin.RangeSlider.Forms"
+              xmlns:slider="clr-namespace:Xamarin.RangeSlider.Forms;assembly=Xamarin.RangeSlider.Forms"
              x:Name="PlayerPage"
              x:Class="VideoPlayerTrimmer.Views.VideoPlayerPage">
     <ContentPage.Resources>
@@ -101,6 +101,17 @@
                                 TextColor="White" 
                                 Text="{Binding CurrentTime, Converter={StaticResource DurationConverter}}"
                                 VerticalTextAlignment="Center"/>
+                        <!--<slider:RangeSlider 
+                            x:Name="Slider"
+                            FlexLayout.Grow="1"
+                            MinimumValue="0"
+                            VerticalOptions="Center"
+                            Margin="0,4,0,0"
+                            MaxThumbHidden="True"
+                            UseSingleThumb="True"
+                            MaximumValue="{Binding TotalTime, Converter={StaticResource ToSecondsConverter}, ConverterParameter=1}"
+                            LowerValue="{Binding CurrentTime, Converter={StaticResource ToSecondsConverter}, Mode=OneWay}"
+                            LowerValueChanged="RangeSlider_LowerValueChanged"/>-->
                         <Slider 
                                 FlexLayout.Grow="1"
                                 Minimum="0" 
