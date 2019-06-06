@@ -96,35 +96,36 @@
                         <RowDefinition/>
                         <RowDefinition Height="60"/>
                     </Grid.RowDefinitions>
-                    <FlexLayout Grid.Row="0" Direction="Row">
+                    <Grid Grid.Row="0" >
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
                         <Label 
-                                TextColor="White" 
-                                Text="{Binding CurrentTime, Converter={StaticResource DurationConverter}}"
-                                VerticalTextAlignment="Center"/>
-                        <!--<slider:RangeSlider 
+                            Grid.Column="0"
+                            TextColor="White" 
+                            HorizontalOptions="StartAndExpand"
+                            Text="{Binding CurrentTime, Converter={StaticResource DurationConverter}}"
+                            VerticalTextAlignment="Center"/>
+                        <slider:RangeSlider 
                             x:Name="Slider"
-                            FlexLayout.Grow="1"
+                            Grid.Column="1"
                             MinimumValue="0"
                             VerticalOptions="Center"
                             Margin="0,4,0,0"
-                            MaxThumbHidden="True"
+                            MinThumbHidden="True"
                             UseSingleThumb="True"
+                            PrimaryThumb="Upper"
                             MaximumValue="{Binding TotalTime, Converter={StaticResource ToSecondsConverter}, ConverterParameter=1}"
-                            LowerValue="{Binding CurrentTime, Converter={StaticResource ToSecondsConverter}, Mode=OneWay}"
-                            LowerValueChanged="RangeSlider_LowerValueChanged"/>-->
-                        <Slider 
-                                FlexLayout.Grow="1"
-                                Minimum="0" 
-                                VerticalOptions="Center"
-                                Margin="0,4,0,0"
-                                Maximum="{Binding TotalTime, Converter={StaticResource ToSecondsConverter}, ConverterParameter=1}"
-                                Value="{Binding CurrentTime, Converter={StaticResource ToSecondsConverter}, Mode=OneWay}"
-                                ValueChanged="Slider_ValueChanged"/>
+                            UpperValue="{Binding CurrentTime, Converter={StaticResource ToSecondsConverter}, Mode=OneWay}"
+                            UpperValueChanged="RangeSlider_ValueChanged"/>
                         <Label 
-                                TextColor="White" 
-                                Text="{Binding TotalTime, Converter={StaticResource DurationConverter}}"
-                                VerticalTextAlignment="Center"/>
-                    </FlexLayout>
+                            Grid.Column="2"
+                            TextColor="White" 
+                            Text="{Binding TotalTime, Converter={StaticResource DurationConverter}}"
+                            VerticalTextAlignment="Center"/>
+                    </Grid>
                     <FlexLayout Grid.Row="1" Direction="Row" JustifyContent="Center">
                         <ic:IconButton 
                             Command="{Binding ToggleAudioTracksCommand}"

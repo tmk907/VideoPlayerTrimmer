@@ -468,7 +468,7 @@ namespace VideoPlayerTrimmer.ViewModels
         public void SeekTo(object value)
         {
             if (value == null) return;
-            double seconds = (double)value;
+            double seconds = Convert.ToDouble(value);
             if (MediaPlayer.IsSeekable)
             {
                 long newTime = (long)(seconds * 1000);

@@ -102,10 +102,9 @@ namespace VideoPlayerTrimmer.Views
             return Math.Max(0, Math.Min(value, maxValue));
         }
 
-        private void RangeSlider_LowerValueChanged(object sender, EventArgs e)
+        private void RangeSlider_ValueChanged(object sender, EventArgs e)
         {
-            App.DebugLog("");
-            //ViewModel.SeekTo(Slider.LowerValue);
+            ViewModel.SeekTo(Slider.UpperValue);
         }
     }
 }
