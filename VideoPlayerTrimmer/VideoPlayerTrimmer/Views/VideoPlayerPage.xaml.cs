@@ -39,71 +39,71 @@ namespace VideoPlayerTrimmer.Views
         private int initialVolume;
         private int initialBrightness;
 
-        private void VolumePanUpdated(object sender, PanUpdatedEventArgs e)
-        {
-            switch (e.StatusType)
-            {
-                case GestureStatus.Started:
-                    ViewModel.IsVolumeIndicatorVisible = true;
-                    initialVolume = ViewModel.Volume;
-                    break;
-                case GestureStatus.Running:
-                    ViewModel.Volume = CalculateValue(e.TotalY, initialVolume, ViewModel.MaxVolume);
-                    ViewModel.ApplyVolume();
-                    break;
-                case GestureStatus.Completed:
-                    ViewModel.IsVolumeIndicatorVisible = false;
-                    break;
-                case GestureStatus.Canceled:
-                    ViewModel.IsVolumeIndicatorVisible = false;
-                    break;
-            }
-        }
+        //private void VolumePanUpdated(object sender, PanUpdatedEventArgs e)
+        //{
+        //    switch (e.StatusType)
+        //    {
+        //        case GestureStatus.Started:
+        //            ViewModel.IsVolumeIndicatorVisible = true;
+        //            initialVolume = ViewModel.Volume;
+        //            break;
+        //        case GestureStatus.Running:
+        //            ViewModel.Volume = CalculateValue(e.TotalY, initialVolume, ViewModel.MaxVolume);
+        //            ViewModel.ApplyVolume();
+        //            break;
+        //        case GestureStatus.Completed:
+        //            ViewModel.IsVolumeIndicatorVisible = false;
+        //            break;
+        //        case GestureStatus.Canceled:
+        //            ViewModel.IsVolumeIndicatorVisible = false;
+        //            break;
+        //    }
+        //}
 
-        private void BrightnessPanUpdated(object sender, PanUpdatedEventArgs e)
-        {
-            switch (e.StatusType)
-            {
-                case GestureStatus.Started:
-                    ViewModel.IsBrightnessIndicatorVisible = true;
-                    initialBrightness = ViewModel.Brightness;
-                    break;
-                case GestureStatus.Running:
-                    ViewModel.Brightness = CalculateValue(e.TotalY, initialBrightness, ViewModel.MaxBrightness);
-                    ViewModel.ApplyBrightness();
-                    break;
-                case GestureStatus.Completed:
-                    ViewModel.IsBrightnessIndicatorVisible = false;
-                    break;
-                case GestureStatus.Canceled:
-                    ViewModel.IsBrightnessIndicatorVisible = false;
-                    break;
-            }
-        }
+        //private void BrightnessPanUpdated(object sender, PanUpdatedEventArgs e)
+        //{
+        //    switch (e.StatusType)
+        //    {
+        //        case GestureStatus.Started:
+        //            ViewModel.IsBrightnessIndicatorVisible = true;
+        //            initialBrightness = ViewModel.Brightness;
+        //            break;
+        //        case GestureStatus.Running:
+        //            ViewModel.Brightness = CalculateValue(e.TotalY, initialBrightness, ViewModel.MaxBrightness);
+        //            ViewModel.ApplyBrightness();
+        //            break;
+        //        case GestureStatus.Completed:
+        //            ViewModel.IsBrightnessIndicatorVisible = false;
+        //            break;
+        //        case GestureStatus.Canceled:
+        //            ViewModel.IsBrightnessIndicatorVisible = false;
+        //            break;
+        //    }
+        //}
 
-        private int CalculateValue(double totalChange, int value, int maxValue)
-        {
-            double minimumChange = 30;
-            bool decrease = totalChange > 0;
-            totalChange = Math.Abs(totalChange);
-            if (totalChange < minimumChange) return value;
-            totalChange -= minimumChange;
+        //private int CalculateValue(double totalChange, int value, int maxValue)
+        //{
+        //    double minimumChange = 30;
+        //    bool decrease = totalChange > 0;
+        //    totalChange = Math.Abs(totalChange);
+        //    if (totalChange < minimumChange) return value;
+        //    totalChange -= minimumChange;
 
-            double maxChange = VolumeGrid.Height;
-            double maxValueChange = 15;
-            double heightPerValue = (maxChange - minimumChange) / maxValueChange;
+        //    double maxChange = VolumeGrid.Height;
+        //    double maxValueChange = 15;
+        //    double heightPerValue = (maxChange - minimumChange) / maxValueChange;
 
-            int valueChange = (int)Math.Round(totalChange / heightPerValue);
-            if (decrease) valueChange *= -1;
-            value += valueChange;
+        //    int valueChange = (int)Math.Round(totalChange / heightPerValue);
+        //    if (decrease) valueChange *= -1;
+        //    value += valueChange;
 
-            App.DebugLog(String.Format("{0} {1} {2}", totalChange, heightPerValue, valueChange));
-            return Math.Max(0, Math.Min(value, maxValue));
-        }
+        //    App.DebugLog(String.Format("{0} {1} {2}", totalChange, heightPerValue, valueChange));
+        //    return Math.Max(0, Math.Min(value, maxValue));
+        //}
 
-        private void RangeSlider_ValueChanged(object sender, EventArgs e)
-        {
-            ViewModel.SeekTo(Slider.UpperValue);
-        }
+        //private void RangeSlider_ValueChanged(object sender, EventArgs e)
+        //{
+        //    ViewModel.SeekTo(Slider.UpperValue);
+        //}
     }
 }

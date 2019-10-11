@@ -14,11 +14,10 @@ using VideoPlayerTrimmer.Framework;
 using VideoPlayerTrimmer.MediaHelpers;
 using VideoPlayerTrimmer.Models;
 using VideoPlayerTrimmer.Services;
-using Xamarin.Forms;
 
 namespace VideoPlayerTrimmer.ViewModels
 {
-    public class VideoPlayerViewModel : BaseViewModel, INavigatedAware, IApplicationLifecycleAware, IInitialize
+    public class VideoPlayerViewModel : BaseViewModel, IApplicationLifecycleAware, IInitialize
     {
         private readonly INavigationService navigationService;
         private readonly MediaPlayerService playerService;
@@ -64,6 +63,12 @@ namespace VideoPlayerTrimmer.ViewModels
             private set => SetProperty(ref mediaPlayer, value);
         }
 
+        public LibVLC LibVLC
+        {
+            get => playerService.LibVLC.Value;
+        }
+
+
         public bool IsVideoViewInitialized { get; set; } = false;
 
         public void Initialize(INavigationParameters parameters)
@@ -75,10 +80,6 @@ namespace VideoPlayerTrimmer.ViewModels
                 userPosition = (long)pos.TotalMilliseconds;
             }
         }
-
-        public void OnNavigatedTo(INavigationParameters parameters) { }
-
-        public void OnNavigatedFrom(INavigationParameters parameters) { }
 
         public void OnResume()
         {
@@ -129,6 +130,7 @@ namespace VideoPlayerTrimmer.ViewModels
                 var favScenes = await videoLibrary.GetFavoriteScenes(videoItem.VideoId);
                 favoriteScenes = new FavoritesCollection(favoriteSceneDuration, favScenes);
                 InitMediaPlayer();
+                StartPlayingOrResume();
             }
         }
 
@@ -240,7 +242,7 @@ namespace VideoPlayerTrimmer.ViewModels
             MediaPlayer.Playing += MediaPlayer_Playing;
 
             MediaPlayer.Play();
-            MediaPlayer.Time = lastPosition;
+            //MediaPlayer.Time = lastPosition;
         }
 
         private async void MediaPlayer_Playing(object sender, EventArgs e)

@@ -34,10 +34,11 @@
     </ContentPage.Resources>
     <ContentPage.Content>
         <Grid x:Name="VideoPlayerGrid">
-            <vlc:VideoView x:Name="VideoView"
-                            MediaPlayer="{Binding MediaPlayer}"
-                            MediaPlayerChanged="MediaPlayerChanged" Grid.Row="0" Grid.Column="0"/>
-            <Grid BackgroundColor="Transparent">
+            <vlc:MediaPlayerElement
+                Grid.Row="0" Grid.Column="0"
+                MediaPlayer="{Binding MediaPlayer}"
+                LibVLC="{Binding LibVLC}"/>
+            <!--<Grid BackgroundColor="Transparent">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition/>
                     <ColumnDefinition/>
@@ -275,7 +276,7 @@
                         </StackLayout>
                     </StackLayout>
                 </ScrollView>
-            </ContentView>
+            </ContentView>-->
         </Grid>
     </ContentPage.Content>
 </views:VideoPlayerContentPage>
