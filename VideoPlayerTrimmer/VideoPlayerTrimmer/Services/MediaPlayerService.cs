@@ -1,8 +1,6 @@
 ﻿using LibVLCSharp.Shared;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace VideoPlayerTrimmer.Services
 {
@@ -10,22 +8,14 @@ namespace VideoPlayerTrimmer.Services
     {
         public MediaPlayerService()
         {
-            Task.Run((Action)Initialize);
         }
 
-        private LibVLC LibVLC { get; set; }
+        public Lazy<LibVLC> LibVLC = new Lazy<LibVLC>(() => { Core.Initialize(); return new LibVLC(); });
 
-        private void Initialize()
-        {
-            App.DebugLog("");
-            Core.Initialize();
-            LibVLC = new LibVLC();
-            App.DebugLog("Finished LibVLC initialization");
-        }
 
         public MediaPlayer GetMediaPlayer(string filePath)
         {
-            var media = new Media(LibVLC, filePath);
+            var media = new Media(LibVLC.Value, filePath);
             if (Settings.UseHardwareAcceleration)
             {
                 var configuration = new MediaConfiguration();
@@ -58,7 +48,7 @@ namespace VideoPlayerTrimmer.Services
 
         public MediaPlayer GetMediaPlayer(string filePath, List<string> options)
         {
-            var media = new Media(LibVLC, filePath);
+            var media = new Media(LibVLC.Value, filePath);
             if (Settings.UseHardwareAcceleration)
             {
                 var configuration = new MediaConfiguration();
