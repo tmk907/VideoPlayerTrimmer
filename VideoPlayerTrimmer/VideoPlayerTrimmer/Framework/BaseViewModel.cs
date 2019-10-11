@@ -1,21 +1,50 @@
-﻿using System;
+﻿using AsyncAwaitBestPractices;
+using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace VideoPlayerTrimmer.Framework
 {
     public abstract class BaseViewModel : BindableBase
     {
-        public virtual Task OnAppearingAsync(bool firstTime) => Task.CompletedTask;
+        protected CancellationTokenSource cts;
 
-        public virtual Task OnDisappearingAsync(bool firstTime) => Task.CompletedTask;
+        protected bool firstTimeAppeared = true;
+        protected bool firstTimeDisappeared = true;
 
-        private bool isBusy;
-        public bool IsBusy
+        private bool isLoadingData;
+        public bool IsLoadingData
         {
-            get => isBusy;
-            set => SetProperty(ref isBusy, value);
+            get => isLoadingData;
+            set => SetProperty(ref isLoadingData, value);
         }
+
+        public virtual void OnAppearing(bool firstTime)
+        {
+            firstTimeAppeared = firstTime;
+            cts = new CancellationTokenSource();
+            InitializeVMAsyncInternal(cts.Token).SafeFireAndForget(true);
+        }
+
+        public virtual void OnDisappearing(bool firstTime)
+        {
+            firstTimeDisappeared = firstTime;
+            cts.Cancel();
+            UnInitializeVMAsync().SafeFireAndForget(true);
+        }
+
+        protected async Task InitializeVMAsyncInternal(CancellationToken token)
+        {
+            IsLoadingData = true;
+            await InitializeVMAsync(token);
+            IsLoadingData = false;
+        }
+
+        protected virtual Task InitializeVMAsync(CancellationToken token) => Task.CompletedTask;
+
+        protected virtual Task UnInitializeVMAsync() => Task.CompletedTask;
+
     }
 }

@@ -10,12 +10,12 @@ namespace VideoPlayerTrimmer.Framework
 
         protected virtual T ViewModel => BindingContext as T;
 
-        protected override async void OnAppearing()
+        protected override void OnAppearing()
         {
             App.DebugLog("");
             base.OnAppearing();
 
-            await ViewModel.OnAppearingAsync(firstTimeAppearing);
+            ViewModel.OnAppearing(firstTimeAppearing);
 
             if (firstTimeAppearing)
             {
@@ -29,7 +29,7 @@ namespace VideoPlayerTrimmer.Framework
             App.DebugLog("");
             base.OnDisappearing();
 
-            ViewModel.OnDisappearingAsync(firstTimeDisappearing);
+            ViewModel.OnDisappearing(firstTimeDisappearing);
 
             if (firstTimeDisappearing)
             {

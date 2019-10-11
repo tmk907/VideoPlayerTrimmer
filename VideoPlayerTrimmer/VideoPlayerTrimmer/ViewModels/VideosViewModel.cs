@@ -1,7 +1,9 @@
-﻿using Prism.Navigation;
+﻿using Prism.AppModel;
+using Prism.Navigation;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using VideoPlayerTrimmer.Framework;
 using VideoPlayerTrimmer.Models;
@@ -30,16 +32,11 @@ namespace VideoPlayerTrimmer.ViewModels
 
         public Command ItemTappedCommand { get; set; }
 
-        public override async Task OnAppearingAsync(bool firstTime)
-        {
-            if (firstTime)
-            {
-                await LoadDataAsync();
-            }
-        }
 
-        private async Task LoadDataAsync()
+        protected override async Task InitializeVMAsync(CancellationToken token)
         {
+            App.DebugLog("");
+
             var list = await videoLibrary.GetVideoItemsAsync(Directory, false);
             VideoItems.Clear();
             VideoItems.AddRange(list.OrderBy(e => e.Title));
@@ -61,6 +58,8 @@ namespace VideoPlayerTrimmer.ViewModels
 
         public void Initialize(INavigationParameters parameters)
         {
+            App.DebugLog("");
+
             Directory = (string)parameters[NavigationParameterNames.Directory];
             if (parameters.ContainsKey(NavigationParameterNames.GoBack))
             {

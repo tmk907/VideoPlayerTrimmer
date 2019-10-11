@@ -1,14 +1,11 @@
 ﻿using Prism.Navigation;
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using VideoPlayerTrimmer.Framework;
 using VideoPlayerTrimmer.Models;
 using VideoPlayerTrimmer.Services;
-using VideoPlayerTrimmer.Views;
 using Xamarin.Forms;
 
 namespace VideoPlayerTrimmer.ViewModels
@@ -41,8 +38,9 @@ namespace VideoPlayerTrimmer.ViewModels
 
         public Command ItemTappedCommand { get; set; }
 
-        public override async Task OnAppearingAsync(bool firstTime)
+        protected override async Task InitializeVMAsync(CancellationToken token)
         {
+            App.DebugLog("");
             var list = await videoLibrary.GetFolderItemsAsync(true);
             Folders.Clear();
             foreach (var item in list.OrderBy(e => e.FolderName))

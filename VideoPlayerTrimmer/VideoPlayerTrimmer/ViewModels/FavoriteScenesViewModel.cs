@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using VideoPlayerTrimmer.Framework;
 using VideoPlayerTrimmer.Models;
@@ -25,7 +26,7 @@ namespace VideoPlayerTrimmer.ViewModels
 
         public DelegateCommand<object> ItemTappedCommand { get; }
 
-        public override async Task OnAppearingAsync(bool firstTime)
+        protected override async Task InitializeVMAsync(CancellationToken token)
         {
             await LoadDataAsync();
         }

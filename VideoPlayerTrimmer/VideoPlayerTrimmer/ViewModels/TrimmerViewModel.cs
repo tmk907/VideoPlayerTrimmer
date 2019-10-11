@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using VideoPlayerTrimmer.Extensions;
 using VideoPlayerTrimmer.Framework;
@@ -320,7 +321,7 @@ namespace VideoPlayerTrimmer.ViewModels
             }
         }
 
-        public override async Task OnAppearingAsync(bool firstTime)
+        protected override async Task InitializeVMAsync(CancellationToken token)
         {
             App.DebugLog("");
             if (!String.IsNullOrEmpty(filePath))
@@ -330,7 +331,7 @@ namespace VideoPlayerTrimmer.ViewModels
             MediaHelper.TimeChanged += MediaHelper_TimeChanged;
         }
 
-        public override Task OnDisappearingAsync(bool firstTime)
+        protected override Task UnInitializeVMAsync()
         {
             App.DebugLog("");
             MediaHelper.TimeChanged -= MediaHelper_TimeChanged;

@@ -8,6 +8,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using VideoPlayerTrimmer.Framework;
 using VideoPlayerTrimmer.MediaHelpers;
@@ -95,10 +96,10 @@ namespace VideoPlayerTrimmer.ViewModels
             IsVideoViewInitialized = false;
         }
 
-        public override async Task OnAppearingAsync(bool firstTime)
+        protected override async Task InitializeVMAsync(CancellationToken token)
         {
-            App.DebugLog(firstTime.ToString());
-            if (firstTime)
+            App.DebugLog(firstTimeAppeared.ToString());
+            if (firstTimeAppeared)
             {
                 statusBarService.IsVisible = false;
                 orientationService.ChangeToLandscape();
@@ -131,10 +132,10 @@ namespace VideoPlayerTrimmer.ViewModels
             }
         }
 
-        public override async Task OnDisappearingAsync(bool firstTime)
+        protected override async Task UnInitializeVMAsync()
         {
-            App.DebugLog(firstTime.ToString());
-            if (firstTime)
+            App.DebugLog(firstTimeDisappeared.ToString());
+            if (firstTimeDisappeared)
             {
                 UnInitMediaPlayer();
                 await videoLibrary.MarkAsPlayedAsync(videoItem);

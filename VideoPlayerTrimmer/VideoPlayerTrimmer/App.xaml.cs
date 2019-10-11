@@ -16,6 +16,7 @@ using Xamarin.Essentials;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 using Plugin.Iconize;
+using AsyncAwaitBestPractices;
 
 [assembly: XamlCompilation(XamlCompilationOptions.Compile)]
 namespace VideoPlayerTrimmer
@@ -29,6 +30,9 @@ namespace VideoPlayerTrimmer
         protected override async void OnInitialized()
         {
             InitializeComponent();
+#if DEBUG
+            SafeFireAndForgetExtensions.Initialize(true);
+#endif
             VersionTracking.Track();
             Plugin.Iconize.Iconize.With(new Plugin.Iconize.Fonts.EntypoPlusModule());
             Setup();
@@ -123,6 +127,7 @@ namespace VideoPlayerTrimmer
         {
             var callerTypeName = filePath.Split(new char[] { '\\' }, StringSplitOptions.RemoveEmptyEntries).Last();
             callerTypeName = callerTypeName.Remove(callerTypeName.Length - 3);
+            var c2 = Path.GetFileNameWithoutExtension(filePath);
             System.Diagnostics.Debug.WriteLine("LOG: {0}.{1}() {2}", callerTypeName, methodName, arg);
         }
         
