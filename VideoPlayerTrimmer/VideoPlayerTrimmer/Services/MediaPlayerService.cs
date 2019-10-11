@@ -29,7 +29,7 @@ namespace VideoPlayerTrimmer.Services
             if (Settings.UseHardwareAcceleration)
             {
                 var configuration = new MediaConfiguration();
-                configuration.EnableHardwareDecoding();
+                configuration.EnableHardwareDecoding = true;
                 media.AddOption(configuration);
             }
             var mediaPlayer = new MediaPlayer(media);
@@ -62,7 +62,7 @@ namespace VideoPlayerTrimmer.Services
             if (Settings.UseHardwareAcceleration)
             {
                 var configuration = new MediaConfiguration();
-                configuration.EnableHardwareDecoding();
+                configuration.EnableHardwareDecoding = true;
                 media.AddOption(configuration);
             }
             foreach(var option in options)

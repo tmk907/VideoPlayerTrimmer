@@ -13,7 +13,7 @@ using VideoPlayerTrimmer.Services;
 
 namespace VideoPlayerTrimmer.ViewModels
 {
-    public class TrimmerViewModel : BaseViewModel, INavigationAware
+    public class TrimmerViewModel : BaseViewModel, INavigatedAware
     {
         public TrimmerViewModel(IVideoLibrary videoLibrary, INavigationService navigationService, 
             MediaPlayerService playerService, IFFmpegConverter fFmpegConverter)

@@ -17,7 +17,7 @@ using Xamarin.Forms;
 
 namespace VideoPlayerTrimmer.ViewModels
 {
-    public class VideoPlayerViewModel : BaseViewModel, INavigationAware, IApplicationLifecycleAware
+    public class VideoPlayerViewModel : BaseViewModel, INavigatedAware, IApplicationLifecycleAware, IInitialize
     {
         private readonly INavigationService navigationService;
         private readonly MediaPlayerService playerService;
@@ -65,7 +65,7 @@ namespace VideoPlayerTrimmer.ViewModels
 
         public bool IsVideoViewInitialized { get; set; } = false;
 
-        public void OnNavigatingTo(INavigationParameters parameters)
+        public void Initialize(INavigationParameters parameters)
         {
             filePath = parameters.GetValue<string>(NavigationParameterNames.VideoPath);
             if (parameters.ContainsKey(NavigationParameterNames.Position))

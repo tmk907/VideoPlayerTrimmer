@@ -13,9 +13,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AdMaiora.RealXaml.Client" Version="1.0.0" />
     <PackageReference Include="dotMorten.Xamarin.Forms.AutoSuggestBox" Version="0.7.0" />
     <PackageReference Include="LibVLCSharp.Forms" Version="3.2.3" />
+    <PackageReference Include="LiveSharp" Version="1.1.6" />
     <PackageReference Include="Microsoft.AppCenter.Analytics" Version="2.1.1" />
     <PackageReference Include="Microsoft.AppCenter.Crashes" Version="2.1.1" />
     <PackageReference Include="Mobile.BuildTools" Version="1.4.0.638">

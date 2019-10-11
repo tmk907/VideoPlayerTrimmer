@@ -19,7 +19,6 @@ namespace VideoPlayerTrimmer.Views
     {
         public VideoPlayerPage()
         {
-            AdMaiora.RealXaml.Client.AppManager.Init(this);
             InitializeComponent();
             NavigationPage.SetHasNavigationBar(this, false);
         }

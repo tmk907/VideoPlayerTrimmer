@@ -10,7 +10,7 @@ using Xamarin.Forms;
 
 namespace VideoPlayerTrimmer.ViewModels
 {
-    public class VideosViewModel : BaseViewModel, INavigatingAware
+    public class VideosViewModel : BaseViewModel, IInitialize
     {
         private readonly INavigationService navigationService;
         private readonly IVideoLibrary videoLibrary;
@@ -38,15 +38,6 @@ namespace VideoPlayerTrimmer.ViewModels
             }
         }
 
-        public void OnNavigatingTo(INavigationParameters parameters)
-        {
-            Directory = (string)parameters[NavigationParameterNames.Directory];
-            if (parameters.ContainsKey(NavigationParameterNames.GoBack))
-            {
-                backToTrimmer = parameters.GetValue<bool>(NavigationParameterNames.GoBack);
-            }
-        }
-
         private async Task LoadDataAsync()
         {
             var list = await videoLibrary.GetVideoItemsAsync(Directory, false);
@@ -65,6 +56,15 @@ namespace VideoPlayerTrimmer.ViewModels
             else
             {
                 await navigationService.NavigateAsync(PageNames.Player, parameters);
+            }
+        }
+
+        public void Initialize(INavigationParameters parameters)
+        {
+            Directory = (string)parameters[NavigationParameterNames.Directory];
+            if (parameters.ContainsKey(NavigationParameterNames.GoBack))
+            {
+                backToTrimmer = parameters.GetValue<bool>(NavigationParameterNames.GoBack);
             }
         }
     }

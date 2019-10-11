@@ -61,9 +61,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="AdMaiora.RealXaml.Client">
-      <Version>1.0.0</Version>
-    </PackageReference>
     <PackageReference Include="dotMorten.Xamarin.Forms.AutoSuggestBox">
       <Version>0.7.0</Version>
     </PackageReference>
@@ -155,6 +152,9 @@
       <Project>{3AED387B-1D29-4038-8D8C-DF3FE9A1622A}</Project>
       <Name>VideoPlayerTrimmer</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidEnvironment Include="environment.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
 </Project>

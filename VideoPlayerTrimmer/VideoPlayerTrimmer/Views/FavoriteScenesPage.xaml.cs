@@ -17,7 +17,6 @@ namespace VideoPlayerTrimmer.Views
     {
         public FavoriteScenesPage()
         {
-            AdMaiora.RealXaml.Client.AppManager.Init(this);
             InitializeComponent();
         }
     }
