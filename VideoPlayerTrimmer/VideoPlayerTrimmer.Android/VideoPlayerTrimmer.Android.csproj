@@ -67,6 +67,9 @@
     <PackageReference Include="glidex.forms">
       <Version>2.0.0.336</Version>
     </PackageReference>
+    <PackageReference Include="LibVLCSharp.Forms">
+      <Version>3.2.4</Version>
+    </PackageReference>
     <PackageReference Include="Mobile.BuildTools">
       <Version>1.4.0.638</Version>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>

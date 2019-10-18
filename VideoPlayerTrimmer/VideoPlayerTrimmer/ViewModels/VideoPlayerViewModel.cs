@@ -1,5 +1,5 @@
-﻿using LibVLCSharp.Shared;
-using Prism.AppModel;
+﻿using LibVLCSharp.Forms.Shared;
+using LibVLCSharp.Shared;
 using Prism.Commands;
 using Prism.Navigation;
 using System;
@@ -14,12 +14,12 @@ using VideoPlayerTrimmer.Framework;
 using VideoPlayerTrimmer.MediaHelpers;
 using VideoPlayerTrimmer.Models;
 using VideoPlayerTrimmer.Services;
+using Xamarin.Forms;
 
 namespace VideoPlayerTrimmer.ViewModels
 {
-    public class VideoPlayerViewModel : BaseViewModel, IApplicationLifecycleAware, IInitialize
+    public class VideoPlayerViewModel : BaseViewModel   , IInitialize
     {
-        private readonly INavigationService navigationService;
         private readonly MediaPlayerService playerService;
         private readonly IVideoLibrary videoLibrary;
         private readonly IVolumeService volumeController;
@@ -29,19 +29,17 @@ namespace VideoPlayerTrimmer.ViewModels
         private string filePath;
         private VideoItem videoItem;
 
-        public VideoPlayerViewModel(INavigationService navigationService, MediaPlayerService playerService, 
+        public VideoPlayerViewModel(MediaPlayerService playerService, 
             IVideoLibrary videoLibrary, IVolumeService volumeController, IBrightnessService brightnessController,
             IOrientationService orientationService, IStatusBarService statusBarService)
         {
             App.DebugLog("");
-            this.navigationService = navigationService;
             this.playerService = playerService;
             this.videoLibrary = videoLibrary;
             this.volumeController = volumeController;
             this.brightnessController = brightnessController;
             this.orientationService = orientationService;
             this.statusBarService = statusBarService;
-            PlayPauseCommand = new DelegateCommand(TogglePlayPause);
             ToggleFavoriteCommand = new DelegateCommand(ToggleFavorite);
             ToggleControlsVisibilityCommand = new DelegateCommand(ToggleControlsVisibility);
             ToggleAudioTracksCommand = new DelegateCommand(ToggleAudioTracks);
@@ -81,104 +79,118 @@ namespace VideoPlayerTrimmer.ViewModels
             }
         }
 
-        public void OnResume()
-        {
-            App.DebugLog("");
-            statusBarService.IsVisible = false;
-            orientationService.ChangeToLandscape();
-            ApplyBrightness();
-            InitMediaPlayer();
-        }
-
-        public void OnSleep()
-        {
-            App.DebugLog("");
-            UnInitMediaPlayer();
-            IsVideoViewInitialized = false;
-        }
-
         protected override async Task InitializeVMAsync(CancellationToken token)
         {
             App.DebugLog(firstTimeAppeared.ToString());
             if (firstTimeAppeared)
             {
-                statusBarService.IsVisible = false;
-                orientationService.ChangeToLandscape();
-                ApplyBrightness();
-
                 videoItem = await videoLibrary.GetVideoItemAsync(filePath);
                 Title = videoItem.Title;
                 if (String.IsNullOrWhiteSpace(Title))
                 {
                     Title = videoItem.FileName;
                 }
-                if (userPosition != 0)
+                if (Settings.ResumePlayback)
                 {
-                    lastPosition = userPosition;
+                    lastPosition = (long)videoItem.Preferences.Position.TotalMilliseconds;
                 }
                 else
                 {
-                    if (Settings.ResumePlayback)
-                    {
-                        lastPosition = (long)videoItem.Preferences.Position.TotalMilliseconds;
-                    }
-                    else
-                    {
-                        lastPosition = 0;
-                    }
+                    lastPosition = 0;
                 }
                 var favScenes = await videoLibrary.GetFavoriteScenes(videoItem.VideoId);
                 favoriteScenes = new FavoritesCollection(favoriteSceneDuration, favScenes);
-                InitMediaPlayer();
-                StartPlayingOrResume();
             }
+
+            //statusBarService.IsVisible = false;
+            orientationService.ChangeToLandscape();
+            ApplyBrightness();
+            
+            if (userPosition != 0)
+            {
+                lastPosition = userPosition;
+            }
+
+            InitMediaPlayer();
+            StartPlayingOrResume();
         }
 
         protected override async Task UnInitializeVMAsync()
         {
             App.DebugLog(firstTimeDisappeared.ToString());
-            if (firstTimeDisappeared)
+            UnInitMediaPlayer();
+
+            //statusBarService.IsVisible = true;
+            brightnessController.RestoreBrightness();
+            orientationService.RestoreOrientation();
+
+            await videoLibrary.MarkAsPlayedAsync(videoItem);
+            videoItem.Preferences.Position = CurrentTime;
+            if (currentTime >= totalTime - TimeSpan.FromSeconds(0.5))
             {
-                UnInitMediaPlayer();
-                await videoLibrary.MarkAsPlayedAsync(videoItem);
-                videoItem.Preferences.Position = CurrentTime;
-                if (currentTime >= totalTime)
-                {
-                    videoItem.Preferences.Position = TimeSpan.Zero;
-                }
-                await videoLibrary.SaveVideoItemPreferences(videoItem);
-                await videoLibrary.SaveFavoriteScenes(videoItem.VideoId, favoriteScenes.Select(s => s.Value));
-                statusBarService.IsVisible = true;
-                brightnessController.RestoreBrightness();
-                orientationService.RestoreOrientation();
+                videoItem.Preferences.Position = TimeSpan.Zero;
             }
+            await videoLibrary.SaveVideoItemPreferences(videoItem);
+            await videoLibrary.SaveFavoriteScenes(videoItem.VideoId, favoriteScenes.Select(s => s.Value));
         }
 
         private void InitMediaPlayer()
         {
             App.DebugLog("");
             MediaPlayer = playerService.GetMediaPlayer(filePath);
+
             MediaPlayer.TimeChanged += MediaPlayer_TimeChanged;
-            MediaPlayer.Playing += MediaPlayer_Playing1;
+            MediaPlayer.LengthChanged += MediaPlayer_LengthChanged;
+            MediaPlayer.Playing += MediaPlayer_Playing;
             MediaPlayer.Paused += MediaPlayer_Paused;
             MediaPlayer.EndReached += MediaPlayer_EndReached;
             MediaPlayer.EncounteredError += MediaPlayer_EncounteredError;
             MediaPlayer.SnapshotTaken += MediaPlayer_SnapshotTaken;
+            
+            IsVideoViewInitialized = true;
+        }
+
+        private void MediaPlayer_PositionChanged(object sender, MediaPlayerPositionChangedEventArgs e)
+        {
+            App.DebugLog("PositionChanged: " + e.Position);
         }
 
         private void UnInitMediaPlayer()
         {
             App.DebugLog("");
+            IsVideoViewInitialized = false;
+
             MediaPlayer.Pause();
             lastPosition = MediaPlayer.Time;
             MediaPlayer.Stop();
 
             MediaPlayer.TimeChanged -= MediaPlayer_TimeChanged;
-            MediaPlayer.Playing -= MediaPlayer_Playing1;
+            MediaPlayer.LengthChanged -= MediaPlayer_LengthChanged;
+            MediaPlayer.Playing -= MediaPlayer_Playing;
             MediaPlayer.Paused -= MediaPlayer_Paused;
             MediaPlayer.EndReached -= MediaPlayer_EndReached;
             MediaPlayer.EncounteredError -= MediaPlayer_EncounteredError;
             MediaPlayer.SnapshotTaken -= MediaPlayer_SnapshotTaken;
+        }
+
+        private void MediaPlayer_LengthChanged(object sender, MediaPlayerLengthChangedEventArgs e)
+        {
+            var state = MediaPlayer?.State;
+            var length = MediaPlayer == null ||
+                state == VLCState.Ended || state == VLCState.Error || state == VLCState.NothingSpecial ||
+                state == VLCState.Stopped ? 0 : mediaPlayer.Length;
+            App.DebugLog(TimeSpan.FromMilliseconds(length).ToString());
+            Device.BeginInvokeOnMainThread(() =>
+            {
+                TotalTime = TimeSpan.FromMilliseconds(length);
+            });
+        }
+
+        private void MediaPlayer_TimeChanged(object sender, MediaPlayerTimeChangedEventArgs e)
+        {
+            //App.DebugLog("TimeChanged " + e.Time);
+            CurrentTime = TimeSpan.FromMilliseconds(e.Time);
+            ShowIsFavorite(currentTime);
         }
 
         private void MediaPlayer_EndReached(object sender, EventArgs e)
@@ -198,15 +210,14 @@ namespace VideoPlayerTrimmer.ViewModels
 
         private void MediaPlayer_Paused(object sender, EventArgs e)
         {
-            OnPlaybackStateChange(false);
+            App.DebugLog("");
         }
 
-        private void MediaPlayer_Playing1(object sender, EventArgs e)
+        private void MediaPlayer_Playing(object sender, EventArgs e)
         {
-            OnPlaybackStateChange(true);
+            App.DebugLog("");
         }
 
-        public DelegateCommand PlayPauseCommand { get; }
         public DelegateCommand ToggleFavoriteCommand { get; }
         public DelegateCommand ToggleControlsVisibilityCommand { get; }
         public DelegateCommand ToggleAudioTracksCommand { get; }
@@ -220,84 +231,18 @@ namespace VideoPlayerTrimmer.ViewModels
         private long userPosition = 0;
         private bool isPausedByUser = false;
 
-        private void TogglePlayPause()
-        {
-            App.DebugLog("");
-            if (MediaPlayer.IsPlaying)
-            {
-                Pause();
-                isPausedByUser = true;
-            }
-            else
-            {
-                Play();
-                isPausedByUser = false;
-            }
-        }
-
         public void StartPlayingOrResume()
-        {
-            App.DebugLog("");
-            IsVideoViewInitialized = true;
-            MediaPlayer.Playing += MediaPlayer_Playing;
-
-            MediaPlayer.Play();
-            //MediaPlayer.Time = lastPosition;
-        }
-
-        private async void MediaPlayer_Playing(object sender, EventArgs e)
         {
             App.DebugLog("");
             if (isPausedByUser)
             {
-                // If Pause() is called without delay, videoview is black
-                MediaPlayer.Mute = true;
-                await Task.Delay(100);
-                MediaPlayer.Pause();
-                MediaPlayer.Mute = false;
-            }
-            MediaPlayer.Playing -= MediaPlayer_Playing;
-            //AfterPlaybackStateChange();
-            TotalTime = TimeSpan.FromMilliseconds(MediaPlayer.Length);
-        }
 
-        private void MediaPlayer_TimeChanged(object sender, MediaPlayerTimeChangedEventArgs e)
-        {
-            CurrentTime = TimeSpan.FromMilliseconds(e.Time);
-            ShowIsFavorite(currentTime);
-        }
-
-        private void Play()
-        {
-            App.DebugLog("");
-            if (IsVideoViewInitialized)
-            {
-                App.DebugLog("VideViewInitialized");
-                MediaPlayer.Play();
-            }
-        }
-
-        private void Pause()
-        {
-            App.DebugLog("");
-            MediaPlayer.Pause();
-        }
-
-        private void Next() { }
-
-        private void Previous() { }
-
-        private void OnPlaybackStateChange(bool isPlaying)
-        {
-            App.DebugLog(isPlaying.ToString());
-            if (isPlaying)
-            {
-                PlayPauseIcon = "ep-controller-paus";
             }
             else
             {
-                PlayPauseIcon = "ep-controller-play";
+                MediaPlayer.Play();
             }
+            MediaPlayer.Time = lastPosition;
         }
 
         #region VolumeAndBrightness

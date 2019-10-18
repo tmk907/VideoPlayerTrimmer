@@ -1,5 +1,4 @@
 ﻿using Microsoft.AppCenter;
-using Microsoft.AppCenter.Analytics;
 using Microsoft.AppCenter.Crashes;
 using Prism;
 using Prism.DryIoc;
@@ -36,8 +35,6 @@ namespace VideoPlayerTrimmer
             Plugin.Iconize.Iconize.With(new Plugin.Iconize.Fonts.EntypoPlusModule());
             Setup();
             await NavigationService.NavigateAsync("NavigationPage/HomePage?selectedTab=folders");
-
-            var a = Container.Resolve<MediaPlayerService>();
         }
         
         protected override void RegisterTypes(IContainerRegistry containerRegistry)
