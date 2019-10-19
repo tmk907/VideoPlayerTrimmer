@@ -1578,7 +1578,7 @@ namespace VideoPlayerTrimmer.Controls
         {
             Device.BeginInvokeOnMainThread(async () =>
             {
-                await ControlsPanel.FadeTo(0, 1000, Easing.CubicOut);
+                await ControlsPanel.FadeTo(0, 1000);
                 if (ControlsPanel.Opacity == 0)
                 {
                     ControlsPanel.IsVisible = false;
@@ -1608,7 +1608,7 @@ namespace VideoPlayerTrimmer.Controls
                     if (ControlsPanel.Opacity == 1)
                     {
                         FadeOutTimer.Change(TimeSpan.FromMilliseconds(-1), TimeSpan.FromMilliseconds(-1));
-                        FadeOutTimer.Change(TimeSpan.FromSeconds(1), TimeSpan.FromMilliseconds(-1));
+                        FadeOut();
                     }
                     else if (ControlsPanel.Opacity == 0)
                     {
