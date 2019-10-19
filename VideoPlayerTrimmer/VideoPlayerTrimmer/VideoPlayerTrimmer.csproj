@@ -68,6 +68,12 @@
     <EmbeddedResource Update="Controls\SettingsEntry.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
+    <EmbeddedResource Update="Resources\Strings.resx">
+      <GenFilePath>%(RecursiveDir)%(Filename)$(ExtrasDefaultDesignerFileSuffix)$(DefaultLanguageSourceExtension)</GenFilePath>
+      <_SdkHasLangId>$([System.Text.RegularExpressions.Regex]::IsMatch('%(FileName)', '$(_SdkLangIdRegEx)'))</_SdkHasLangId>
+      <LastGenOutput>Strings.Designer.cs</LastGenOutput>
+      <Generator>ResXFileCodeGenerator</Generator>
+    </EmbeddedResource>
     <EmbeddedResource Update="Views\FavoriteScenesPage.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
@@ -92,6 +98,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="Resources\Strings.Designer.cs">
+      <DesignTimeSharedInput>true</DesignTimeSharedInput>
+      <DependentUpon>Strings.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
     <Compile Update="Views\FavoriteScenesPage.xaml.cs">
       <DependentUpon>FavoriteScenesPage.xaml</DependentUpon>
     </Compile>

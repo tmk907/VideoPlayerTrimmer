@@ -10,12 +10,19 @@ namespace VideoPlayerTrimmer.Services
         {
         }
 
-        public Lazy<LibVLC> LibVLC = new Lazy<LibVLC>(() => { Core.Initialize(); return new LibVLC(); });
+        private Lazy<LibVLC> libVLC = new Lazy<LibVLC>(() => { Core.Initialize(); return new LibVLC(); });
 
+        public LibVLC LibVLC
+        {
+            get
+            {
+                return libVLC.Value;
+            }
+        }
 
         public MediaPlayer GetMediaPlayer(string filePath)
         {
-            var media = new Media(LibVLC.Value, filePath);
+            var media = new Media(LibVLC, filePath);
             if (Settings.UseHardwareAcceleration)
             {
                 var configuration = new MediaConfiguration();
@@ -48,7 +55,7 @@ namespace VideoPlayerTrimmer.Services
 
         public MediaPlayer GetMediaPlayer(string filePath, List<string> options)
         {
-            var media = new Media(LibVLC.Value, filePath);
+            var media = new Media(LibVLC, filePath);
             if (Settings.UseHardwareAcceleration)
             {
                 var configuration = new MediaConfiguration();

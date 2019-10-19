@@ -10,6 +10,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using VideoPlayerTrimmer.Controls;
 using VideoPlayerTrimmer.Framework;
 using VideoPlayerTrimmer.MediaHelpers;
 using VideoPlayerTrimmer.Models;
@@ -61,13 +62,19 @@ namespace VideoPlayerTrimmer.ViewModels
             private set => SetProperty(ref mediaPlayer, value);
         }
 
+        private LibVLC libVLC;
         public LibVLC LibVLC
         {
-            get => playerService.LibVLC.Value;
+            get => libVLC;
+            private set => SetProperty(ref libVLC, value);
         }
 
-
-        public bool IsVideoViewInitialized { get; set; } = false;
+        private IPlaybackControls playbackControls;
+        public IPlaybackControls PlaybackControls
+        {
+            get => playbackControls;
+            private set => SetProperty(ref playbackControls, value);
+        }
 
         public void Initialize(INavigationParameters parameters)
         {
@@ -138,6 +145,8 @@ namespace VideoPlayerTrimmer.ViewModels
         {
             App.DebugLog("");
             MediaPlayer = playerService.GetMediaPlayer(filePath);
+            LibVLC = playerService.LibVLC;
+            PlaybackControls = new MyPlaybackControls();
 
             MediaPlayer.TimeChanged += MediaPlayer_TimeChanged;
             MediaPlayer.LengthChanged += MediaPlayer_LengthChanged;
@@ -147,7 +156,6 @@ namespace VideoPlayerTrimmer.ViewModels
             MediaPlayer.EncounteredError += MediaPlayer_EncounteredError;
             MediaPlayer.SnapshotTaken += MediaPlayer_SnapshotTaken;
             
-            IsVideoViewInitialized = true;
         }
 
         private void MediaPlayer_PositionChanged(object sender, MediaPlayerPositionChangedEventArgs e)
@@ -158,7 +166,6 @@ namespace VideoPlayerTrimmer.ViewModels
         private void UnInitMediaPlayer()
         {
             App.DebugLog("");
-            IsVideoViewInitialized = false;
 
             MediaPlayer.Pause();
             lastPosition = MediaPlayer.Time;

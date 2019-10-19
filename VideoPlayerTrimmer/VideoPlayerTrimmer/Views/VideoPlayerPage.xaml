@@ -37,7 +37,8 @@
             <vlc:MediaPlayerElement
                 Grid.Row="0" Grid.Column="0"
                 MediaPlayer="{Binding MediaPlayer}"
-                LibVLC="{Binding LibVLC}"/>
+                LibVLC="{Binding LibVLC}"
+                PlaybackControls="{Binding PlaybackControls}"/>
             <!--<Grid BackgroundColor="Transparent">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition/>
