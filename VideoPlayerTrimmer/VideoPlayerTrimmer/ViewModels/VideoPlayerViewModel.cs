@@ -102,7 +102,7 @@ namespace VideoPlayerTrimmer.ViewModels
                 favoriteScenes = new FavoritesCollection(favoriteSceneDuration, favScenes);
             }
 
-            //statusBarService.IsVisible = false;
+            statusBarService.IsVisible = false;
             orientationService.ChangeToLandscape();
             ApplyBrightness();
             
@@ -120,7 +120,7 @@ namespace VideoPlayerTrimmer.ViewModels
             App.DebugLog(firstTimeDisappeared.ToString());
             UnInitMediaPlayer();
 
-            //statusBarService.IsVisible = true;
+            statusBarService.IsVisible = true;
             brightnessController.RestoreBrightness();
             orientationService.RestoreOrientation();
 

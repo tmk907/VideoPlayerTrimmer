@@ -15,7 +15,6 @@
   <ItemGroup>
     <PackageReference Include="AsyncAwaitBestPractices" Version="3.1.0" />
     <PackageReference Include="dotMorten.Xamarin.Forms.AutoSuggestBox" Version="0.7.0" />
-    <PackageReference Include="LibVLCSharp.Forms" Version="3.2.4" />
     <PackageReference Include="LiveSharp" Version="1.1.6" />
     <PackageReference Include="Microsoft.AppCenter.Analytics" Version="2.1.1" />
     <PackageReference Include="Microsoft.AppCenter.Crashes" Version="2.1.1" />
@@ -101,5 +100,9 @@
   <ItemGroup>
     <Folder Include="Effects\" />
     <Folder Include="Vlc\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\LibVLCSharp\LibVLCSharp.Forms\LibVLCSharp.Forms.csproj" />
   </ItemGroup>
 </Project>

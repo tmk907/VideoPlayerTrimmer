@@ -18,6 +18,7 @@ using Prism;
 using Prism.Ioc;
 using LibVLCSharp.Forms.Shared;
 using VideoPlayerTrimmer.Droid.BroadcastReceivers;
+using LibVLCSharp.Forms.Platforms.Android;
 
 namespace VideoPlayerTrimmer.Droid
 {
@@ -34,7 +35,7 @@ namespace VideoPlayerTrimmer.Droid
 
             base.OnCreate(savedInstanceState);
 
-            LibVLCSharpFormsRenderer.Init();
+            Platform.Init(this);
             InitRenderersAndServices(savedInstanceState);
             //volumeReceiver = new VolumeChangeBroadcastReceiver();
             
