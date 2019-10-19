@@ -50,7 +50,8 @@ namespace LibVLCSharp.Forms.Shared
         }
 
         public static readonly BindableProperty PlaybackControlsProperty = BindableProperty.Create(nameof(PlaybackControls),
-            typeof(IPlaybackControls), typeof(MediaPlayerElement), propertyChanged: PlaybackControlsPropertyChanged);
+            typeof(IPlaybackControls), typeof(MediaPlayerElement),
+            propertyChanged: PlaybackControlsPropertyChanged, defaultValue: new PlaybackControls());
         /// <summary>
         /// Gets or sets the playback controls for the media.
         /// </summary>
@@ -154,10 +155,6 @@ namespace LibVLCSharp.Forms.Shared
                 {
                     VideoView = new VideoView();
                 }
-                if (PlaybackControls == null)
-                {
-                    PlaybackControls = new PlaybackControls();
-                }
 
                 var application = Application.Current;
                 application.PageAppearing += PageAppearing;
@@ -171,30 +168,30 @@ namespace LibVLCSharp.Forms.Shared
             {
                 MessagingCenter.Subscribe<LifecycleMessage>(this, "OnSleep", m =>
                 {
-                    var applicationProperties = Application.Current.Properties;
-                    var mediaPlayer = MediaPlayer;
-                    if (mediaPlayer != null)
-                    {
-                        applicationProperties[$"VLC_{mediaPlayer.NativeReference}_MediaPlayerElement_Position"] = mediaPlayer.Position;
-                        applicationProperties[$"VLC_{mediaPlayer.NativeReference}_MediaPlayerElement_IsPlaying"] = mediaPlayer.State == VLCState.Playing;
-                        mediaPlayer.Stop();
-                    }                 
+                    //var applicationProperties = Application.Current.Properties;
+                    //var mediaPlayer = MediaPlayer;
+                    //if (mediaPlayer != null)
+                    //{
+                    //    applicationProperties[$"VLC_{mediaPlayer.NativeReference}_MediaPlayerElement_Position"] = mediaPlayer.Position;
+                    //    applicationProperties[$"VLC_{mediaPlayer.NativeReference}_MediaPlayerElement_IsPlaying"] = mediaPlayer.State == VLCState.Playing;
+                    //    mediaPlayer.Stop();
+                    //}                 
                     VideoView = null;
                 });
                 MessagingCenter.Subscribe<LifecycleMessage>(this, "OnResume", m =>
                 {
                     VideoView = new VideoView();
-                    var mediaPlayer = MediaPlayer;
-                    if (mediaPlayer != null)
-                    {
-                        var applicationProperties = Application.Current.Properties;
-                        if (applicationProperties.TryGetValue($"VLC_{mediaPlayer.NativeReference}_MediaPlayerElement_IsPlaying", out var play) && play is true)
-                        {
-                            mediaPlayer.Play();
-                            mediaPlayer.Position = applicationProperties.TryGetValue($"VLC_{mediaPlayer.NativeReference}_MediaPlayerElement_Position", out var position) 
-                                && position is float p ? p : 0;
-                        }
-                    }
+                    //var mediaPlayer = MediaPlayer;
+                    //if (mediaPlayer != null)
+                    //{
+                    //    var applicationProperties = Application.Current.Properties;
+                    //    if (applicationProperties.TryGetValue($"VLC_{mediaPlayer.NativeReference}_MediaPlayerElement_IsPlaying", out var play) && play is true)
+                    //    {
+                    //        mediaPlayer.Play();
+                    //        mediaPlayer.Position = applicationProperties.TryGetValue($"VLC_{mediaPlayer.NativeReference}_MediaPlayerElement_Position", out var position) 
+                    //            && position is float p ? p : 0;
+                    //    }
+                    //}
                 });
             }
         }
@@ -208,9 +205,9 @@ namespace LibVLCSharp.Forms.Shared
             }
         }
 
-        private async void GestureRecognized(object sender, EventArgs e)
+        private void GestureRecognized(object sender, EventArgs e)
         {
-            await PlaybackControls.FadeInAsync();
+            PlaybackControls?.GestureRecognized(sender, e);
         }
     }
 }

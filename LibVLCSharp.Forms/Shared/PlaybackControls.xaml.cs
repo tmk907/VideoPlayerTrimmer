@@ -1586,15 +1586,10 @@ namespace LibVLCSharp.Forms.Shared
                 FadeOutTimer.Change(TimeSpan.FromSeconds(3), TimeSpan.FromMilliseconds(-1));
             }
         }
-    }
 
-    internal enum AspectRatio
-    {
-        BestFit,
-        FitScreen,
-        Fill,
-        _16_9,
-        _4_3,
-        Original
+        public async void GestureRecognized(object sender, EventArgs e)
+        {
+            await FadeInAsync();
+        }
     }
 }
