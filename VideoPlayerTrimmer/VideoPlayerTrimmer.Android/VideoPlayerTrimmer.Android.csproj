@@ -151,8 +151,8 @@
       <Project>{bb40b076-48f2-4848-aae3-67cb0b9d1ace}</Project>
       <Name>FFBinding2</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\LibVLCSharp\LibVLCSharp.Forms\LibVLCSharp.Forms.csproj">
-      <Project>{105d4104-9fb5-4e1b-95e0-b0a76de97ddb}</Project>
+    <ProjectReference Include="..\..\LibVLCSharp.Forms\LibVLCSharp.Forms.csproj">
+      <Project>{56e8f9f1-7f0a-49a7-9b39-63bb5caa6fb6}</Project>
       <Name>LibVLCSharp.Forms</Name>
     </ProjectReference>
     <ProjectReference Include="..\VideoPlayerTrimmer\VideoPlayerTrimmer.csproj">

@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VideoPlayerTrimmer", "Video
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FFBinding2", "FFBinding2\FFBinding2.csproj", "{BB40B076-48F2-4848-AAE3-67CB0B9D1ACE}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LibVLCSharp.Forms", "libvlcsharp\LibVLCSharp.Forms\LibVLCSharp.Forms.csproj", "{105D4104-9FB5-4E1B-95E0-B0A76DE97DDB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LibVLCSharp.Forms", "LibVLCSharp.Forms\LibVLCSharp.Forms.csproj", "{56E8F9F1-7F0A-49A7-9B39-63BB5CAA6FB6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,10 +33,10 @@ Global
 		{BB40B076-48F2-4848-AAE3-67CB0B9D1ACE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BB40B076-48F2-4848-AAE3-67CB0B9D1ACE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BB40B076-48F2-4848-AAE3-67CB0B9D1ACE}.Release|Any CPU.Build.0 = Release|Any CPU
-		{105D4104-9FB5-4E1B-95E0-B0A76DE97DDB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{105D4104-9FB5-4E1B-95E0-B0A76DE97DDB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{105D4104-9FB5-4E1B-95E0-B0A76DE97DDB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{105D4104-9FB5-4E1B-95E0-B0A76DE97DDB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{56E8F9F1-7F0A-49A7-9B39-63BB5CAA6FB6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{56E8F9F1-7F0A-49A7-9B39-63BB5CAA6FB6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{56E8F9F1-7F0A-49A7-9B39-63BB5CAA6FB6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{56E8F9F1-7F0A-49A7-9B39-63BB5CAA6FB6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
