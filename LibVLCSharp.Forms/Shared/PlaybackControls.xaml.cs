@@ -100,6 +100,8 @@ namespace LibVLCSharp.Forms.Shared
             { AspectRatio._4_3, "4:3" }
         };
 
+        #region BindableProperties
+
         /// <summary>
         /// Identifies the <see cref="ButtonColor"/> dependency property.
         /// </summary>
@@ -414,11 +416,11 @@ namespace LibVLCSharp.Forms.Shared
         /// Identifies the <see cref="MediaPlayer"/> dependency property.
         /// </summary>
         public static readonly BindableProperty MediaPlayerProperty = BindableProperty.Create(nameof(MediaPlayer),
-            typeof(LibVLCSharp.Shared.MediaPlayer), typeof(PlaybackControls), propertyChanged: MediaPlayerPropertyChanged);
+            typeof(MediaPlayer), typeof(PlaybackControls), propertyChanged: MediaPlayerPropertyChanged);
         /// <summary>
         /// Gets or sets the <see cref="LibVLCSharp.Shared.MediaPlayer"/> instance.
         /// </summary>
-        public LibVLCSharp.Shared.MediaPlayer MediaPlayer
+        public MediaPlayer MediaPlayer
         {
             get => (LibVLCSharp.Shared.MediaPlayer)GetValue(MediaPlayerProperty);
             set => SetValue(MediaPlayerProperty, value);
@@ -666,6 +668,8 @@ namespace LibVLCSharp.Forms.Shared
             set => SetValue(IsSeekButtonVisibleProperty, value);
         }
 
+        #endregion
+
         /// <summary>
         /// Called when the <see cref="Element.Parent"/> property has changed.
         /// </summary>
@@ -702,6 +706,8 @@ namespace LibVLCSharp.Forms.Shared
                 SeekBar.ValueChanged += SeekBar_ValueChanged;
             }
         }
+
+        #region PropertyChangedEvents
 
         private static void IsAudioTracksSelectionButtonVisiblePropertyChanged(BindableObject bindable, object oldValue, object newValue)
         {
@@ -741,25 +747,14 @@ namespace LibVLCSharp.Forms.Shared
             ((PlaybackControls)bindable).UpdateRendererDiscovery((bool)newValue);
         }
 
-        private void UpdateRendererDiscovery(bool enableRendererDiscovery)
-        {
-            IsCastButtonVisible = enableRendererDiscovery;
-            UpdateCastAvailability();
-            ResetRendererDiscovery();
-        }
-
-        private void ResetRendererDiscovery()
-        {
-            ClearRenderers();
-
-            if(EnableRendererDiscovery)
-                FindRenderers();
-        }
-
         private static void MediaPlayerPropertyChanged(BindableObject bindable, object oldValue, object newValue)
         {
             ((PlaybackControls)bindable).OnMediaPlayerChanged((LibVLCSharp.Shared.MediaPlayer)oldValue, (LibVLCSharp.Shared.MediaPlayer)newValue);
         }
+
+        #endregion
+
+        #region MediaPlayerEvents
 
         private void MediaPlayer_Buffering(object sender, MediaPlayerBufferingEventArgs e)
         {
@@ -829,6 +824,23 @@ namespace LibVLCSharp.Forms.Shared
         {
             UpdateAudioTracksSelectionAvailability();
             UpdateClosedCaptionsTracksSelectionAvailability();
+        }
+
+        #endregion
+
+        private void UpdateRendererDiscovery(bool enableRendererDiscovery)
+        {
+            IsCastButtonVisible = enableRendererDiscovery;
+            UpdateCastAvailability();
+            ResetRendererDiscovery();
+        }
+
+        private void ResetRendererDiscovery()
+        {
+            ClearRenderers();
+
+            if (EnableRendererDiscovery)
+                FindRenderers();
         }
 
         private async void AudioTracksSelectionButton_Clicked(object sender, EventArgs e)
@@ -1156,8 +1168,8 @@ namespace LibVLCSharp.Forms.Shared
             return GetTrackName(trackName, mediaTrack.Id, currentTrackId);
         }
 
-        private async Task SelectTrackAsync(TrackType trackType, string popupTitle, Func<LibVLCSharp.Shared.MediaPlayer, int> getCurrentTrackId,
-            Action<LibVLCSharp.Shared.MediaPlayer, int> setCurrentTrackId, bool addDeactivateRow = false)
+        private async Task SelectTrackAsync(TrackType trackType, string popupTitle, Func<MediaPlayer, int> getCurrentTrackId,
+            Action<MediaPlayer, int> setCurrentTrackId, bool addDeactivateRow = false)
         {
             var mediaPlayer = MediaPlayer;
             var mediaTracks = GetMediaTracks(mediaPlayer, trackType);
@@ -1216,8 +1228,8 @@ namespace LibVLCSharp.Forms.Shared
             }
         }
 
-        private void UpdateTracksSelectionAvailability(LibVLCSharp.Shared.MediaPlayer mediaPlayer, Button tracksSelectionButton,
-            bool isTracksSelectionButtonVisible, Func<LibVLCSharp.Shared.MediaPlayer, IEnumerable<TrackDescription>> getTrackDescriptions,
+        private void UpdateTracksSelectionAvailability(MediaPlayer mediaPlayer, Button tracksSelectionButton,
+            bool isTracksSelectionButtonVisible, Func<MediaPlayer, IEnumerable<TrackDescription>> getTrackDescriptions,
             string availableState, string unavailableState, int count)
         {
             if (tracksSelectionButton != null)
