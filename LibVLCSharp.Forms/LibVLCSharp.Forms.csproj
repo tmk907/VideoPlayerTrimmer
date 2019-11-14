@@ -33,7 +33,7 @@ Xamarin.Forms support for GTK and WPF are in separate packages. LibVLC needs to 
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="LibVLCSharp" Version="3.2.4" />
-    <PackageReference Include="Xamarin.Forms" Version="3.2.0.871581" />
+    <PackageReference Include="Xamarin.Forms" Version="4.4.0.936621-pre1" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="Platforms\**\*.cs" />

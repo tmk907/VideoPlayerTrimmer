@@ -1,0 +1,187 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentView xmlns="http://xamarin.com/schemas/2014/forms" 
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="clr-namespace:VideoPlayerTrimmer.PlayerControls"
+             mc:Ignorable="d"
+             x:Class="VideoPlayerTrimmer.PlayerControls.PlaybackControls"
+             x:Name="this">
+    <ContentView.Resources>
+        <local:TimeSpanToVideoDurationConverter x:Key="TimeSpanConverter"/>
+
+        <x:Int32 x:Key="SliderTimeRow">0</x:Int32>
+        <x:Int32 x:Key="SliderRow">1</x:Int32>
+        <x:Int32 x:Key="ButtonsRow">2</x:Int32>
+
+        <x:String x:Key="Entypo">iconize-entypoplus.ttf#entypo-plus</x:String>
+        <x:String x:Key="ep-note">&#xe82b;</x:String>
+        <x:String x:Key="ep-message">&#xe8fa;</x:String>
+        <x:String x:Key="ep-info">&#xe8cc;</x:String>
+        <x:String x:Key="ep-check">&#xe840;</x:String>
+
+
+        <x:String x:Key="FontAwesomeSolid">FontAwesome5Solid.otf#Regular</x:String>
+        <x:String x:Key="FontAwesomeRegular">FontAwesome5Regular.otf#Regular</x:String>
+        <x:String x:Key="FontAwesomeBrands">FontAwesome5Brands.otf#Regular</x:String>
+        
+        <x:String x:Key="fab-chromecast">&#xf838;</x:String>
+        <x:String x:Key="fas-file-audio">&#xf1c7;</x:String>
+        <x:String x:Key="far-closed-captioning">&#xf20a;</x:String>
+        <x:String x:Key="fas-info-circle">&#xf05a;</x:String>
+        <x:String x:Key="fas-step-backward">&#xf048;</x:String>
+        <x:String x:Key="fas-step-forward">&#xf051;</x:String>
+        <x:String x:Key="fas-expand-arrows-alt">&#xf31e;</x:String>
+
+        <Color x:Key="AccentColor">#0d48a1</Color>
+        <Color x:Key="DarkColor">#777777</Color>
+        <Color x:Key="LightColor">#E3F2FD</Color>
+        <Color x:Key="TextForeground">#E3F2FD</Color>
+
+        <!--<Style TargetType="StackLayout">
+            <Setter Property="BackgroundColor" Value="LightGreen"/>
+        </Style>-->
+
+        <Style x:Key="TimeLabelStyle" TargetType="Label">
+            <Setter Property="HorizontalOptions" Value="StartAndExpand" />
+            <Setter Property="Margin" Value="16,8,16,8" />
+            <Setter Property="FontSize" Value="Medium" />
+            <Setter Property="VerticalOptions" Value="Center" />
+            <Setter Property="TextColor" Value="{StaticResource TextForeground}"/>
+        </Style>
+
+        <Style x:Key="SeekBarStyle" TargetType="Slider">
+            <Setter Property="HorizontalOptions" Value="FillAndExpand" />
+            <Setter Property="MinimumTrackColor" Value="{StaticResource LightColor}" />
+            <Setter Property="MaximumTrackColor" Value="{StaticResource LightColor}" />
+            <Setter Property="ThumbColor" Value="{StaticResource LightColor}" />
+            <Setter Property="VerticalOptions" Value="Center" />
+            <Setter Property="VisualStateManager.VisualStateGroups">
+                <VisualStateGroupList>
+                    <VisualStateGroup x:Name="SeekAvailabilityStates">
+                        <VisualState x:Name="SeekAvailable">
+                            <VisualState.Setters>
+                                <Setter Property="IsEnabled" Value="True" />
+                            </VisualState.Setters>
+                        </VisualState>
+                        <VisualState x:Name="SeekUnavailable" />
+                    </VisualStateGroup>
+                </VisualStateGroupList>
+            </Setter>
+        </Style>
+
+        <Style x:Key="ButtonStyle" TargetType="Button">
+            <Setter Property="BackgroundColor" Value="Transparent" />
+            <Setter Property="FontFamily" Value="{StaticResource FontAwesomeSolid}" />
+            <Setter Property="FontSize" Value="30" />
+            <Setter Property="HeightRequest" Value="40" />
+            <Setter Property="HorizontalOptions" Value="Center" />
+            <Setter Property="Margin" Value="0" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="TextColor" Value="{StaticResource TextForeground}" />
+            <Setter Property="VerticalOptions" Value="Center" />
+            <Setter Property="WidthRequest" Value="40" />
+            <Style.Triggers>
+                <Trigger TargetType="Button" Property="IsEnabled" Value="False">
+                    <Setter Property="TextColor" Value="DarkGray"/>
+                </Trigger>
+                <EventTrigger Event="Clicked">
+                    <local:ClickEffect />
+                </EventTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="PlayPauseButtonStyle" BasedOn="{StaticResource ButtonStyle}" TargetType="Button">
+            <Setter Property="CornerRadius" Value="27" />
+            <Setter Property="FontSize" Value="34" />
+            <Setter Property="HeightRequest" Value="54" />
+            <Setter Property="WidthRequest" Value="54" />
+        </Style>
+        
+    </ContentView.Resources>
+    <ContentView.Content>
+        <Grid RowSpacing="0">
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <Grid Grid.Row="0" BackgroundColor="Transparent">
+                <Grid.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="TapGestureRecognizer_Tapped"/>
+                </Grid.GestureRecognizers>
+            </Grid>
+            <Grid Grid.Row="1" RowSpacing="0" ColumnSpacing="0"
+                  IsVisible="{Binding Source={x:Reference this}, Path=IsControlVisible}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <StackLayout Grid.Row="{StaticResource SliderTimeRow}" Orientation="Horizontal" BackgroundColor="#99000000">
+                    <StackLayout Orientation="Horizontal" HorizontalOptions="Start">
+                        <Label Text="{Binding Source={x:Reference this}, Path=ElapsedTime, Converter={StaticResource TimeSpanConverter}}" Style="{StaticResource TimeLabelStyle}"/>
+                    </StackLayout>
+                    <StackLayout Orientation="Horizontal" HorizontalOptions="EndAndExpand">
+                        <Label Text="{Binding Source={x:Reference this}, Path=TotalTime, Converter={StaticResource TimeSpanConverter}}" Style="{StaticResource TimeLabelStyle}"/>
+                    </StackLayout>
+                </StackLayout>
+                <StackLayout Grid.Row="{StaticResource SliderRow}" Orientation="Horizontal" Spacing="0" BackgroundColor="#99000000">
+                    <Slider 
+                    Value="{Binding Source={x:Reference this}, Path=SliderValue}"
+                    IsEnabled="True"
+                    DragStarted="Slider_DragStarted"
+                    DragCompleted="Slider_DragCompleted"
+                    ValueChanged="Slider_ValueChanged"
+                    Minimum="0" Maximum="{Binding Source={x:Reference this}, Path=SliderMaxValue}"
+                    Style="{StaticResource SeekBarStyle}" />
+                </StackLayout>
+                <StackLayout Grid.Row="{StaticResource ButtonsRow}" Orientation="Horizontal" BackgroundColor="#99000000"
+                HeightRequest="86" Spacing="0">
+                    <StackLayout Orientation="Horizontal" HorizontalOptions="Start" VerticalOptions="Center" Spacing="0">
+                        <Button 
+                        Text="{StaticResource fas-file-audio}" FontFamily="{StaticResource FontAwesomeSolid}"
+                        Command="{Binding Source={x:Reference this}, Path=AudioTracksClickedCommand}"
+                        Style="{StaticResource ButtonStyle}"/>
+                        <Button 
+                        Text="{StaticResource far-closed-captioning}" FontFamily="{StaticResource FontAwesomeSolid}"
+                        Command="{Binding Source={x:Reference this}, Path=SubtitlesClickedCommand}"
+                        Style="{StaticResource ButtonStyle}" />
+                        <Button 
+                        Text="{StaticResource fas-info-circle}" FontFamily="{StaticResource FontAwesomeSolid}"
+                        Command="{Binding Source={x:Reference this}, Path=VideoDetailsClickedCommand}"
+                        Style="{StaticResource ButtonStyle}" />
+                    </StackLayout>
+                    <StackLayout Orientation="Horizontal" HorizontalOptions="CenterAndExpand" VerticalOptions="Center" Spacing="0">
+                        <Button
+                        Command="{Binding Source={x:Reference this}, Path=PreviousClickedCommand}"
+                        Text="{StaticResource fas-step-backward}" FontFamily="{StaticResource FontAwesomeSolid}"
+                        Style="{StaticResource ButtonStyle}" />
+                        <Button
+                        Command="{Binding Source={x:Reference this}, Path=PlayPauseClickedCommand}"
+                        Text="{Binding Source={x:Reference this}, Path=PlayIcon}" FontFamily="{StaticResource FontAwesomeSolid}"
+                        Style="{StaticResource PlayPauseButtonStyle}" />
+                        <Button
+                        Command="{Binding Source={x:Reference this}, Path=NextClickedCommand}"
+                        Text="{StaticResource fas-step-forward}" FontFamily="{StaticResource FontAwesomeSolid}"
+                        Style="{StaticResource ButtonStyle}" />
+                    </StackLayout>
+                    <StackLayout Orientation="Horizontal" HorizontalOptions="End" VerticalOptions="Center" Spacing="0">
+                        <Button
+                        Command="{Binding Source={x:Reference this}, Path=FavoriteClickedCommand}"
+                        Text="{Binding Source={x:Reference this}, Path=FavoriteIcon}" FontFamily="{Binding Source={x:Reference this}, Path=FavoriteIconFontFamily}"
+                        Style="{StaticResource ButtonStyle}"/>
+                        <!--<Button 
+                        Command="{Binding Source={x:Reference this}, Path=CastClickedCommand}"
+                        Text="{StaticResource fab-chromecast}" FontFamily="{StaticResource FontAwesomeBrands}"
+                        IsVisible="{Binding Source={x:Reference this}, Path=IsCastButtonVisible}"
+                        Style="{StaticResource ButtonStyle}" />-->
+                        <Button 
+                        Command="{Binding Source={x:Reference this}, Path=AspectRatioClickedCommand}"
+                        Text="{StaticResource fas-expand-arrows-alt}" FontFamily="{StaticResource FontAwesomeSolid}"
+                        Style="{StaticResource ButtonStyle}" />
+                    </StackLayout>
+                </StackLayout>
+            </Grid>
+        </Grid>
+    </ContentView.Content>
+</ContentView>

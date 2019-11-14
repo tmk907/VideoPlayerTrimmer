@@ -1,5 +1,6 @@
 ﻿using LibVLCSharp.Forms.Shared;
 using LibVLCSharp.Shared;
+using Plugin.Iconize;
 using Prism.Commands;
 using Prism.Navigation;
 using System;
@@ -14,6 +15,7 @@ using VideoPlayerTrimmer.Controls;
 using VideoPlayerTrimmer.Framework;
 using VideoPlayerTrimmer.MediaHelpers;
 using VideoPlayerTrimmer.Models;
+using VideoPlayerTrimmer.PlayerControls;
 using VideoPlayerTrimmer.Services;
 using Xamarin.Forms;
 
@@ -21,7 +23,7 @@ namespace VideoPlayerTrimmer.ViewModels
 {
     public class VideoPlayerViewModel : BaseViewModel   , IInitialize
     {
-        private readonly MediaPlayerService playerService;
+        private readonly MediaPlayerBuilder playerService;
         private readonly IVideoLibrary videoLibrary;
         private readonly IVolumeService volumeController;
         private readonly IBrightnessService brightnessController;
@@ -30,7 +32,7 @@ namespace VideoPlayerTrimmer.ViewModels
         private string filePath;
         private VideoItem videoItem;
 
-        public VideoPlayerViewModel(MediaPlayerService playerService, 
+        public VideoPlayerViewModel(MediaPlayerBuilder playerService, 
             IVideoLibrary videoLibrary, IVolumeService volumeController, IBrightnessService brightnessController,
             IOrientationService orientationService, IStatusBarService statusBarService)
         {
@@ -53,28 +55,17 @@ namespace VideoPlayerTrimmer.ViewModels
             volumeController.VolumeChanged += VolumeController_VolumeChanged;
             Brightness = Settings.VideoBrightness;
             favoriteScenes = new FavoritesCollection(favoriteSceneDuration);
-        }       
 
-        private MediaPlayer mediaPlayer;
-        public MediaPlayer MediaPlayer
-        {
-            get => mediaPlayer;
-            private set => SetProperty(ref mediaPlayer, value);
+            VlcPlayerHelper = new VlcPlayerHelper(playerService);
         }
 
-        private LibVLC libVLC;
-        public LibVLC LibVLC
+        private VlcPlayerHelper vlcPlayerHelper;
+        public VlcPlayerHelper VlcPlayerHelper
         {
-            get => libVLC;
-            private set => SetProperty(ref libVLC, value);
+            get { return vlcPlayerHelper; }
+            set { vlcPlayerHelper = value; }
         }
 
-        private IPlaybackControls playbackControls;
-        public IPlaybackControls PlaybackControls
-        {
-            get => playbackControls;
-            private set => SetProperty(ref playbackControls, value);
-        }
 
         public void Initialize(INavigationParameters parameters)
         {
@@ -144,85 +135,33 @@ namespace VideoPlayerTrimmer.ViewModels
         private void InitMediaPlayer()
         {
             App.DebugLog("");
-            MediaPlayer = playerService.GetMediaPlayer(filePath);
-            LibVLC = playerService.LibVLC;
-            PlaybackControls = new MyPlaybackControls();
-
-            MediaPlayer.TimeChanged += MediaPlayer_TimeChanged;
-            MediaPlayer.LengthChanged += MediaPlayer_LengthChanged;
-            MediaPlayer.Playing += MediaPlayer_Playing;
-            MediaPlayer.Paused += MediaPlayer_Paused;
-            MediaPlayer.EndReached += MediaPlayer_EndReached;
-            MediaPlayer.EncounteredError += MediaPlayer_EncounteredError;
-            MediaPlayer.SnapshotTaken += MediaPlayer_SnapshotTaken;
+            VlcPlayerHelper.LoadFile(filePath);
             
-        }
-
-        private void MediaPlayer_PositionChanged(object sender, MediaPlayerPositionChangedEventArgs e)
-        {
-            App.DebugLog("PositionChanged: " + e.Position);
+            VlcPlayerHelper.MediaPlayer.SnapshotTaken += MediaPlayer_SnapshotTaken;
         }
 
         private void UnInitMediaPlayer()
         {
             App.DebugLog("");
 
-            MediaPlayer.Pause();
-            lastPosition = MediaPlayer.Time;
-            MediaPlayer.Stop();
+            VlcPlayerHelper.MediaPlayer.Pause();
+            lastPosition = VlcPlayerHelper.MediaPlayer.Time;
+            VlcPlayerHelper.MediaPlayer.Stop();
 
-            MediaPlayer.TimeChanged -= MediaPlayer_TimeChanged;
-            MediaPlayer.LengthChanged -= MediaPlayer_LengthChanged;
-            MediaPlayer.Playing -= MediaPlayer_Playing;
-            MediaPlayer.Paused -= MediaPlayer_Paused;
-            MediaPlayer.EndReached -= MediaPlayer_EndReached;
-            MediaPlayer.EncounteredError -= MediaPlayer_EncounteredError;
-            MediaPlayer.SnapshotTaken -= MediaPlayer_SnapshotTaken;
+            VlcPlayerHelper.MediaPlayer.SnapshotTaken -= MediaPlayer_SnapshotTaken;
+            VlcPlayerHelper.OnDisappearing();
         }
 
-        private void MediaPlayer_LengthChanged(object sender, MediaPlayerLengthChangedEventArgs e)
-        {
-            var state = MediaPlayer?.State;
-            var length = MediaPlayer == null ||
-                state == VLCState.Ended || state == VLCState.Error || state == VLCState.NothingSpecial ||
-                state == VLCState.Stopped ? 0 : mediaPlayer.Length;
-            App.DebugLog(TimeSpan.FromMilliseconds(length).ToString());
-            Device.BeginInvokeOnMainThread(() =>
-            {
-                TotalTime = TimeSpan.FromMilliseconds(length);
-            });
-        }
-
-        private void MediaPlayer_TimeChanged(object sender, MediaPlayerTimeChangedEventArgs e)
-        {
-            //App.DebugLog("TimeChanged " + e.Time);
-            CurrentTime = TimeSpan.FromMilliseconds(e.Time);
-            ShowIsFavorite(currentTime);
-        }
-
-        private void MediaPlayer_EndReached(object sender, EventArgs e)
-        {
-            App.DebugLog("");
-        }
-
-        private void MediaPlayer_EncounteredError(object sender, EventArgs e)
-        {
-            App.DebugLog("");
-        }
-
+        
         private void MediaPlayer_SnapshotTaken(object sender, MediaPlayerSnapshotTakenEventArgs e)
         {
             App.DebugLog(e.Filename);
         }
 
-        private void MediaPlayer_Paused(object sender, EventArgs e)
-        {
-            App.DebugLog("");
-        }
 
-        private void MediaPlayer_Playing(object sender, EventArgs e)
+        private void PlaybackControls_OnSubtitlesButtonClicked(object sender, EventArgs e)
         {
-            App.DebugLog("");
+            ToggleSubtitles();
         }
 
         public DelegateCommand ToggleFavoriteCommand { get; }
@@ -247,19 +186,12 @@ namespace VideoPlayerTrimmer.ViewModels
             }
             else
             {
-                MediaPlayer.Play();
+                VlcPlayerHelper.MediaPlayer.Play();
             }
-            MediaPlayer.Time = lastPosition;
+            VlcPlayerHelper.MediaPlayer.Time = lastPosition;
         }
 
         #region VolumeAndBrightness
-
-        private string playPauseIcon = "ep-controller-play";
-        public string PlayPauseIcon
-        {
-            get { return playPauseIcon; }
-            set { SetProperty(ref playPauseIcon, value); }
-        }
 
         private int volume = 0;
         public int Volume
@@ -388,13 +320,14 @@ namespace VideoPlayerTrimmer.ViewModels
 
         private void ShowIsFavorite(TimeSpan position)
         {
-            if (favoriteScenes.IsFavorite(position))
+            bool isCurrentSceneFavorite = favoriteScenes.IsFavorite(position);
+
+            if (isCurrentSceneFavorite != isFavorite)
             {
-                IsFavorite = true;
-            }
-            else
-            {
-                IsFavorite = false;
+                Device.BeginInvokeOnMainThread(() =>
+                {
+                    IsFavorite = isCurrentSceneFavorite;
+                });
             }
         }
 
@@ -415,27 +348,9 @@ namespace VideoPlayerTrimmer.ViewModels
                     ThumbnailPath = "",
                     SnapshotPath = path
                 });
-                MediaPlayer.TakeSnapshot(0, path, 0, 0);
+                VlcPlayerHelper.MediaPlayer.TakeSnapshot(0, path, 0, 0);
             }
             IsFavorite = !IsFavorite;
-        }
-
-        public void SeekTo(object value)
-        {
-            if (value == null) return;
-            double seconds = Convert.ToDouble(value);
-            if (MediaPlayer.IsSeekable)
-            {
-                long newTime = (long)(seconds * 1000);
-                if (newTime > MediaPlayer.Length)
-                {
-                    MediaPlayer.Time = newTime - 100;
-                }
-                else
-                {
-                    MediaPlayer.Time = newTime;
-                }
-            }
         }
 
         #region Audio,subtitles,info
@@ -460,7 +375,7 @@ namespace VideoPlayerTrimmer.ViewModels
                 audio.IsSelected = false;
             }
             selected.IsSelected = true;
-            MediaPlayer.SetAudioTrack(selected.Id);
+            VlcPlayerHelper.MediaPlayer.SetAudioTrack(selected.Id);
             canChangeAudioTrack = true;
         }
 
@@ -468,11 +383,11 @@ namespace VideoPlayerTrimmer.ViewModels
         {
             if (AudioTracks.Count == 0)
             {
-                foreach(var item in MediaPlayer.AudioTrackDescription)
+                foreach (var item in VlcPlayerHelper.MediaPlayer.AudioTrackDescription)
                 {
                     AudioTracks.Add(new AudioTrackInfo() { Id = item.Id, Name = item.Name });
                 }
-                AudioTracks.SingleOrDefault(a => a.Id == MediaPlayer.AudioTrack).IsSelected = true;
+                AudioTracks.SingleOrDefault(a => a.Id == VlcPlayerHelper.MediaPlayer.AudioTrack).IsSelected = true;
             }
             IsAudioTracksPopupVisible = !IsAudioTracksPopupVisible;
         }
@@ -497,19 +412,20 @@ namespace VideoPlayerTrimmer.ViewModels
                 sub.IsSelected = false;
             }
             selected.IsSelected = true;
-            MediaPlayer.SetSpu(selected.Id);
+            VlcPlayerHelper.MediaPlayer.SetSpu(selected.Id);
             canChangeSubtitles = true;
         }
 
         public void ToggleSubtitles()
         {
+            if (VlcPlayerHelper.MediaPlayer == null) return;
             if (Subtitles.Count == 0)
             {
-                foreach (var item in MediaPlayer.SpuDescription)
+                foreach (var item in VlcPlayerHelper.MediaPlayer.SpuDescription)
                 {
                     Subtitles.Add(new SubtitleInfo() { Id = item.Id, Name = item.Name });
                 }
-                var sub = Subtitles.SingleOrDefault(a => a.Id == MediaPlayer.Spu);
+                var sub = Subtitles.SingleOrDefault(a => a.Id == VlcPlayerHelper.MediaPlayer.Spu);
                 if (sub != null)
                 {
                     sub.IsSelected = true;
@@ -541,15 +457,15 @@ namespace VideoPlayerTrimmer.ViewModels
                 mi.FileName = videoItem.FileName;
                 mi.FilePath = videoItem.FilePath;
                 mi.VideoTitle = title;
-                mi.Fps = MediaPlayer.Fps;
-                TimeSpan.FromMilliseconds(MediaPlayer.Length);
-                mi.AudioTracks = MediaPlayer.AudioTrackDescription.Where(s => s.Id != -1)
+                mi.Fps = VlcPlayerHelper.MediaPlayer.Fps;
+                TimeSpan.FromMilliseconds(VlcPlayerHelper.MediaPlayer.Length);
+                mi.AudioTracks = VlcPlayerHelper.MediaPlayer.AudioTrackDescription.Where(s => s.Id != -1)
                     .Select(a => new AudioTrackInfo() { Id = a.Id, Name = a.Name }).ToList();
-                mi.Subtitles = MediaPlayer.SpuDescription.Where(s => s.Id != -1)
+                mi.Subtitles = VlcPlayerHelper.MediaPlayer.SpuDescription.Where(s => s.Id != -1)
                     .Select(s => new SubtitleInfo() { Id = s.Id, Name = s.Name }).ToList();
                 uint width = 0;
                 uint height = 0;
-                MediaPlayer.Size(0, ref width, ref height);
+                VlcPlayerHelper.MediaPlayer.Size(0, ref width, ref height);
                 mi.Resolution = width + "x" + height;
                 MediaInfo = mi;
             }

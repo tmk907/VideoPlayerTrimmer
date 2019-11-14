@@ -17,7 +17,7 @@ namespace VideoPlayerTrimmer.ViewModels
     public class TrimmerViewModel : BaseViewModel, INavigatedAware
     {
         public TrimmerViewModel(IVideoLibrary videoLibrary, INavigationService navigationService, 
-            MediaPlayerService playerService, IFFmpegConverter fFmpegConverter)
+            MediaPlayerBuilder playerService, IFFmpegConverter fFmpegConverter)
         {
             App.DebugLog("");
             this.videoLibrary = videoLibrary;
@@ -343,7 +343,7 @@ namespace VideoPlayerTrimmer.ViewModels
         private VideoItem videoItem;
         private readonly IVideoLibrary videoLibrary;
         private readonly INavigationService navigationService;
-        private readonly MediaPlayerService playerService;
+        private readonly MediaPlayerBuilder playerService;
         private readonly IFFmpegConverter fFmpegConverter;
 
         private async Task OpenFileAsync()

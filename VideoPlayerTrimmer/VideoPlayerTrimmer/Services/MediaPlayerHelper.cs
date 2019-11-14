@@ -10,8 +10,8 @@ namespace VideoPlayerTrimmer.Services
 {
     public class MediaPlayerHelper : BindableBase
     {
-        private readonly MediaPlayerService playerService;
-        public MediaPlayerHelper(MediaPlayerService playerService)
+        private readonly MediaPlayerBuilder playerService;
+        public MediaPlayerHelper(MediaPlayerBuilder playerService)
         {
             this.playerService = playerService;
         }

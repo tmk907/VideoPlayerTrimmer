@@ -46,7 +46,7 @@ namespace VideoPlayerTrimmer
             containerRegistry.RegisterForNavigation<FoldersPage, FoldersViewModel>(PageNames.Folders);
             containerRegistry.RegisterForNavigation<SettingsPage, SettingsViewModel>(PageNames.Settings);
             containerRegistry.RegisterForNavigation<TrimmerPage, TrimmerViewModel>(PageNames.Trimmer);
-            containerRegistry.RegisterForNavigation<VideoPlayerPage, VideoPlayerViewModel>(PageNames.Player);
+            containerRegistry.RegisterForNavigation<VideoPlayerPage>(PageNames.Player);
             containerRegistry.RegisterForNavigation<VideosPage, VideosViewModel>(PageNames.Videos);
 
             RegisterServices(containerRegistry);
@@ -68,12 +68,11 @@ namespace VideoPlayerTrimmer
             }
         }
 
-
         private void RegisterServices(IContainerRegistry containerRegistry)
         {
             containerRegistry.RegisterInstance<VideoDatabase>(Database);
             containerRegistry.RegisterSingleton<IVideoLibrary, VideoLibrary>();
-            containerRegistry.RegisterSingleton<MediaPlayerService>();
+            containerRegistry.RegisterSingleton<MediaPlayerBuilder>();
         }
 
         protected override void OnStart()

@@ -4,9 +4,9 @@ using System.Collections.Generic;
 
 namespace VideoPlayerTrimmer.Services
 {
-    public class MediaPlayerService
+    public class MediaPlayerBuilder
     {
-        public MediaPlayerService()
+        public MediaPlayerBuilder()
         {
         }
 
