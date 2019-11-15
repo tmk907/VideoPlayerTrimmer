@@ -1,6 +1,5 @@
-﻿using Prism.AppModel;
-using Prism.Navigation;
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
@@ -12,14 +11,13 @@ using Xamarin.Forms;
 
 namespace VideoPlayerTrimmer.ViewModels
 {
-    public class VideosViewModel : BaseViewModel, IInitialize
+    public class VideosViewModel : BaseViewModel
     {
-        private readonly INavigationService navigationService;
         private readonly IVideoLibrary videoLibrary;
 
-        public VideosViewModel(INavigationService navigationService, IVideoLibrary videoLibrary)
+        public VideosViewModel(IVideoLibrary videoLibrary)
         {
-            this.navigationService = navigationService;
+            App.DebugLog("");
             this.videoLibrary = videoLibrary;
             ItemTappedCommand = new Command<VideoItem>(async (item) => await NavigateToPlayerPage(item));
         }
@@ -32,6 +30,16 @@ namespace VideoPlayerTrimmer.ViewModels
 
         public Command ItemTappedCommand { get; set; }
 
+        public override void OnNavigating(Dictionary<string, string> navigationArgs)
+        {
+            base.OnNavigating(navigationArgs);
+
+            Directory = navigationParameters[NavigationParameterNames.Directory];
+            if (navigationParameters.ContainsKey(NavigationParameterNames.GoBack))
+            {
+                backToTrimmer = navigationParameters[NavigationParameterNames.GoBack] == "true";
+            }
+        }
 
         protected override async Task InitializeVMAsync(CancellationToken token)
         {
@@ -44,26 +52,15 @@ namespace VideoPlayerTrimmer.ViewModels
 
         public async Task NavigateToPlayerPage(VideoItem item)
         {
-            var parameters = new NavigationParameters();
-            parameters.Add(NavigationParameterNames.VideoPath, item.FilePath);
             if (backToTrimmer)
             {
-                await navigationService.GoBackAsync(parameters);
+                await App.NavigationService.NavigateToAsync($"//{PageNames.Trimmer}" +
+                    $"?{NavigationParameterNames.VideoPath}={item.FilePath}");
             }
             else
             {
-                await navigationService.NavigateAsync(PageNames.Player, parameters);
-            }
-        }
-
-        public void Initialize(INavigationParameters parameters)
-        {
-            App.DebugLog("");
-
-            Directory = (string)parameters[NavigationParameterNames.Directory];
-            if (parameters.ContainsKey(NavigationParameterNames.GoBack))
-            {
-                backToTrimmer = parameters.GetValue<bool>(NavigationParameterNames.GoBack);
+                await App.NavigationService.NavigateToAsync($"{PageNames.Player}" +
+                    $"?{NavigationParameterNames.VideoPath}={item.FilePath}");
             }
         }
     }

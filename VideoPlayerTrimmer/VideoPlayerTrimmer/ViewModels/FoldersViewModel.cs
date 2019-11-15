@@ -1,4 +1,4 @@
-﻿using Prism.Navigation;
+﻿using AsyncAwaitBestPractices.MVVM;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
@@ -12,15 +12,14 @@ namespace VideoPlayerTrimmer.ViewModels
 {
     public class FoldersViewModel : BaseViewModel
     {
-        private readonly INavigationService navigationService;
         private readonly IVideoLibrary videoLibrary;
 
-        public FoldersViewModel(INavigationService navigationService, IVideoLibrary videoLibrary)
+        public FoldersViewModel(IVideoLibrary videoLibrary)
         {
-            this.navigationService = navigationService;
+            App.DebugLog("");
             this.videoLibrary = videoLibrary;
             Folders = new ObservableCollection<FolderItem>();
-            ItemTappedCommand = new Command<FolderItem>(async (item) => await NavigateToVideosPage(item));
+            ItemTappedCommand = new AsyncCommand<object>((item) => NavigateToVideosPage(item));
             if (Xamarin.Forms.DesignMode.IsDesignModeEnabled)
             {
                 Folders.Add(new FolderItem()
@@ -36,7 +35,7 @@ namespace VideoPlayerTrimmer.ViewModels
 
         public ObservableCollection<FolderItem> Folders { get; set; }
 
-        public Command ItemTappedCommand { get; set; }
+        public IAsyncCommand<object> ItemTappedCommand { get; set; }
 
         protected override async Task InitializeVMAsync(CancellationToken token)
         {
@@ -49,11 +48,10 @@ namespace VideoPlayerTrimmer.ViewModels
             }
         }
 
-        public async Task NavigateToVideosPage(FolderItem item)
+        public Task NavigateToVideosPage(object item)
         {
-            var parameter = new NavigationParameters();
-            parameter.Add(NavigationParameterNames.Directory, item.FolderPath);
-            await navigationService.NavigateAsync(PageNames.Videos, parameter, false);
+            var folderItem = item as FolderItem;
+            return NavigateToVideosPage(folderItem.FolderPath);
         }
 
         public ObservableCollection<VideoItem> Results = new ObservableCollection<VideoItem>();
@@ -68,7 +66,7 @@ namespace VideoPlayerTrimmer.ViewModels
             }
         }
 
-        public async Task OnVideoSelected(object val)
+        public Task OnVideoSelected(object val)
         {
             VideoItem item;
             if (val is VideoItem)
@@ -80,9 +78,13 @@ namespace VideoPlayerTrimmer.ViewModels
                 item = videoLibrary.SearchVideoItems(val as string).FirstOrDefault();
             }
 
-            var parameter = new NavigationParameters();
-            parameter.Add(NavigationParameterNames.Directory, item.FolderPath);
-            await navigationService.NavigateAsync(PageNames.Videos, parameter, false);
+            return NavigateToVideosPage(item.FolderPath);
+        }
+
+        private Task NavigateToVideosPage(string folderPath)
+        {
+            return App.NavigationService.NavigateToAsync($"{PageNames.Videos}" +
+                $"?{NavigationParameterNames.Directory}={folderPath}", false);
         }
     }
 }

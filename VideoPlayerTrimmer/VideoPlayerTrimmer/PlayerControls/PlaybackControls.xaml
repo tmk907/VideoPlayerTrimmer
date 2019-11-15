@@ -20,11 +20,6 @@
         <x:String x:Key="ep-info">&#xe8cc;</x:String>
         <x:String x:Key="ep-check">&#xe840;</x:String>
 
-
-        <x:String x:Key="FontAwesomeSolid">FontAwesome5Solid.otf#Regular</x:String>
-        <x:String x:Key="FontAwesomeRegular">FontAwesome5Regular.otf#Regular</x:String>
-        <x:String x:Key="FontAwesomeBrands">FontAwesome5Brands.otf#Regular</x:String>
-        
         <x:String x:Key="fab-chromecast">&#xf838;</x:String>
         <x:String x:Key="fas-file-audio">&#xf1c7;</x:String>
         <x:String x:Key="far-closed-captioning">&#xf20a;</x:String>
@@ -33,14 +28,7 @@
         <x:String x:Key="fas-step-forward">&#xf051;</x:String>
         <x:String x:Key="fas-expand-arrows-alt">&#xf31e;</x:String>
 
-        <Color x:Key="AccentColor">#0d48a1</Color>
-        <Color x:Key="DarkColor">#777777</Color>
-        <Color x:Key="LightColor">#E3F2FD</Color>
         <Color x:Key="TextForeground">#E3F2FD</Color>
-
-        <!--<Style TargetType="StackLayout">
-            <Setter Property="BackgroundColor" Value="LightGreen"/>
-        </Style>-->
 
         <Style x:Key="TimeLabelStyle" TargetType="Label">
             <Setter Property="HorizontalOptions" Value="StartAndExpand" />

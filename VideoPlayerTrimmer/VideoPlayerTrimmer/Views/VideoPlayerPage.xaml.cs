@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Prism.Ioc;
 using VideoPlayerTrimmer.Framework;
 using VideoPlayerTrimmer.ViewModels;
 using Xamarin.Forms;
@@ -20,7 +19,6 @@ namespace VideoPlayerTrimmer.Views
     {
         public VideoPlayerPage()
         {
-            BindingContext = App.Current.Container.Resolve<VideoPlayerViewModel>();
             InitializeComponent();
             NavigationPage.SetHasNavigationBar(this, false);
         }

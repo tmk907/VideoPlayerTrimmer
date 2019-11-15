@@ -5,6 +5,8 @@
              xmlns:converters="clr-namespace:VideoPlayerTrimmer.Converters"
              xmlns:player="clr-namespace:VideoPlayerTrimmer.PlayerControls"
              x:Name="PlayerPage"
+             Shell.NavBarIsVisible="false"
+             Shell.TabBarIsVisible="false"
              x:Class="VideoPlayerTrimmer.Views.VideoPlayerPage">
     <ContentPage.Resources>
         <ResourceDictionary>

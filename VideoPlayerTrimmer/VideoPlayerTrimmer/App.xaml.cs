@@ -1,55 +1,88 @@
 ﻿using Microsoft.AppCenter;
 using Microsoft.AppCenter.Crashes;
-using Prism;
-using Prism.DryIoc;
-using Prism.Ioc;
 using System;
 using System.Linq;
 using System.IO;
 using VideoPlayerTrimmer.Database;
 using VideoPlayerTrimmer.Services;
-using VideoPlayerTrimmer.ViewModels;
 using VideoPlayerTrimmer.Views;
 using Xamarin.Essentials;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
-using Plugin.Iconize;
 using AsyncAwaitBestPractices;
+using TinyIoC;
+using VideoPlayerTrimmer.Framework;
+using System.Reflection;
 
 [assembly: XamlCompilation(XamlCompilationOptions.Compile)]
 namespace VideoPlayerTrimmer
 {
-    public partial class App : PrismApplication
+    public partial class App : Application
     {
-        public App() : this(null) { }
+        public static TinyIoCContainer DIContainer => TinyIoCContainer.Current;
+        public static NavigationService NavigationService { get; private set; }
 
-        public App(IPlatformInitializer initializer) : base(initializer) { }
 
-        protected override async void OnInitialized()
+        public App()
         {
             InitializeComponent();
+
+            ApplicationSetup();
+            RegisterServices();
+
+            MainPage = new AppShell();
+            NavigationService = new NavigationService();
+        }
+
+        private void ApplicationSetup()
+        {
+
 #if DEBUG
             SafeFireAndForgetExtensions.Initialize(true);
 #endif
-            VersionTracking.Track();
-            Plugin.Iconize.Iconize.With(new Plugin.Iconize.Fonts.EntypoPlusModule());
-            Setup();
-            await NavigationService.NavigateAsync("NavigationPage/HomePage?selectedTab=folders");
-        }
-        
-        protected override void RegisterTypes(IContainerRegistry containerRegistry)
-        {
-            //containerRegistry.RegisterForNavigation<NavigationPage>();
-            containerRegistry.RegisterForNavigation<IconNavigationPage>(nameof(NavigationPage));
-            containerRegistry.RegisterForNavigation(typeof(HomePage), "HomePage");
-            containerRegistry.RegisterForNavigation<FavoriteScenesPage, FavoriteScenesViewModel>(PageNames.Favourites);
-            containerRegistry.RegisterForNavigation<FoldersPage, FoldersViewModel>(PageNames.Folders);
-            containerRegistry.RegisterForNavigation<SettingsPage, SettingsViewModel>(PageNames.Settings);
-            containerRegistry.RegisterForNavigation<TrimmerPage, TrimmerViewModel>(PageNames.Trimmer);
-            containerRegistry.RegisterForNavigation<VideoPlayerPage>(PageNames.Player);
-            containerRegistry.RegisterForNavigation<VideosPage, VideosViewModel>(PageNames.Videos);
+            //VersionTracking.Track();
 
-            RegisterServices(containerRegistry);
+            if (VersionTracking.IsFirstLaunchEver)
+            {
+
+            }
+
+            var directoryPath = Path.Combine(FileSystem.AppDataDirectory, Configuration.FavoriteThumbnailsFolderName);
+            if (!Directory.Exists(directoryPath))
+            {
+                Directory.CreateDirectory(directoryPath);
+            }
+            directoryPath = Path.Combine(FileSystem.AppDataDirectory, Configuration.SnaphotsFolderName);
+            if (!Directory.Exists(directoryPath))
+            {
+                Directory.CreateDirectory(directoryPath);
+            }
+        }
+
+        private void RegisterServices()
+        {
+            DIContainer.Register<VideoDatabase>(Database);
+            DIContainer.Register<IVideoLibrary, VideoLibrary>().AsSingleton();
+            DIContainer.Register<MediaPlayerBuilder>().AsSingleton();
+
+            var assembly = typeof(App).GetTypeInfo().Assembly;
+            var vms = AssemblyExtensions.SafeGetTypes(assembly).Where(x => x.IsSubclassOf(typeof(BaseViewModel)));
+            foreach (var vm in vms)
+            {
+                DIContainer.Register(vm);
+            }
+
+            Routing.RegisterRoute(PageNames.Videos, typeof(VideosPage));
+            Routing.RegisterRoute(PageNames.Player, typeof(VideoPlayerPage));
+
+            //containerRegistry.RegisterForNavigation<NavigationPage>();
+            //DIContainer.RegisterForNavigation(typeof(HomePage), "HomePage");
+            //containerRegistry.RegisterForNavigation<FavoriteScenesPage, FavoriteScenesViewModel>(PageNames.Favourites);
+            //containerRegistry.RegisterForNavigation<FoldersPage, FoldersViewModel>(PageNames.Folders);
+            //containerRegistry.RegisterForNavigation<SettingsPage, SettingsViewModel>(PageNames.Settings);
+            //containerRegistry.RegisterForNavigation<TrimmerPage, TrimmerViewModel>(PageNames.Trimmer);
+            //containerRegistry.RegisterForNavigation<VideoPlayerPage>(PageNames.Player);
+            //containerRegistry.RegisterForNavigation<VideosPage, VideosViewModel>(PageNames.Videos);
         }
 
         private static VideoDatabase database;
@@ -66,13 +99,6 @@ namespace VideoPlayerTrimmer
                 }
                 return database;
             }
-        }
-
-        private void RegisterServices(IContainerRegistry containerRegistry)
-        {
-            containerRegistry.RegisterInstance<VideoDatabase>(Database);
-            containerRegistry.RegisterSingleton<IVideoLibrary, VideoLibrary>();
-            containerRegistry.RegisterSingleton<MediaPlayerBuilder>();
         }
 
         protected override void OnStart()
@@ -97,25 +123,6 @@ namespace VideoPlayerTrimmer
             App.DebugLog("1");
             base.OnResume();
             App.DebugLog("2");
-        }
-
-        private void Setup()
-        {
-            if (VersionTracking.IsFirstLaunchEver)
-            {
-                
-            }
-            
-            var directoryPath = Path.Combine(FileSystem.AppDataDirectory, Configuration.FavoriteThumbnailsFolderName);
-            if (!Directory.Exists(directoryPath))
-            {
-                Directory.CreateDirectory(directoryPath);
-            }
-            directoryPath = Path.Combine(FileSystem.AppDataDirectory, Configuration.SnaphotsFolderName);
-            if (!Directory.Exists(directoryPath))
-            {
-                Directory.CreateDirectory(directoryPath);
-            }
         }
 
         public static void DebugLog(string arg, [System.Runtime.CompilerServices.CallerFilePath] string filePath = "", [System.Runtime.CompilerServices.CallerMemberName] string methodName = "")

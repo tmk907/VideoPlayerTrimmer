@@ -8,7 +8,15 @@ namespace VideoPlayerTrimmer.Framework
         private bool firstTimeAppearing = true;
         private bool firstTimeDisappearing = true;
 
-        protected virtual T ViewModel => BindingContext as T;
+        protected virtual T ViewModel { get; }
+
+        public BaseContentPage()
+        {
+            App.DebugLog("");
+            ViewModel = App.DIContainer.Resolve<T>();
+            BindingContext = ViewModel;
+            ViewModel.OnNavigating(App.NavigationService.GetNavigationParameters());
+        }
 
         protected override void OnAppearing()
         {
@@ -19,7 +27,6 @@ namespace VideoPlayerTrimmer.Framework
 
             if (firstTimeAppearing)
             {
-                
                 firstTimeAppearing = false;
             }
         }

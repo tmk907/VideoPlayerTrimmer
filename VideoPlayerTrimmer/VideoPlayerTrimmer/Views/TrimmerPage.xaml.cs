@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using VideoPlayerTrimmer.Framework;
 using VideoPlayerTrimmer.ViewModels;
 using Xamarin.Forms;
@@ -18,7 +14,7 @@ namespace VideoPlayerTrimmer.Views
         public TrimmerPage()
         {
             InitializeComponent();
-            SizeChanged += TrimmerPage_SizeChanged;
+            //SizeChanged += TrimmerPage_SizeChanged;
         }
 
         private void TrimmerPage_SizeChanged(object sender, EventArgs e)

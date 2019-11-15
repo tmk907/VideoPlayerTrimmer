@@ -1,6 +1,6 @@
-﻿using Prism.Commands;
-using Prism.Navigation;
+﻿using AsyncAwaitBestPractices.MVVM;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -9,22 +9,21 @@ using System.Threading.Tasks;
 using VideoPlayerTrimmer.Framework;
 using VideoPlayerTrimmer.Models;
 using VideoPlayerTrimmer.Services;
+using Xamarin.Forms;
 
 namespace VideoPlayerTrimmer.ViewModels
 {
     public class FavoriteScenesViewModel : BaseViewModel
     {
-        private readonly INavigationService navigationService;
         private readonly IVideoLibrary videoLibrary;
 
-        public FavoriteScenesViewModel(INavigationService navigationService, IVideoLibrary videoLibrary)
+        public FavoriteScenesViewModel(IVideoLibrary videoLibrary)
         {
-            this.navigationService = navigationService;
             this.videoLibrary = videoLibrary;
-            ItemTappedCommand = new DelegateCommand<object>((e) => OnItemClicked(e));
+            ItemTappedCommand = new AsyncCommand<object>((e) => OnItemClicked(e));
         }
 
-        public DelegateCommand<object> ItemTappedCommand { get; }
+        public IAsyncCommand<object> ItemTappedCommand { get; }
 
         protected override async Task InitializeVMAsync(CancellationToken token)
         {
@@ -53,12 +52,11 @@ namespace VideoPlayerTrimmer.ViewModels
 
         private async Task OnItemClicked(object item)
         {
-            var scene = (FavoriteScene)item;
-            var parameters = new NavigationParameters();
+            var scene = item as FavoriteScene;
             var video = GroupedFavoriteScenes.FirstOrDefault(v => v.Favorites.Any(s => s.SnapshotPath == scene.SnapshotPath));
-            parameters.Add(NavigationParameterNames.VideoPath, video.VideoPath);
-            parameters.Add(NavigationParameterNames.Position, scene.Position);
-            await navigationService.NavigateAsync(PageNames.Player, parameters, false);
+            await App.NavigationService.NavigateToAsync($"{PageNames.Player}" +
+                $"?{NavigationParameterNames.VideoPath}={video.VideoPath}" +
+                $"&{NavigationParameterNames.Position}={scene.Position}", false);
         }
 
         public ObservableCollection<FavoriteList> GroupedFavoriteScenes { get; } = new ObservableCollection<FavoriteList>();

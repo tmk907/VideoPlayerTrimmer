@@ -1,8 +1,4 @@
-﻿using LibVLCSharp.Forms.Shared;
-using LibVLCSharp.Shared;
-using Plugin.Iconize;
-using Prism.Commands;
-using Prism.Navigation;
+﻿using LibVLCSharp.Shared;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -11,7 +7,6 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using VideoPlayerTrimmer.Controls;
 using VideoPlayerTrimmer.Framework;
 using VideoPlayerTrimmer.MediaHelpers;
 using VideoPlayerTrimmer.Models;
@@ -21,9 +16,8 @@ using Xamarin.Forms;
 
 namespace VideoPlayerTrimmer.ViewModels
 {
-    public class VideoPlayerViewModel : BaseViewModel   , IInitialize
+    public class VideoPlayerViewModel : BaseViewModel
     {
-        private readonly MediaPlayerBuilder playerService;
         private readonly IVideoLibrary videoLibrary;
         private readonly IVolumeService volumeController;
         private readonly IBrightnessService brightnessController;
@@ -37,19 +31,18 @@ namespace VideoPlayerTrimmer.ViewModels
             IOrientationService orientationService, IStatusBarService statusBarService)
         {
             App.DebugLog("");
-            this.playerService = playerService;
             this.videoLibrary = videoLibrary;
             this.volumeController = volumeController;
             this.brightnessController = brightnessController;
             this.orientationService = orientationService;
             this.statusBarService = statusBarService;
-            ToggleFavoriteCommand = new DelegateCommand(ToggleFavorite);
-            ToggleControlsVisibilityCommand = new DelegateCommand(ToggleControlsVisibility);
-            ToggleAudioTracksCommand = new DelegateCommand(ToggleAudioTracks);
-            ToggleSubtitlesCommand = new DelegateCommand(ToggleSubtitles);
-            ToggleMediaInfoCommand = new DelegateCommand(ToggleMediaInfo);
-            SelectSubtitlesCommand = new DelegateCommand<object>(SelectSubtitles, (e) => canChangeSubtitles);
-            SelectAudioTrackCommand = new DelegateCommand<object>(SelectAudioTrack, (e) => canChangeAudioTrack);
+            ToggleFavoriteCommand = new Command(ToggleFavorite);
+            ToggleControlsVisibilityCommand = new Command(ToggleControlsVisibility);
+            ToggleAudioTracksCommand = new Command(ToggleAudioTracks);
+            ToggleSubtitlesCommand = new Command(ToggleSubtitles);
+            ToggleMediaInfoCommand = new Command(ToggleMediaInfo);
+            SelectSubtitlesCommand = new Command<object>(SelectSubtitles, (e) => canChangeSubtitles);
+            SelectAudioTrackCommand = new Command<object>(SelectAudioTrack, (e) => canChangeAudioTrack);
             MaxVolume = volumeController.GetMaxVolume();
             Volume = volumeController.GetVolume();
             volumeController.VolumeChanged += VolumeController_VolumeChanged;
@@ -66,13 +59,14 @@ namespace VideoPlayerTrimmer.ViewModels
             set { vlcPlayerHelper = value; }
         }
 
-
-        public void Initialize(INavigationParameters parameters)
+        public override void OnNavigating(Dictionary<string, string> navigationArgs)
         {
-            filePath = parameters.GetValue<string>(NavigationParameterNames.VideoPath);
-            if (parameters.ContainsKey(NavigationParameterNames.Position))
+            base.OnNavigating(navigationArgs);
+            
+            filePath = navigationParameters[NavigationParameterNames.VideoPath];
+            if (navigationParameters.ContainsKey(NavigationParameterNames.Position))
             {
-                var pos = parameters.GetValue<TimeSpan>(NavigationParameterNames.Position);
+                var pos = TimeSpan.Parse(navigationParameters[NavigationParameterNames.Position]);
                 userPosition = (long)pos.TotalMilliseconds;
             }
         }
@@ -80,6 +74,7 @@ namespace VideoPlayerTrimmer.ViewModels
         protected override async Task InitializeVMAsync(CancellationToken token)
         {
             App.DebugLog(firstTimeAppeared.ToString());
+
             if (firstTimeAppeared)
             {
                 videoItem = await videoLibrary.GetVideoItemAsync(filePath);
@@ -164,13 +159,13 @@ namespace VideoPlayerTrimmer.ViewModels
             ToggleSubtitles();
         }
 
-        public DelegateCommand ToggleFavoriteCommand { get; }
-        public DelegateCommand ToggleControlsVisibilityCommand { get; }
-        public DelegateCommand ToggleAudioTracksCommand { get; }
-        public DelegateCommand ToggleSubtitlesCommand { get; }
-        public DelegateCommand ToggleMediaInfoCommand { get; }
-        public DelegateCommand<object> SelectSubtitlesCommand { get; }
-        public DelegateCommand<object> SelectAudioTrackCommand { get; }
+        public Command ToggleFavoriteCommand { get; }
+        public Command ToggleControlsVisibilityCommand { get; }
+        public Command ToggleAudioTracksCommand { get; }
+        public Command ToggleSubtitlesCommand { get; }
+        public Command ToggleMediaInfoCommand { get; }
+        public Command<object> SelectSubtitlesCommand { get; }
+        public Command<object> SelectAudioTrackCommand { get; }
 
 
         private long lastPosition = 0;

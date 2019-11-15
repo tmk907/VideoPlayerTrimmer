@@ -14,8 +14,6 @@ using System.Threading.Tasks;
 using Android.Content.PM;
 using VideoPlayerTrimmer.Services;
 using VideoPlayerTrimmer.Droid.Services;
-using Prism;
-using Prism.Ioc;
 using LibVLCSharp.Forms.Shared;
 using VideoPlayerTrimmer.Droid.BroadcastReceivers;
 using LibVLCSharp.Forms.Platforms.Android;
@@ -44,9 +42,10 @@ namespace VideoPlayerTrimmer.Droid
             global::Xamarin.Forms.Forms.SetFlags(new[] { "CollectionView_Experimental", "Shell_Experimental" });
             global::Xamarin.Forms.Forms.Init(this, savedInstanceState);
 
-            Plugin.Iconize.Iconize.Init(Resource.Id.toolbar, Resource.Id.sliding_tabs);
-            Android.Glide.Forms.Init();
-            LoadApplication(new App(new AndroidInitializer()));
+            RegisterServices();
+
+            Android.Glide.Forms.Init(this);
+            LoadApplication(new App());
         }
 
         public override bool OnKeyDown([GeneratedEnum] Keycode keyCode, KeyEvent e)
@@ -84,19 +83,16 @@ namespace VideoPlayerTrimmer.Droid
         {
             CrossCurrentActivity.Current.Init(this, savedInstanceState);
         }
-    }
 
-    public class AndroidInitializer : IPlatformInitializer
-    {
-        public void RegisterTypes(IContainerRegistry containerRegistry)
+        public void RegisterServices()
         {
-            containerRegistry.Register<IMediaScanner, MediaScannerImpl>();
-            containerRegistry.RegisterSingleton<IVolumeService, VolumeService>();
-            containerRegistry.Register<IBrightnessService, BrightnessService>();
-            containerRegistry.Register<IOrientationService, OrientationService>();
-            containerRegistry.Register<IStatusBarService, StatusBarService>();
-            containerRegistry.Register<IFFmpegService, FFmpegService2>();
-            containerRegistry.Register<IFFmpegConverter, FFmpegConverter>();
+            App.DIContainer.Register<IMediaScanner, MediaScannerImpl>();
+            App.DIContainer.Register<IVolumeService, VolumeService>().AsSingleton();
+            App.DIContainer.Register<IBrightnessService, BrightnessService>();
+            App.DIContainer.Register<IOrientationService, OrientationService>();
+            App.DIContainer.Register<IStatusBarService, StatusBarService>();
+            App.DIContainer.Register<IFFmpegService, FFmpegService2>();
+            App.DIContainer.Register<IFFmpegConverter, FFmpegConverter>();
         }
     }
 }

@@ -1,12 +1,35 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<prism:PrismApplication xmlns="http://xamarin.com/schemas/2014/forms"
+<Application xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:prism="clr-namespace:Prism.DryIoc;assembly=Prism.DryIoc.Forms"
              x:Class="VideoPlayerTrimmer.App">
     <Application.Resources>
         <ResourceDictionary>
             <Color x:Key="NavBarColor">#2196F3</Color>
+            <Color x:Key="AccentColor">#0d48a1</Color>
             <x:Double x:Key="NavBarHeight">56</x:Double>
+            <Color x:Key="DarkColor">#777777</Color>
+            <Color x:Key="LightColor">#E3F2FD</Color>
+            <Color x:Key="OrangeColor">#ffc41e</Color>
+
+            <x:String x:Key="FontAwesomeSolid">FontAwesome5Solid.otf#Regular</x:String>
+            <x:String x:Key="FontAwesomeRegular">FontAwesome5Regular.otf#Regular</x:String>
+            <x:String x:Key="FontAwesomeBrands">FontAwesome5Brands.otf#Regular</x:String>
+
+            <Style x:Key="DataTemplateRootGridStyle" TargetType="Grid">
+                <Setter Property="VisualStateManager.VisualStateGroups">
+                    <VisualStateGroupList>
+                        <VisualStateGroup x:Name="CommonStates">
+                            <VisualState x:Name="Normal" />
+                            <VisualState x:Name="Selected">
+                                <VisualState.Setters>
+                                    <Setter Property="BackgroundColor"
+                                        Value="White" />
+                                </VisualState.Setters>
+                            </VisualState>
+                        </VisualStateGroup>
+                    </VisualStateGroupList>
+                </Setter>
+            </Style>
         </ResourceDictionary>
     </Application.Resources>
-</prism:PrismApplication>
+</Application>

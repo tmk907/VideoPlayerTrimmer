@@ -1,7 +1,6 @@
 ﻿using AsyncAwaitBestPractices;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -14,11 +13,18 @@ namespace VideoPlayerTrimmer.Framework
         protected bool firstTimeAppeared = true;
         protected bool firstTimeDisappeared = true;
 
+        protected Dictionary<string, string> navigationParameters;
+
         private bool isLoadingData;
         public bool IsLoadingData
         {
             get => isLoadingData;
             set => SetProperty(ref isLoadingData, value);
+        }
+
+        public virtual void OnNavigating(Dictionary<string, string> navigationArgs)
+        {
+            navigationParameters = navigationArgs;
         }
 
         public virtual void OnAppearing(bool firstTime)

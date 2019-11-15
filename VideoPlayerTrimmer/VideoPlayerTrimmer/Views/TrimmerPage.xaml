@@ -1,25 +1,20 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <views:TrimmerContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:views="clr-namespace:VideoPlayerTrimmer.Views"
-                          xmlns:ic="clr-namespace:Plugin.Iconize;assembly=Plugin.Iconize"
-                          xmlns:slider="clr-namespace:Xamarin.RangeSlider.Forms;assembly=Xamarin.RangeSlider.Forms"
-                          xmlns:vlc="clr-namespace:LibVLCSharp.Forms.Shared;assembly=LibVLCSharp.Forms"
-                          xmlns:converters="clr-namespace:VideoPlayerTrimmer.Converters"
-             x:Class="VideoPlayerTrimmer.Views.TrimmerPage"
-                          Title="Trimmer">
+             xmlns:slider="clr-namespace:Xamarin.RangeSlider.Forms;assembly=Xamarin.RangeSlider.Forms"
+             xmlns:vlc="clr-namespace:LibVLCSharp.Forms.Shared;assembly=LibVLCSharp.Forms"
+             xmlns:converters="clr-namespace:VideoPlayerTrimmer.Converters"
+             mc:Ignorable="d"
+             x:Class="VideoPlayerTrimmer.Views.TrimmerPage">
     <ContentPage.Resources>
         <Color x:Key="SemiTransparent">#AA000000</Color>
         <converters:BoolToFavoriteIconConverter x:Key="ToFavIcon"/>
         <converters:BoolToPlayPauseIcon x:Key="ToPlayPauseIcon"/>
         <converters:TimeSpanToVideoDurationConverter x:Key="ToDuration"/>
         <converters:TimeSpanToSecondsConverter x:Key="ToSeconds"/>
-        <Style x:Key="NavBarButtonStyle" TargetType="ic:IconButton">
-            <Setter Property="BackgroundColor" Value="Transparent"/>
-            <Setter Property="TextColor" Value="White"/>
-            <Setter Property="FontSize" Value="26"/>
-            <Setter Property="WidthRequest" Value="50"/>
-        </Style>
     </ContentPage.Resources>
     <ContentPage.Content>
         <Grid>
@@ -35,12 +30,12 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <Label Grid.Column="0" Text="Trimmer" TextColor="White" FontSize="20" Margin="24,0,0,0" VerticalTextAlignment="Center"/>
-                    <ic:IconButton 
+                    <Button 
                         Grid.Column="1" 
                         Style="{StaticResource NavBarButtonStyle}"
                         Text="ep-folder" 
                         Clicked="Open_Clicked"/>
-                    <ic:IconButton 
+                    <Button 
                         Grid.Column="2" 
                         Style="{StaticResource NavBarButtonStyle}"
                         Text="ep-save" 
@@ -71,7 +66,7 @@
                                        HorizontalTextAlignment="Center"
                                        VerticalTextAlignment="Center"/>
                                     <StackLayout Orientation="Horizontal" HorizontalOptions="Center">
-                                        <ic:IconButton 
+                                        <Button 
                                         BackgroundColor="Transparent"
                                         TextColor="White"
                                         BorderColor="White"
@@ -79,7 +74,7 @@
                                         Command="{Binding JumpToStartCommand}" 
                                         WidthRequest="50"
                                         Text="ep-controller-jump-to-start"/>
-                                        <ic:IconButton 
+                                        <Button 
                                         BackgroundColor="Transparent"
                                         TextColor="White"
                                         BorderColor="White"
@@ -93,13 +88,13 @@
                         </Grid>
                         <StackLayout Orientation="Vertical">
                             <StackLayout Orientation="Horizontal" HorizontalOptions="Center">
-                                <ic:IconButton Command="{Binding GoToPrevFavSceneCommand}" 
+                                <Button Command="{Binding GoToPrevFavSceneCommand}" 
                                Text="ep-arrow-long-left"
                                WidthRequest="50"/>
-                                <ic:IconLabel Text="{Binding IsFavoriteScene, Converter={StaticResource ToFavIcon}}" 
+                                <Label Text="{Binding IsFavoriteScene, Converter={StaticResource ToFavIcon}}" 
                               VerticalOptions="Center"
                               FontSize="22"/>
-                                <ic:IconButton Command="{Binding GoToNextFavSceneCommand}" 
+                                <Button Command="{Binding GoToNextFavSceneCommand}" 
                                Text="ep-arrow-long-right"
                                WidthRequest="50"/>
                             </StackLayout>
@@ -120,10 +115,10 @@
                        HorizontalTextAlignment="End"
                        VerticalTextAlignment="Center"
                        WidthRequest="80"/>
-                                    <ic:IconButton Command="{Binding DecrementPositionCommand}" CommandParameter="A" 
+                                    <Button Command="{Binding DecrementPositionCommand}" CommandParameter="A" 
                                Text="ep-minus"
                                WidthRequest="50"/>
-                                    <ic:IconButton Command="{Binding IncrementPositionCommand}" CommandParameter="A" 
+                                    <Button Command="{Binding IncrementPositionCommand}" CommandParameter="A" 
                                Text="ep-plus"
                                WidthRequest="50"/>
                                 </StackLayout>
@@ -135,10 +130,10 @@
                        HorizontalTextAlignment="End"
                        VerticalTextAlignment="Center"
                        WidthRequest="80"/>
-                                    <ic:IconButton Command="{Binding DecrementPositionCommand}" CommandParameter="B" 
+                                    <Button Command="{Binding DecrementPositionCommand}" CommandParameter="B" 
                                Text="ep-minus"
                                WidthRequest="50"/>
-                                    <ic:IconButton Command="{Binding IncrementPositionCommand}" CommandParameter="B" 
+                                    <Button Command="{Binding IncrementPositionCommand}" CommandParameter="B" 
                                Text="ep-plus"
                                WidthRequest="50"/>
 
@@ -164,10 +159,10 @@
                         <Label Text="Fast trimming"/>
                         <Switch IsToggled="{Binding FastTrim}"/>
                     </StackLayout>
-                    <!--<StackLayout Orientation="Horizontal">
+                    <StackLayout Orientation="Horizontal">
                         <Label Text="Save as gif"/>
                         <Switch IsToggled="{Binding SaveToGif}"/>
-                    </StackLayout>-->
+                    </StackLayout>
                 </StackLayout>
                 <Grid BackgroundColor="{StaticResource SemiTransparent}" IsVisible="{Binding NoFileSelected}">
                     <Button Clicked="Open_Clicked" Text="Choose video" HorizontalOptions="Center" VerticalOptions="Center"/>

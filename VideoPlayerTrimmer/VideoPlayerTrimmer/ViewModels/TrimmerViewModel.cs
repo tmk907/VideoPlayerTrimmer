@@ -1,6 +1,4 @@
-﻿using Prism.Commands;
-using Prism.Navigation;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -11,17 +9,17 @@ using VideoPlayerTrimmer.Framework;
 using VideoPlayerTrimmer.MediaHelpers;
 using VideoPlayerTrimmer.Models;
 using VideoPlayerTrimmer.Services;
+using Xamarin.Forms;
 
 namespace VideoPlayerTrimmer.ViewModels
 {
-    public class TrimmerViewModel : BaseViewModel, INavigatedAware
+    public class TrimmerViewModel : BaseViewModel
     {
-        public TrimmerViewModel(IVideoLibrary videoLibrary, INavigationService navigationService, 
-            MediaPlayerBuilder playerService, IFFmpegConverter fFmpegConverter)
+        public TrimmerViewModel(IVideoLibrary videoLibrary, MediaPlayerBuilder playerService, 
+            IFFmpegConverter fFmpegConverter)
         {
             App.DebugLog("");
             this.videoLibrary = videoLibrary;
-            this.navigationService = navigationService;
             this.playerService = playerService;
             this.fFmpegConverter = fFmpegConverter;
             fFmpegConverter.ConversionProgressChanged += FFmpegConverter_ProgressChanged;
@@ -33,12 +31,12 @@ namespace VideoPlayerTrimmer.ViewModels
             MediaHelper.MediaPlayerReady += MediaPlayerHelper_MediaPlayerReady;
             MediaHelper.PlaybackStateChanged += MediaHelper_PlaybackStateChanged;
 
-            GoToNextFavSceneCommand = new DelegateCommand(GoToNextFavScene);
-            GoToPrevFavSceneCommand = new DelegateCommand(GoToPrevFavScene);
-            IncrementPositionCommand = new DelegateCommand<object>((e) => IncrementPosition(e));
-            DecrementPositionCommand = new DelegateCommand<object>((e) => DecrementPosition(e));
-            JumpToStartCommand = new DelegateCommand(() => JumpToStart());
-            TogglePlayPauseCommand = new DelegateCommand(TogglePlayPause);
+            GoToNextFavSceneCommand = new Command(GoToNextFavScene);
+            GoToPrevFavSceneCommand = new Command(GoToPrevFavScene);
+            IncrementPositionCommand = new Command<object>((e) => IncrementPosition(e));
+            DecrementPositionCommand = new Command<object>((e) => DecrementPosition(e));
+            JumpToStartCommand = new Command(() => JumpToStart());
+            TogglePlayPauseCommand = new Command(TogglePlayPause);
 
             OffsetOptions = new ObservableCollection<OffsetOption>()
             {
@@ -204,12 +202,12 @@ namespace VideoPlayerTrimmer.ViewModels
             set { SetProperty(ref isConverting, value); }
         }
 
-        public DelegateCommand GoToPrevFavSceneCommand { get; }
-        public DelegateCommand GoToNextFavSceneCommand { get; }
-        public DelegateCommand TogglePlayPauseCommand { get; }
-        public DelegateCommand<object> IncrementPositionCommand { get; }
-        public DelegateCommand<object> DecrementPositionCommand { get; }
-        public DelegateCommand JumpToStartCommand { get; }
+        public Command GoToPrevFavSceneCommand { get; }
+        public Command GoToNextFavSceneCommand { get; }
+        public Command TogglePlayPauseCommand { get; }
+        public Command<object> IncrementPositionCommand { get; }
+        public Command<object> DecrementPositionCommand { get; }
+        public Command JumpToStartCommand { get; }
 
         private TimeSpan previewPosition = TimeSpan.Zero;
 
@@ -307,14 +305,11 @@ namespace VideoPlayerTrimmer.ViewModels
             MediaHelper.SeekTo(StartPosition);
         }
 
-        public void OnNavigatedFrom(INavigationParameters parameters) { }
-
-        public void OnNavigatedTo(INavigationParameters parameters) { }
-
-        public void OnNavigatingTo(INavigationParameters parameters)
+        public override void OnNavigating(Dictionary<string, string> navigationArgs)
         {
-            App.DebugLog("");
-            var filePathParam = parameters.GetValue<string>(NavigationParameterNames.VideoPath);
+            base.OnNavigating(navigationArgs);
+
+            var filePathParam = navigationParameters[NavigationParameterNames.VideoPath];
             if (!String.IsNullOrEmpty(filePathParam))
             {
                 filePath = filePathParam;
@@ -324,6 +319,7 @@ namespace VideoPlayerTrimmer.ViewModels
         protected override async Task InitializeVMAsync(CancellationToken token)
         {
             App.DebugLog("");
+
             if (!String.IsNullOrEmpty(filePath))
             {
                 await OpenFileAsync();
@@ -342,7 +338,6 @@ namespace VideoPlayerTrimmer.ViewModels
         private string filePath;
         private VideoItem videoItem;
         private readonly IVideoLibrary videoLibrary;
-        private readonly INavigationService navigationService;
         private readonly MediaPlayerBuilder playerService;
         private readonly IFFmpegConverter fFmpegConverter;
 
@@ -357,11 +352,10 @@ namespace VideoPlayerTrimmer.ViewModels
             //await ffmpegService.Test(filePath);
         }
 
-        public async Task ChooseVideoAsync()
+        public Task ChooseVideoAsync()
         {
-            var parameters = new NavigationParameters();
-            parameters.Add(NavigationParameterNames.GoBack, true);
-            await navigationService.NavigateAsync(PageNames.Videos, parameters);
+            return App.NavigationService.NavigateToAsync($"{PageNames.Videos}" +
+                $"?{NavigationParameterNames.GoBack}={true}");
         }
 
         public async Task SaveVideoAsync()
