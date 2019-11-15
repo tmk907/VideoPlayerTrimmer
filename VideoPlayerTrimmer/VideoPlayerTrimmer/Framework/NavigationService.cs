@@ -46,12 +46,12 @@ namespace VideoPlayerTrimmer.Framework
             return lookupDict;
         }
 
-        public Task NavigateToAsync(string pageName, bool animate = true)
+        public Task NavigateToAsync(string pageName, bool animate = false)
         {
             return Shell.Current.GoToAsync(pageName, animate);
         }
 
-        public Task NavigateBackAsync(bool animated = true)
+        public Task NavigateBackAsync(bool animated = false)
         {
             return Shell.Current.Navigation.PopAsync(animated);
         }
