@@ -86,12 +86,16 @@ namespace VideoPlayerTrimmer.Services
             }
         }
 
-        public List<VideoItem> SearchVideoItems(string title)
+        public IEnumerable<VideoItem> SearchVideoItems(string title)
         {
-            return videoItems.Where(v => 
+            var start = videoItems.Where(v =>
                 v.Title.ToLowerInvariant().StartsWith(title.ToLowerInvariant()) ||
-                v.FileNameWithoutExtension.ToLowerInvariant().StartsWith(title.ToLowerInvariant()))
-                .ToList();
+                v.FileNameWithoutExtension.ToLowerInvariant().StartsWith(title.ToLowerInvariant()));
+            var contains = videoItems.Where(v =>
+                v.Title.ToLowerInvariant().Contains(title.ToLowerInvariant()) ||
+                v.FileNameWithoutExtension.ToLowerInvariant().Contains(title.ToLowerInvariant()));
+            var result = start.Concat(contains).Distinct();
+            return result;
         }
 
         public async Task MarkAsPlayedAsync(VideoItem video)

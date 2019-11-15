@@ -309,10 +309,9 @@ namespace VideoPlayerTrimmer.ViewModels
         {
             base.OnNavigating(navigationArgs);
 
-            var filePathParam = navigationParameters[NavigationParameterNames.VideoPath];
-            if (!String.IsNullOrEmpty(filePathParam))
+            if (navigationParameters.ContainsKey(NavigationParameterNames.VideoPath))
             {
-                filePath = filePathParam;
+                filePath = navigationParameters[NavigationParameterNames.VideoPath];
             }
         }
 
@@ -354,7 +353,7 @@ namespace VideoPlayerTrimmer.ViewModels
 
         public Task ChooseVideoAsync()
         {
-            return App.NavigationService.NavigateToAsync($"{PageNames.Videos}" +
+            return App.NavigationService.NavigateToAsync($"{PageNames.TrimmerNav}/{PageNames.Videos}" +
                 $"?{NavigationParameterNames.GoBack}={true}");
         }
 

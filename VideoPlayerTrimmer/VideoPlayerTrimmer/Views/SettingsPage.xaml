@@ -15,33 +15,33 @@
             <Setter Property="FontSize" Value="14"/>
         </Style>
     </ContentPage.Resources>
+    <Shell.TitleView>
+        <Label Text="Settings" Style="{StaticResource TitleLabelStyle}"/>
+    </Shell.TitleView>
     <ContentPage.Content>
         <StackLayout Orientation="Vertical">
-            <Frame BackgroundColor="{StaticResource NavBarColor}" HeightRequest="{StaticResource NavBarHeight}" HasShadow="True" Padding="0">
-                <Label Text="Settings" TextColor="White" FontSize="20" Margin="24,0,0,0" VerticalTextAlignment="Center"/>
-            </Frame>
             <ScrollView Margin="12,0,12,0">
-            <StackLayout Orientation="Vertical" Margin="0,12,0,12">
-                <controls:SettingsEntry Header="Resume playback" Description="If disabled video is played from beginning">
-                    <Switch IsToggled="{Binding ResumePlayback}"/>
-                </controls:SettingsEntry>
-                <controls:SettingsEntry Header="Use hardware acceleration" Description="" IsLineVisible="False">
-                    <Switch IsToggled="{Binding UseHardwareAcceleration}"/>
-                </controls:SettingsEntry>
+                <StackLayout Orientation="Vertical" Margin="0,12,0,12">
+                    <controls:SettingsEntry Header="Resume playback" Description="If disabled video is played from beginning">
+                        <Switch IsToggled="{Binding ResumePlayback}"/>
+                    </controls:SettingsEntry>
+                    <controls:SettingsEntry Header="Use hardware acceleration" Description="" IsLineVisible="False">
+                        <Switch IsToggled="{Binding UseHardwareAcceleration}"/>
+                    </controls:SettingsEntry>
 
-                <Frame>
-                    <StackLayout Orientation="Vertical" HorizontalOptions="Center">
-                        <Label Text="VideoPlayerTrimmer"
-                               FontSize="17"
-                               HorizontalTextAlignment="Center"/>
-                        <StackLayout Orientation="Horizontal" HorizontalOptions="Center">
-                            <Label Text="{Binding CurrentVersion}"/>
-                            <Label Text="Debug" IsVisible="{Binding IsDebug}"/>
+                    <Frame>
+                        <StackLayout Orientation="Vertical" HorizontalOptions="Center">
+                            <Label Text="VideoPlayerTrimmer"
+                                   FontSize="17"
+                                   HorizontalTextAlignment="Center"/>
+                            <StackLayout Orientation="Horizontal" HorizontalOptions="Center">
+                                <Label Text="{Binding CurrentVersion}"/>
+                                <Label Text="Debug" IsVisible="{Binding IsDebug}"/>
+                            </StackLayout>
                         </StackLayout>
-                    </StackLayout>
-                </Frame>
-            </StackLayout>
-        </ScrollView>
+                    </Frame>
+                </StackLayout>
+            </ScrollView>
         </StackLayout>
     </ContentPage.Content>
 </views:SettingsContentPage>

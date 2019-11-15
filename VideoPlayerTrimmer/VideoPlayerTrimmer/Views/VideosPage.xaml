@@ -10,6 +10,9 @@
             <converters:TimeSpanToVideoDurationConverter x:Key="DurationConverter" />
         </ResourceDictionary>
     </ContentPage.Resources>
+    <Shell.TitleView>
+        <Label Text="Videos" Style="{StaticResource TitleLabelStyle}"/>
+    </Shell.TitleView>
     <ContentPage.Content>
         <CollectionView
             ItemsSource="{Binding VideoItems}"

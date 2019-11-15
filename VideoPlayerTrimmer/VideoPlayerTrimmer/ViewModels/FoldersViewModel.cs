@@ -20,17 +20,6 @@ namespace VideoPlayerTrimmer.ViewModels
             this.videoLibrary = videoLibrary;
             Folders = new ObservableCollection<FolderItem>();
             ItemTappedCommand = new AsyncCommand<object>((item) => NavigateToVideosPage(item));
-            if (Xamarin.Forms.DesignMode.IsDesignModeEnabled)
-            {
-                Folders.Add(new FolderItem()
-                {
-                    FolderName = "Folder1"
-                });
-                Folders.Add(new FolderItem()
-                {
-                    FolderName = "Folder2"
-                });
-            }
         }
 
         public ObservableCollection<FolderItem> Folders { get; set; }

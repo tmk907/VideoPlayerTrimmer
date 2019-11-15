@@ -1,11 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Shell xmlns="http://xamarin.com/schemas/2014/forms"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:d="http://xamarin.com/schemas/2014/forms/design"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-       xmlns:views="clr-namespace:VideoPlayerTrimmer.Views"
-             mc:Ignorable="d"
-             x:Class="VideoPlayerTrimmer.Views.AppShell">
+        xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+        xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:fonts="clr-namespace:VideoPlayerTrimmer.Fonts"
+        xmlns:views="clr-namespace:VideoPlayerTrimmer.Views"
+       xmlns:routes="clr-namespace:VideoPlayerTrimmer"
+        mc:Ignorable="d"
+        x:Class="VideoPlayerTrimmer.Views.AppShell">
     <Shell.Resources>
         <ResourceDictionary>
             <Color x:Key="NavigationPrimary">#2196F3</Color>
@@ -21,20 +23,37 @@
                 <Setter Property="Shell.TabBarTitleColor" Value="White"/>
             </Style>
             <Style TargetType="TabBar" BasedOn="{StaticResource BaseStyle}" />
+            <x:Double x:Key="IconSize">16</x:Double>
         </ResourceDictionary>
     </Shell.Resources>
-    <TabBar>
-        <Tab Title="Folders">
-            <ShellContent Route="folders" ContentTemplate="{DataTemplate views:FoldersPage}"/>
+    <TabBar Route="{x:Static routes:PageNames.Main}">
+        <Tab Title="Folders" Route="{x:Static routes:PageNames.FoldersTab}">
+            <Tab.Icon>
+                <FontImageSource Glyph="{x:Static fonts:FontAwesomeSolid.Folder }" 
+                                 FontFamily="{x:StaticResource FontAwesomeSolid}"/>
+            </Tab.Icon>
+            <ShellContent Route="{x:Static routes:PageNames.Folders}" Title="Folders" ContentTemplate="{DataTemplate views:FoldersPage}"/>
         </Tab>
-        <Tab Title="Favorites">
-            <ShellContent Route="favorites" ContentTemplate="{DataTemplate views:FavoriteScenesPage}"/>
+        <Tab Title="Favorites" Route="{x:Static routes:PageNames.FavoritesTab}">
+            <Tab.Icon>
+                <FontImageSource Glyph="{x:Static fonts:FontAwesomeSolid.Heart }" 
+                                 FontFamily="{x:StaticResource FontAwesomeSolid}"/>
+            </Tab.Icon>
+            <ShellContent Route="{x:Static routes:PageNames.Favourites}" Title="Favorites" ContentTemplate="{DataTemplate views:FavoriteScenesPage}"/>
         </Tab>
-        <Tab Title="Trimmer">
-            <ShellContent Route="trimmer" ContentTemplate="{DataTemplate views:TrimmerPage}"/>
+        <Tab Title="Trimmer" Route="{x:Static routes:PageNames.TrimmerTab}">
+            <Tab.Icon>
+                <FontImageSource Glyph="{x:Static fonts:FontAwesomeSolid.Cut }" 
+                                 FontFamily="{x:StaticResource FontAwesomeSolid}"/>
+            </Tab.Icon>
+            <ShellContent Route="{x:Static routes:PageNames.Trimmer}" Title="Trimmer" ContentTemplate="{DataTemplate views:TrimmerPage}"/>
         </Tab>
-        <Tab Title="Settings">
-            <ShellContent Route="settings" ContentTemplate="{DataTemplate views:SettingsPage}"/>
+        <Tab Title="Settings" Route="{x:Static routes:PageNames.SettingsTab}">
+            <Tab.Icon>
+                <FontImageSource Glyph="{x:Static fonts:FontAwesomeSolid.Cog }" 
+                                 FontFamily="{x:StaticResource FontAwesomeSolid}"/>
+            </Tab.Icon>
+            <ShellContent Route="{x:Static routes:PageNames.Settings}" Title="Settings" ContentTemplate="{DataTemplate views:SettingsPage}"/>
         </Tab>
     </TabBar>
 </Shell>

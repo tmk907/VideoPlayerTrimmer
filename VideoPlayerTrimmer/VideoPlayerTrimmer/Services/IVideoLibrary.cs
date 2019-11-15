@@ -12,7 +12,7 @@ namespace VideoPlayerTrimmer.Services
         Task<List<FolderItem>> GetFolderItemsAsync(bool forceUpdate);
         Task<VideoItem> GetVideoItemAsync(string filePath);
         Task<List<VideoItem>> GetVideoItemsAsync(string folderPath, bool forceUpdate);
-        List<VideoItem> SearchVideoItems(string title);
+        IEnumerable<VideoItem> SearchVideoItems(string title);
         Task MarkAsPlayedAsync(VideoItem video);
         Task SaveVideoItemPreferences(VideoItem videoItem);
         Task<IEnumerable<FavoriteScene>> GetFavoriteScenes(int videoId);

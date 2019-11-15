@@ -3,64 +3,59 @@
     xmlns="http://xamarin.com/schemas/2014/forms"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:views="clr-namespace:VideoPlayerTrimmer.Views"
-    xmlns:models="clr-namespace:VideoPlayerTrimmer.Models"
     xmlns:asb="clr-namespace:dotMorten.Xamarin.Forms;assembly=dotMorten.Xamarin.Forms.AutoSuggestBox"
-    x:Class="VideoPlayerTrimmer.Views.FoldersPage">
+    x:Class="VideoPlayerTrimmer.Views.FoldersPage"
+    Title="Folders">
     <ContentPage.Resources>
         <x:String x:Key="fas-search">&#xf002;</x:String>
         <x:String x:Key="fas-times">&#xf00d;</x:String>
         <x:String x:Key="fas-folder-open">&#xf07c;</x:String>
         <x:String x:Key="fas-film">&#xf008;</x:String>
     </ContentPage.Resources>
+    <Shell.TitleView>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="50"/>
+            </Grid.ColumnDefinitions>
+            <Label x:Name="TitleLabel" Grid.Column="0" Text="Folders" Style="{StaticResource TitleLabelStyle}"/>
+            <asb:AutoSuggestBox
+                    x:Name="SearchBox"
+                    Grid.Column="0"
+                    Margin="24,0,0,0"
+                    Unfocused="SearchBox_Unfocused"
+                    IsVisible="False"
+                    Opacity="0"
+                    TextMemberPath="Title"
+                    DisplayMemberPath="Title"
+                    TextChanged="AutoSuggestBox_TextChanged"
+                    TextColor="White"
+                    QuerySubmitted="AutoSuggestBox_QuerySubmitted"/>
+            <Button 
+                    x:Name="SearchButton" 
+                    Grid.Column="1" 
+                    BackgroundColor="Transparent"
+                    Text="{StaticResource fas-search}" 
+                    FontFamily="{StaticResource FontAwesomeSolid}"
+                    FontSize="26"
+                    TextColor="White"
+                    Clicked="SearchButton_Clicked"/>
+            <Button 
+                    x:Name="CancelButton" 
+                    Grid.Column="1" 
+                    IsVisible="False"
+                    Opacity="0"
+                    BackgroundColor="Transparent"
+                    Text="{StaticResource fas-times}"
+                    FontFamily="{StaticResource FontAwesomeSolid}"
+                    FontSize="26"
+                    TextColor="White"
+                    Clicked="CancelButton_Clicked"/>
+        </Grid>
+    </Shell.TitleView>
     <ContentPage.Content>
         <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition/>
-            </Grid.RowDefinitions>
-            <Frame Grid.Row="0" BackgroundColor="{StaticResource NavBarColor}" HeightRequest="{StaticResource NavBarHeight}" HasShadow="True" Padding="0">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition/>
-                        <ColumnDefinition Width="50"/>
-                    </Grid.ColumnDefinitions>
-                    <Label x:Name="TitleLabel" Text="Folders" TextColor="White" FontSize="20" Margin="24,0,0,0" VerticalTextAlignment="Center" Grid.Column="0"/> 
-                    <asb:AutoSuggestBox
-                        x:Name="SearchBox"
-                        Grid.Column="0"
-                        Margin="24,0,0,0"
-                        Unfocused="SearchBox_Unfocused"
-                        IsVisible="False"
-                        Opacity="0"
-                        TextMemberPath="Title"
-                        DisplayMemberPath="Title"
-                        TextChanged="AutoSuggestBox_TextChanged"
-                        TextColor="White"
-                        QuerySubmitted="AutoSuggestBox_QuerySubmitted"/>
-                    <Button 
-                        x:Name="SearchButton" 
-                        Grid.Column="1" 
-                        BackgroundColor="Transparent"
-                        Text="{StaticResource fas-search}" 
-                        FontFamily="{StaticResource FontAwesomeSolid}"
-                        FontSize="26"
-                        TextColor="White"
-                        Clicked="SearchButton_Clicked"/>
-                    <Button 
-                        x:Name="CancelButton" 
-                        Grid.Column="1" 
-                        IsVisible="False"
-                        Opacity="0"
-                        BackgroundColor="Transparent"
-                        Text="{StaticResource fas-times}"
-                        FontFamily="{StaticResource FontAwesomeSolid}"
-                        FontSize="26"
-                        TextColor="White"
-                        Clicked="CancelButton_Clicked"/>
-                </Grid>
-            </Frame>
             <CollectionView
-                Grid.Row="1"
                 ItemsSource="{Binding Folders}"
                 x:Name="CollectionView"
                 SelectionMode="Single"
@@ -76,8 +71,8 @@
                             <Label 
                                 Grid.Column="0" 
                                 HeightRequest="30"
-                                HorizontalTextAlignment="Center" VerticalTextAlignment="Center"
-                                FontSize="58"
+                                HorizontalTextAlignment="Center" VerticalTextAlignment="End"
+                                FontSize="50"
                                 Text="{StaticResource fas-folder-open}" FontFamily="{StaticResource FontAwesomeSolid}"
                                 TextColor="{StaticResource OrangeColor}"/>
                             <Grid Grid.Column="1" RowSpacing="0">

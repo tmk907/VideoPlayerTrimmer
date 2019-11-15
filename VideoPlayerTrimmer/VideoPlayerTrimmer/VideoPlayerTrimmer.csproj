@@ -13,6 +13,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Vlc\**" />
+    <EmbeddedResource Remove="Vlc\**" />
+    <None Remove="Vlc\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="AsyncAwaitBestPractices" Version="3.1.0" />
     <PackageReference Include="AsyncAwaitBestPractices.MVVM" Version="3.1.0" />
     <PackageReference Include="dotMorten.Xamarin.Forms.AutoSuggestBox" Version="0.7.0" />
@@ -114,7 +120,6 @@
   <ItemGroup>
     <Folder Include="Effects\" />
     <Folder Include="Styles\" />
-    <Folder Include="Vlc\" />
   </ItemGroup>
 
   <ItemGroup>

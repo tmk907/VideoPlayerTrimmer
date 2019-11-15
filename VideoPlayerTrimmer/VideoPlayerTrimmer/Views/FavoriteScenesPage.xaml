@@ -7,17 +7,12 @@
     <ContentPage.Resources>
         <converters:TimeSpanToVideoDurationConverter x:Key="DurationConverter" />
     </ContentPage.Resources>
+    <Shell.TitleView>
+        <Label Text="Favorites" Style="{StaticResource TitleLabelStyle}"/>
+    </Shell.TitleView>
     <ContentPage.Content>
         <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition/>
-            </Grid.RowDefinitions>
-            <Frame Grid.Row="0" BackgroundColor="{StaticResource NavBarColor}" HeightRequest="{StaticResource NavBarHeight}" HasShadow="True" Padding="0">
-                <Label Text="Favorites" TextColor="White" FontSize="20" Margin="24,0,0,0" VerticalTextAlignment="Center"/>
-            </Frame>
             <CollectionView
-                Grid.Row="1"
                 ItemsSource="{Binding GroupedFavoriteScenes}"
                 x:Name="CollectionView"
                 SelectionMode="Single"
