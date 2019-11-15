@@ -17,6 +17,7 @@
                 x:Name="CollectionView"
                 SelectionMode="Single"
                 IsGrouped="True"
+                Margin="2"
                 SelectionChangedCommand="{Binding ItemTappedCommand}"
                 SelectionChangedCommandParameter="{Binding SelectedItem, Source={x:Reference CollectionView}}">
                 <CollectionView.GroupHeaderTemplate>

@@ -37,7 +37,7 @@
                     BackgroundColor="Transparent"
                     Text="{StaticResource fas-search}" 
                     FontFamily="{StaticResource FontAwesomeSolid}"
-                    FontSize="26"
+                    FontSize="23"
                     TextColor="White"
                     Clicked="SearchButton_Clicked"/>
             <Button 
@@ -48,7 +48,7 @@
                     BackgroundColor="Transparent"
                     Text="{StaticResource fas-times}"
                     FontFamily="{StaticResource FontAwesomeSolid}"
-                    FontSize="26"
+                    FontSize="23"
                     TextColor="White"
                     Clicked="CancelButton_Clicked"/>
         </Grid>
@@ -58,6 +58,7 @@
             <CollectionView
                 ItemsSource="{Binding Folders}"
                 x:Name="CollectionView"
+                Margin="8,0,8,0"
                 SelectionMode="Single"
                 SelectionChangedCommand="{Binding ItemTappedCommand}"
                 SelectionChangedCommandParameter="{Binding SelectedItem,Source={x:Reference CollectionView}}">
@@ -65,10 +66,10 @@
                     <DataTemplate>
                         <Grid HeightRequest="60" Style="{StaticResource DataTemplateRootGridStyle}">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="80"/>
+                                <ColumnDefinition Width="70"/>
                                 <ColumnDefinition/>
                             </Grid.ColumnDefinitions>
-                            <Label 
+                            <Label
                                 Grid.Column="0" 
                                 HeightRequest="30"
                                 HorizontalTextAlignment="Center" VerticalTextAlignment="End"
@@ -87,10 +88,13 @@
                                     TextColor="Black"
                                     Text="{Binding FolderName}"
                                     VerticalTextAlignment="Center"/>
-                                <StackLayout Grid.Row="1" Orientation="Horizontal">
+                                <StackLayout Grid.Row="1" Orientation="Horizontal" Spacing="3">
                                     <Label VerticalTextAlignment="Center"
+                                           FontSize="13"
                                         Text="{Binding VideoCount}" />
-                                    <Label VerticalTextAlignment="Center"
+                                    <Label VerticalOptions="Center"
+                                           Margin="0,2,0,0"
+                                           FontSize="13"
                                         Text="{StaticResource fas-film}" FontFamily="{StaticResource FontAwesomeSolid}"/>
                                     <Label VerticalTextAlignment="Center"
                                         Text="NEW" 

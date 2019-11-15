@@ -18,11 +18,12 @@
             ItemsSource="{Binding VideoItems}"
             x:Name="CollectionView"
             SelectionMode="Single"
+            Margin="2"
             SelectionChangedCommand="{Binding ItemTappedCommand}"
             SelectionChangedCommandParameter="{Binding SelectedItem,Source={x:Reference CollectionView}}">
             <CollectionView.ItemTemplate>
                 <DataTemplate>
-                    <Grid HeightRequest="60" Style="{StaticResource DataTemplateRootGridStyle}">
+                    <Grid HeightRequest="70" Style="{StaticResource DataTemplateRootGridStyle}">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition/>
@@ -74,10 +75,11 @@
                             Grid.Column="1"
                             LineBreakMode="TailTruncation"
                             MaxLines="3"
-                            FontSize="16"
+                            FontSize="15"
+                            Margin="0,2,0,2"
                             TextColor="Black"
                             Text="{Binding Title}"
-                            VerticalTextAlignment="Center"/>
+                            VerticalTextAlignment="Start"/>
                     </Grid>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
