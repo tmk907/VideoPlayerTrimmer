@@ -62,7 +62,7 @@ namespace VideoPlayerTrimmer.PlayerControls
             BindableProperty.Create(nameof(FavoriteIconFontFamily),
                                     typeof(string),
                                     typeof(PlaybackControls),
-                                    FontAwesomeSolid);
+                                    FontAwesomeRegular);
         public string FavoriteIconFontFamily
         {
             get { return (string)GetValue(FavoriteIconFontFamilyProperty); }
@@ -73,7 +73,7 @@ namespace VideoPlayerTrimmer.PlayerControls
             BindableProperty.Create(nameof(FavoriteIcon),
                                     typeof(string),
                                     typeof(PlaybackControls),
-                                    FasHeart);
+                                    FarHeart);
         public string FavoriteIcon
         {
             get { return (string)GetValue(FavoriteIconProperty); }
@@ -352,7 +352,9 @@ namespace VideoPlayerTrimmer.PlayerControls
             BindableProperty.Create(nameof(IsControlVisible),
                                     typeof(bool),
                                     typeof(PlaybackControls),
-                                    true);
+                                    true,
+                                    defaultBindingMode: BindingMode.TwoWay,
+                                    propertyChanged: IsControlVisiblePropertyChanged);
         public bool IsControlVisible
         {
             get { return (bool)GetValue(IsControlVisibleProperty); }
@@ -361,11 +363,16 @@ namespace VideoPlayerTrimmer.PlayerControls
 
         private static void IsControlVisiblePropertyChanged(BindableObject bindable, object oldValue, object newValue)
         {
-
+            ((PlaybackControls)bindable).AnimateVisibility();
         }
 
 
-        private async void TapGestureRecognizer_Tapped(object sender, EventArgs e)
+        private void TapGestureRecognizer_Tapped(object sender, EventArgs e)
+        {
+            AnimateVisibility();
+        }
+
+        private async void AnimateVisibility()
         {
             if (IsControlVisible)
             {
