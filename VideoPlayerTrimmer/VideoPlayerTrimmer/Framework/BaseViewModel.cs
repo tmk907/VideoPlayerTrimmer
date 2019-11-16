@@ -29,6 +29,7 @@ namespace VideoPlayerTrimmer.Framework
 
         public virtual void OnAppearing(bool firstTime)
         {
+            App.DebugLog(this.GetType().ToString());
             firstTimeAppeared = firstTime;
             cts = new CancellationTokenSource();
             InitializeVMAsyncInternal(cts.Token).SafeFireAndForget(true);
@@ -36,6 +37,7 @@ namespace VideoPlayerTrimmer.Framework
 
         public virtual void OnDisappearing(bool firstTime)
         {
+            App.DebugLog(this.GetType().ToString());
             firstTimeDisappeared = firstTime;
             cts.Cancel();
             UnInitializeVMAsync().SafeFireAndForget(true);

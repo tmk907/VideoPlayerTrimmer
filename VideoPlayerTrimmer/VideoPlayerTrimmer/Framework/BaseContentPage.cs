@@ -12,7 +12,7 @@ namespace VideoPlayerTrimmer.Framework
 
         public BaseContentPage()
         {
-            App.DebugLog("");
+            App.DebugLog("BaseContentPage() " + this.GetType());
             ViewModel = App.DIContainer.Resolve<T>();
             BindingContext = ViewModel;
             ViewModel.OnNavigating(App.NavigationService.GetNavigationParameters());
@@ -20,7 +20,8 @@ namespace VideoPlayerTrimmer.Framework
 
         protected override void OnAppearing()
         {
-            App.DebugLog("");
+            App.DebugLog(this.GetType().ToString());
+
             base.OnAppearing();
 
             ViewModel.OnAppearing(firstTimeAppearing);
@@ -33,7 +34,7 @@ namespace VideoPlayerTrimmer.Framework
 
         protected override void OnDisappearing()
         {
-            App.DebugLog("");
+            App.DebugLog(this.GetType().ToString());
             base.OnDisappearing();
 
             ViewModel.OnDisappearing(firstTimeDisappearing);
