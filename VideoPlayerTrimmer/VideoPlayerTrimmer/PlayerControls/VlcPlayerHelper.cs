@@ -1,10 +1,12 @@
 ﻿using LibVLCSharp.Forms.Shared;
 using LibVLCSharp.Shared;
+using LibVLCSharp.Shared.Structures;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using VideoPlayerTrimmer.Framework;
+using VideoPlayerTrimmer.MediaHelpers;
 using VideoPlayerTrimmer.Services;
 using Xamarin.Forms;
 
@@ -73,6 +75,19 @@ namespace VideoPlayerTrimmer.PlayerControls
             MediaPlayer.NothingSpecial += MediaPlayer_NothingSpecial;
             MediaPlayer.EndReached += MediaPlayer_EndReached;
             MediaPlayer.EncounteredError += MediaPlayer_EncounteredError;
+            MediaPlayer.MediaChanged += MediaPlayer_MediaChanged;
+            MediaPlayer.ESAdded += MediaPlayer_ESAdded;
+            mediaPlayer.ESDeleted += MediaPlayer_ESDeleted;
+        }
+
+        private void MediaPlayer_ESDeleted(object sender, MediaPlayerESDeletedEventArgs e)
+        {
+            App.DebugLog("");
+        }
+
+        private void MediaPlayer_ESAdded(object sender, MediaPlayerESAddedEventArgs e)
+        {
+            App.DebugLog("");
         }
 
         private void UninitMediaPlayer()
@@ -87,6 +102,9 @@ namespace VideoPlayerTrimmer.PlayerControls
             MediaPlayer.NothingSpecial -= MediaPlayer_NothingSpecial;
             MediaPlayer.EndReached -= MediaPlayer_EndReached;
             MediaPlayer.EncounteredError -= MediaPlayer_EncounteredError;
+            MediaPlayer.MediaChanged -= MediaPlayer_MediaChanged;
+            MediaPlayer.ESAdded -= MediaPlayer_ESAdded;
+            mediaPlayer.ESDeleted -= MediaPlayer_ESDeleted;
         }
 
         public void OnAppearing()
@@ -100,7 +118,7 @@ namespace VideoPlayerTrimmer.PlayerControls
         public void OnDisappearing()
         {
             App.DebugLog("");
-
+            mediaPlayer.Stop();
             VideoView = null;
         }
 
@@ -181,7 +199,6 @@ namespace VideoPlayerTrimmer.PlayerControls
         private void MediaPlayer_TimeChanged(object sender, MediaPlayerTimeChangedEventArgs e)
         {
             Device.BeginInvokeOnMainThread(() => { ElapsedTime = TimeSpan.FromMilliseconds(e.Time); });
-            //ShowIsFavorite(currentTime);
         }
 
         private void MediaPlayer_EndReached(object sender, EventArgs e)
@@ -219,6 +236,17 @@ namespace VideoPlayerTrimmer.PlayerControls
             App.DebugLog("");
             UpdateState(VLCState.Stopped);
         }
+
+        private void MediaPlayer_MediaChanged(object sender, MediaPlayerMediaChangedEventArgs e)
+        {
+            App.DebugLog("");
+        }
+
+        private void MediaPlayer_TracksChanged(object sender, EventArgs e)
+        {
+            App.DebugLog("");
+        }
+
 
         private void UpdateState(VLCState playbackState)
         {
@@ -360,6 +388,56 @@ namespace VideoPlayerTrimmer.PlayerControls
                     break;
             }
             CurrentAspectRatio = newRatio;
+        }
+
+        public IEnumerable<AudioTrackInfo> GetAudioTracks()
+        {
+            var audioTracks = new List<AudioTrackInfo>();
+
+            foreach (var item in mediaPlayer.AudioTrackDescription)
+            {
+                audioTracks.Add(new AudioTrackInfo() { Id = item.Id, Name = item.Name });
+            }
+            audioTracks.SingleOrDefault(a => a.Id == mediaPlayer.AudioTrack).IsSelected = true;
+
+            return audioTracks;
+        }
+
+        public void SetAudioTrack(int trackIndex)
+        {
+            mediaPlayer.SetAudioTrack(trackIndex);
+        }
+
+        public IEnumerable<SubtitleInfo> GetSubtitleTracks()
+        {
+            var subtitles = new List<SubtitleInfo>();
+
+            foreach (var item in mediaPlayer.SpuDescription)
+            {
+                subtitles.Add(new SubtitleInfo() { VlcId = item.Id, Name = item.Name });
+            }
+            var sub = subtitles.SingleOrDefault(a => a.VlcId == mediaPlayer.Spu);
+            if (sub != null)
+            {
+                sub.IsSelected = true;
+            }
+
+            return subtitles;
+        }
+
+        public void SetSubtitles(int trackIndex)
+        {
+            mediaPlayer.SetSpu(trackIndex);
+        }
+
+        public void SetSubtitles(string filePath)
+        {
+            mediaPlayer.AddSlave(MediaSlaveType.Subtitle, filePath, true);
+        }
+
+        public void SetSubtitlesDelay(long milliseconds)
+        {
+            mediaPlayer.SetSpuDelay(milliseconds);
         }
     }
 

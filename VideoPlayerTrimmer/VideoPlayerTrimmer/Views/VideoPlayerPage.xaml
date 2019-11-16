@@ -43,6 +43,8 @@
                     ElapsedTime="{Binding VlcPlayerHelper.ElapsedTime}"
                     TotalTime="{Binding VlcPlayerHelper.TotalTime}"
                     IsPlaying="{Binding VlcPlayerHelper.IsPlaying}"
+                    IsFavorite="{Binding IsFavorite}"
+                    IsControlVisible="{Binding IsControlVisible, Mode=TwoWay}"
                     AspectRatioClickedCommand="{Binding VlcPlayerHelper.AspectRatioClickedCommand}"
                     PlayPauseClickedCommand="{Binding VlcPlayerHelper.PlayPauseCommand}"
                     SliderValueChangedCommand="{Binding VlcPlayerHelper.SliderValueChangedCommand}"
@@ -117,6 +119,7 @@
                                     </DataTemplate>
                                 </BindableLayout.ItemTemplate>
                             </StackLayout>
+                            <Button Text="Add file" Command="{Binding AddSubtitlesFromFileCommand}" HorizontalOptions="Center"/>
                         </StackLayout>
                     </ScrollView>
                 </ContentView>

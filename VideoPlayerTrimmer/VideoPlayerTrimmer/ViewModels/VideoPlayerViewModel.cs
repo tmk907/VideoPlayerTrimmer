@@ -1,4 +1,7 @@
-﻿using LibVLCSharp.Shared;
+﻿using AsyncAwaitBestPractices.MVVM;
+using LibVLCSharp.Shared;
+using Plugin.FilePicker;
+using Plugin.FilePicker.Abstractions;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -7,6 +10,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using VideoPlayerTrimmer.Extensions;
 using VideoPlayerTrimmer.Framework;
 using VideoPlayerTrimmer.MediaHelpers;
 using VideoPlayerTrimmer.Models;
@@ -43,6 +47,7 @@ namespace VideoPlayerTrimmer.ViewModels
             ToggleMediaInfoCommand = new Command(ToggleMediaInfo);
             SelectSubtitlesCommand = new Command<object>(SelectSubtitles, (e) => canChangeSubtitles);
             SelectAudioTrackCommand = new Command<object>(SelectAudioTrack, (e) => canChangeAudioTrack);
+            AddSubtitlesFromFileCommand = new AsyncCommand(AddSubtitlesFromFile);
             MaxVolume = volumeController.GetMaxVolume();
             Volume = volumeController.GetVolume();
             volumeController.VolumeChanged += VolumeController_VolumeChanged;
@@ -103,6 +108,7 @@ namespace VideoPlayerTrimmer.ViewModels
             {
                 lastPosition = userPosition;
             }
+            lastPosition = lastPosition > 750 ? lastPosition : 0;
 
             InitMediaPlayer();
             StartPlayingOrResume();
@@ -111,6 +117,14 @@ namespace VideoPlayerTrimmer.ViewModels
         protected override async Task UnInitializeVMAsync()
         {
             App.DebugLog(firstTimeDisappeared.ToString());
+            
+            var currentTime = vlcPlayerHelper.ElapsedTime;
+            videoItem.Preferences.Position = currentTime;
+            if (currentTime >= vlcPlayerHelper.TotalTime - TimeSpan.FromSeconds(0.5))
+            {
+                videoItem.Preferences.Position = TimeSpan.Zero;
+            }
+
             UnInitMediaPlayer();
 
             statusBarService.IsVisible = true;
@@ -118,11 +132,6 @@ namespace VideoPlayerTrimmer.ViewModels
             orientationService.RestoreOrientation();
 
             await videoLibrary.MarkAsPlayedAsync(videoItem);
-            videoItem.Preferences.Position = CurrentTime;
-            if (currentTime >= totalTime - TimeSpan.FromSeconds(0.5))
-            {
-                videoItem.Preferences.Position = TimeSpan.Zero;
-            }
             await videoLibrary.SaveVideoItemPreferences(videoItem);
             await videoLibrary.SaveFavoriteScenes(videoItem.VideoId, favoriteScenes.Select(s => s.Value));
         }
@@ -131,7 +140,8 @@ namespace VideoPlayerTrimmer.ViewModels
         {
             App.DebugLog("");
             VlcPlayerHelper.LoadFile(filePath);
-            
+
+            VlcPlayerHelper.MediaPlayer.TimeChanged += MediaPlayer_TimeChanged;
             VlcPlayerHelper.MediaPlayer.SnapshotTaken += MediaPlayer_SnapshotTaken;
         }
 
@@ -140,19 +150,20 @@ namespace VideoPlayerTrimmer.ViewModels
             App.DebugLog("");
 
             VlcPlayerHelper.MediaPlayer.Pause();
-            lastPosition = VlcPlayerHelper.MediaPlayer.Time;
-            VlcPlayerHelper.MediaPlayer.Stop();
-
+            VlcPlayerHelper.MediaPlayer.TimeChanged -= MediaPlayer_TimeChanged;
             VlcPlayerHelper.MediaPlayer.SnapshotTaken -= MediaPlayer_SnapshotTaken;
             VlcPlayerHelper.OnDisappearing();
         }
-
         
         private void MediaPlayer_SnapshotTaken(object sender, MediaPlayerSnapshotTakenEventArgs e)
         {
             App.DebugLog(e.Filename);
         }
 
+        private void MediaPlayer_TimeChanged(object sender, MediaPlayerTimeChangedEventArgs e)
+        {
+            ShowIsFavorite(TimeSpan.FromMilliseconds(e.Time));
+        }
 
         private void PlaybackControls_OnSubtitlesButtonClicked(object sender, EventArgs e)
         {
@@ -166,6 +177,7 @@ namespace VideoPlayerTrimmer.ViewModels
         public Command ToggleMediaInfoCommand { get; }
         public Command<object> SelectSubtitlesCommand { get; }
         public Command<object> SelectAudioTrackCommand { get; }
+        public IAsyncCommand AddSubtitlesFromFileCommand { get; }
 
 
         private long lastPosition = 0;
@@ -183,7 +195,10 @@ namespace VideoPlayerTrimmer.ViewModels
             {
                 VlcPlayerHelper.MediaPlayer.Play();
             }
-            VlcPlayerHelper.MediaPlayer.Time = lastPosition;
+            if (lastPosition > 0)
+            {
+                VlcPlayerHelper.MediaPlayer.Time = lastPosition;
+            }
         }
 
         #region VolumeAndBrightness
@@ -255,20 +270,6 @@ namespace VideoPlayerTrimmer.ViewModels
 
         #endregion
 
-        private TimeSpan currentTime = TimeSpan.Zero;
-        public TimeSpan CurrentTime
-        {
-            get { return currentTime; }
-            set { SetProperty(ref currentTime, value); }
-        }
-
-        private TimeSpan totalTime = TimeSpan.Zero;
-        public TimeSpan TotalTime
-        {
-            get { return totalTime; }
-            set { SetProperty(ref totalTime, value); }
-        }
-
         private string title = "";
         public string Title
         {
@@ -281,6 +282,14 @@ namespace VideoPlayerTrimmer.ViewModels
         {
             get { return isFavorite; }
             set { SetProperty(ref isFavorite, value); }
+        }
+
+
+        private bool isControlVisible = true;
+        public bool IsControlVisible
+        {
+            get { return isControlVisible; }
+            set { SetProperty(ref isControlVisible, value); }
         }
 
         private bool showControls;
@@ -297,6 +306,7 @@ namespace VideoPlayerTrimmer.ViewModels
                 IsAudioTracksPopupVisible = false;
                 IsSubtitlesPopupVisible = false;
                 IsMediaInfoPopupVisible = false;
+                IsControlVisible = false;
                 ShowControls = false;
             }
             else
@@ -328,6 +338,7 @@ namespace VideoPlayerTrimmer.ViewModels
 
         private void ToggleFavorite()
         {
+            var currentTime = vlcPlayerHelper.ElapsedTime;
             if (IsFavorite)
             {
                 favoriteScenes.RemoveFavorite(currentTime);
@@ -370,7 +381,7 @@ namespace VideoPlayerTrimmer.ViewModels
                 audio.IsSelected = false;
             }
             selected.IsSelected = true;
-            VlcPlayerHelper.MediaPlayer.SetAudioTrack(selected.Id);
+            VlcPlayerHelper.SetAudioTrack(selected.Id);
             canChangeAudioTrack = true;
         }
 
@@ -378,11 +389,7 @@ namespace VideoPlayerTrimmer.ViewModels
         {
             if (AudioTracks.Count == 0)
             {
-                foreach (var item in VlcPlayerHelper.MediaPlayer.AudioTrackDescription)
-                {
-                    AudioTracks.Add(new AudioTrackInfo() { Id = item.Id, Name = item.Name });
-                }
-                AudioTracks.SingleOrDefault(a => a.Id == VlcPlayerHelper.MediaPlayer.AudioTrack).IsSelected = true;
+                AudioTracks.AddRange(VlcPlayerHelper.GetAudioTracks());
             }
             IsAudioTracksPopupVisible = !IsAudioTracksPopupVisible;
         }
@@ -407,26 +414,49 @@ namespace VideoPlayerTrimmer.ViewModels
                 sub.IsSelected = false;
             }
             selected.IsSelected = true;
-            VlcPlayerHelper.MediaPlayer.SetSpu(selected.Id);
+            vlcPlayerHelper.SetSubtitles(selected.VlcId);
             canChangeSubtitles = true;
         }
 
         public void ToggleSubtitles()
         {
-            if (VlcPlayerHelper.MediaPlayer == null) return;
             if (Subtitles.Count == 0)
             {
-                foreach (var item in VlcPlayerHelper.MediaPlayer.SpuDescription)
-                {
-                    Subtitles.Add(new SubtitleInfo() { Id = item.Id, Name = item.Name });
-                }
-                var sub = Subtitles.SingleOrDefault(a => a.Id == VlcPlayerHelper.MediaPlayer.Spu);
-                if (sub != null)
-                {
-                    sub.IsSelected = true;
-                }
+                Subtitles.AddRange(vlcPlayerHelper.GetSubtitleTracks());
             }
             IsSubtitlesPopupVisible = !IsSubtitlesPopupVisible;
+        }
+
+        private async Task AddSubtitlesFromFile()
+        {
+            try
+            {
+                FileData fileData = await CrossFilePicker.Current.PickFile();
+                if (fileData == null) return; // user canceled file picking
+
+                foreach (var sub in Subtitles)
+                {
+                    sub.IsSelected = false;
+                }
+                var subs = Subtitles.FirstOrDefault(x => x.FilePath == fileData.FilePath);
+                if (subs == null)
+                {
+                    Subtitles.Add(new SubtitleInfo()
+                    {
+                        FilePath = fileData.FilePath,
+                        Name = fileData.FileName
+                    });
+                }
+                else
+                {
+                    subs.IsSelected = true;
+                }
+                vlcPlayerHelper.SetSubtitles(fileData.FilePath);
+            }
+            catch (Exception ex)
+            {
+                App.DebugLog(ex.ToString());
+            }
         }
 
         private bool isMediaInfoPopupVisible = false;
@@ -457,7 +487,7 @@ namespace VideoPlayerTrimmer.ViewModels
                 mi.AudioTracks = VlcPlayerHelper.MediaPlayer.AudioTrackDescription.Where(s => s.Id != -1)
                     .Select(a => new AudioTrackInfo() { Id = a.Id, Name = a.Name }).ToList();
                 mi.Subtitles = VlcPlayerHelper.MediaPlayer.SpuDescription.Where(s => s.Id != -1)
-                    .Select(s => new SubtitleInfo() { Id = s.Id, Name = s.Name }).ToList();
+                    .Select(s => new SubtitleInfo() { VlcId = s.Id, Name = s.Name }).ToList();
                 uint width = 0;
                 uint height = 0;
                 VlcPlayerHelper.MediaPlayer.Size(0, ref width, ref height);

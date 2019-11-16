@@ -4,7 +4,6 @@ namespace VideoPlayerTrimmer.MediaHelpers
 {
     public class SubtitleInfo : BindableBase
     {
-        public int Id { get; set; }
         public string Name { get; set; }
 
         private bool isSelected = false;
@@ -13,5 +12,11 @@ namespace VideoPlayerTrimmer.MediaHelpers
             get { return isSelected; }
             set { SetProperty(ref isSelected, value); }
         }
+        
+        public int VlcId { get; set; }
+
+        public string FilePath { get; set; }
+
+        public bool IsExternal { get { return !string.IsNullOrEmpty(FilePath); } }
     }
 }
