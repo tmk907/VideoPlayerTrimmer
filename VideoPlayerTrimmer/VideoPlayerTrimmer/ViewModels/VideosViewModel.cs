@@ -55,20 +55,10 @@ namespace VideoPlayerTrimmer.ViewModels
 
         public async Task NavigateToPlayerPage(VideoItem item)
         {
-            if (!backToTrimmer)
+            if (backToTrimmer)
             {
                 await App.NavigationService.NavigateToAsync($"{PageNames.TrimmerNav}" +
                     $"?{NavigationParameterNames.VideoPath}={item.FilePath}");
-
-                //await App.NavigationService.NavigateBackAsync();
-                //await App.NavigationService.NavigateToAsync($"{PageNames.Trimmer}");
-                //await App.NavigationService.NavigateToAsync($"/{PageNames.Trimmer}");
-                //await App.NavigationService.NavigateToAsync($"//{PageNames.Trimmer}");
-                //await App.NavigationService.NavigateToAsync($"///{PageNames.Trimmer}");
-                //await App.NavigationService.NavigateToAsync($"////{PageNames.Trimmer}");
-
-                //await App.NavigationService.NavigateToAsync($"///{PageNames.Trimmer}" +
-                //    $"?{NavigationParameterNames.VideoPath}={item.FilePath}");
             }
             else
             {
