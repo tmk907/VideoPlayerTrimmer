@@ -15,15 +15,17 @@
     </Shell.TitleView>
     <ContentPage.Content>
         <CollectionView
+            x:Name="MyCollectionView"
             ItemsSource="{Binding VideoItems}"
-            x:Name="CollectionView"
-            SelectionMode="Single"
-            Margin="2"
-            SelectionChangedCommand="{Binding ItemTappedCommand}"
-            SelectionChangedCommandParameter="{Binding SelectedItem,Source={x:Reference CollectionView}}">
+            SelectionMode="None"
+            Margin="2">
             <CollectionView.ItemTemplate>
                 <DataTemplate>
                     <Grid HeightRequest="70" Style="{StaticResource DataTemplateRootGridStyle}">
+                        <Grid.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding BindingContext.ItemTappedCommand, Source={x:Reference MyCollectionView}}"
+                                                  CommandParameter="{Binding}"/>
+                        </Grid.GestureRecognizers>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition/>

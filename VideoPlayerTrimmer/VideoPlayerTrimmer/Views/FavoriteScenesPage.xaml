@@ -15,11 +15,9 @@
             <CollectionView
                 ItemsSource="{Binding GroupedFavoriteScenes}"
                 x:Name="CollectionView"
-                SelectionMode="Single"
+                SelectionMode="None"
                 IsGrouped="True"
-                Margin="2"
-                SelectionChangedCommand="{Binding ItemTappedCommand}"
-                SelectionChangedCommandParameter="{Binding SelectedItem, Source={x:Reference CollectionView}}">
+                Margin="2">
                 <CollectionView.GroupHeaderTemplate>
                     <DataTemplate>
                         <Label Text="{Binding VideoTitle}" />
@@ -28,6 +26,10 @@
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
                         <Grid HeightRequest="70" Style="{StaticResource DataTemplateRootGridStyle}">
+                            <Grid.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding BindingContext.ItemTappedCommand, Source={x:Reference CollectionView}}"
+                                                    CommandParameter="{Binding}"/>
+                            </Grid.GestureRecognizers>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition/>

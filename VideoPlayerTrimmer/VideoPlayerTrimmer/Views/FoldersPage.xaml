@@ -59,12 +59,14 @@
                 ItemsSource="{Binding Folders}"
                 x:Name="CollectionView"
                 Margin="8,0,8,0"
-                SelectionMode="Single"
-                SelectionChangedCommand="{Binding ItemTappedCommand}"
-                SelectionChangedCommandParameter="{Binding SelectedItem,Source={x:Reference CollectionView}}">
+                SelectionMode="None">
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
                         <Grid HeightRequest="60" Style="{StaticResource DataTemplateRootGridStyle}">
+                            <Grid.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding BindingContext.ItemTappedCommand, Source={x:Reference CollectionView}}"
+                                                    CommandParameter="{Binding}"/>
+                            </Grid.GestureRecognizers>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="70"/>
                                 <ColumnDefinition/>
