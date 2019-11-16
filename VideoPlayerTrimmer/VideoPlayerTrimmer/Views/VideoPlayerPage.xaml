@@ -49,6 +49,7 @@
                     AudioTracksClickedCommand="{Binding ToggleAudioTracksCommand}"
                     SubtitlesClickedCommand="{Binding ToggleSubtitlesCommand}"
                     VideoDetailsClickedCommand="{Binding ToggleMediaInfoCommand}"
+                    FavoriteClickedCommand="{Binding ToggleFavoriteCommand}"
                 />
                 <ContentView IsVisible="{Binding IsMediaInfoPopupVisible}" BackgroundColor="Transparent">
                     <ContentView.GestureRecognizers>
