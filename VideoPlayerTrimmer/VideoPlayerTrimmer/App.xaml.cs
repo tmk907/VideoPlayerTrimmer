@@ -75,12 +75,10 @@ namespace VideoPlayerTrimmer
             DIContainer.Register<ViewModels.FavoriteScenesViewModel>();
             DIContainer.Register<ViewModels.FoldersViewModel>();
             DIContainer.Register<ViewModels.SettingsViewModel>();
-            DIContainer.Register<ViewModels.TestViewModel>();
             DIContainer.Register<ViewModels.TrimmerViewModel>();
             DIContainer.Register<ViewModels.VideoPlayerViewModel>().AsMultiInstance();
             DIContainer.Register<ViewModels.VideosViewModel>();
-
-
+            //DIContainer.Register<ViewModels.TestViewModel>();
 
             Routing.RegisterRoute(PageNames.Videos, typeof(VideosPage));
             Routing.RegisterRoute(PageNames.Player, typeof(VideoPlayerPage));
