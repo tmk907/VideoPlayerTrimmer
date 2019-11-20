@@ -1,10 +1,8 @@
-﻿using LibVLCSharp.Forms.Shared;
-using LibVLCSharp.Shared;
-using LibVLCSharp.Shared.Structures;
+﻿using LibVLCSharp.Shared;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Threading.Tasks;
 using VideoPlayerTrimmer.Framework;
 using VideoPlayerTrimmer.MediaHelpers;
 using VideoPlayerTrimmer.Services;
@@ -17,6 +15,7 @@ namespace VideoPlayerTrimmer.PlayerControls
         private readonly MediaPlayerBuilder _mediaPlayerBuilder;
         private AspectRatio CurrentAspectRatio = AspectRatio.Original;
 
+        public event EventHandler PlayerReady;
 
         public VlcPlayerHelper(MediaPlayerBuilder mediaPlayerBuilder)
         {
@@ -25,6 +24,31 @@ namespace VideoPlayerTrimmer.PlayerControls
             PlayPauseCommand = new Command(() => OnPlayPauseClicked());
             AspectRatioClickedCommand = new Command(() => OnAspectRatioClicked());
             SliderValueChangedCommand = new Command<TimeSpan>((val) => OnSliderValueChanged(val));
+        }
+
+        public Command PlayPauseCommand { get; }
+        public Command AspectRatioClickedCommand { get; }
+        public Command<TimeSpan> SliderValueChangedCommand { get; }
+
+        private TimeSpan totalTime;
+        public TimeSpan TotalTime
+        {
+            get { return totalTime; }
+            set { SetProperty(ref totalTime, value); }
+        }
+
+        private TimeSpan elapsedTime;
+        public TimeSpan ElapsedTime
+        {
+            get { return elapsedTime; }
+            set { SetProperty(ref elapsedTime, value); }
+        }
+
+        private bool isPlaying;
+        public bool IsPlaying
+        {
+            get { return isPlaying; }
+            set { SetProperty(ref isPlaying, value); }
         }
 
         private MediaPlayer mediaPlayer;
@@ -41,29 +65,44 @@ namespace VideoPlayerTrimmer.PlayerControls
             private set => SetProperty(ref libVLC, value);
         }
 
-        private VideoView videoView;
-        public VideoView VideoView
-        {
-            get => videoView;
-            private set => SetProperty(ref videoView, value);
-        }
+        //private VideoView videoView;
+        //public VideoView VideoView
+        //{
+        //    get => videoView;
+        //    set => SetProperty(ref videoView, value);
+        //}
 
         public void LoadFile(string filePath)
         {
-            App.DebugLog("");
-            MediaPlayer = _mediaPlayerBuilder.GetMediaPlayer(filePath);
+            App.DebugLog(filePath);
+
             LibVLC = _mediaPlayerBuilder.LibVLC;
 
-            if (VideoView == null)
-            {
-                VideoView = new VideoView();
-            }
-            VideoView.MediaPlayer = MediaPlayer;
+            MediaPlayer = _mediaPlayerBuilder.GetMediaPlayer(filePath);
+            AddMediaPlayerEvents();
 
-            InitMediaPlayer();
+            mediaPlayer.Playing += MediaPlayerStartedPlaying;
+            MediaPlayer.Play();
+            App.DebugLog("");
         }
 
-        private void InitMediaPlayer()
+        private async void MediaPlayerStartedPlaying(object sender, EventArgs e)
+        {
+            mediaPlayer.Playing -= MediaPlayerStartedPlaying;
+            await Task.Delay(100);
+            mediaPlayer.Pause();
+            PlayerReady.Invoke(null, null);
+        }
+
+        public void OnDisappearing()
+        {
+            App.DebugLog("1");
+            RemoveMediaPlayerEvents();
+            mediaPlayer.Stop();
+            App.DebugLog("2");
+        }
+
+        private void AddMediaPlayerEvents()
         {
             App.DebugLog("");
 
@@ -80,17 +119,7 @@ namespace VideoPlayerTrimmer.PlayerControls
             mediaPlayer.ESDeleted += MediaPlayer_ESDeleted;
         }
 
-        private void MediaPlayer_ESDeleted(object sender, MediaPlayerESDeletedEventArgs e)
-        {
-            App.DebugLog("");
-        }
-
-        private void MediaPlayer_ESAdded(object sender, MediaPlayerESAddedEventArgs e)
-        {
-            App.DebugLog("");
-        }
-
-        private void UninitMediaPlayer()
+        private void RemoveMediaPlayerEvents()
         {
             App.DebugLog("");
 
@@ -107,87 +136,30 @@ namespace VideoPlayerTrimmer.PlayerControls
             mediaPlayer.ESDeleted -= MediaPlayer_ESDeleted;
         }
 
-        public void OnAppearing()
+        private void VideoView_MediaPlayerChanged(object sender, MediaPlayerChangedEventArgs e)
         {
             App.DebugLog("");
-
-            VideoView = new VideoView();
-            VideoView.MediaPlayer = MediaPlayer;
         }
 
-        public void OnDisappearing()
+        private void MediaPlayer_Opening(object sender, EventArgs e)
         {
             App.DebugLog("");
-            mediaPlayer.Stop();
-            VideoView = null;
         }
 
-
-        private TimeSpan totalTime;
-        public TimeSpan TotalTime
-        {   
-            get { return totalTime; }
-            set { SetProperty(ref totalTime, value); }
-        }
-
-
-        private TimeSpan elapsedTime;
-        public TimeSpan ElapsedTime
+        private void MediaPlayer_ESDeleted(object sender, MediaPlayerESDeletedEventArgs e)
         {
-            get { return elapsedTime; }
-            set { SetProperty(ref elapsedTime, value); }
+            App.DebugLog("");
         }
 
-
-        private bool isPlaying;
-        public bool IsPlaying
+        private void MediaPlayer_ESAdded(object sender, MediaPlayerESAddedEventArgs e)
         {
-            get { return isPlaying; }
-            set { SetProperty(ref isPlaying, value); }
-        }
-
-        public Command PlayPauseCommand { get; }
-        public Command AspectRatioClickedCommand { get; }
-        public Command<TimeSpan> SliderValueChangedCommand { get; }
-
-        private void OnPlayPauseClicked()
-        {
-            switch (mediaPlayer.State)
-            {
-                case VLCState.Ended:
-                    mediaPlayer.Stop();
-                    goto case VLCState.Stopped;
-                case VLCState.Error:
-                case VLCState.Paused:
-                case VLCState.Stopped:
-                case VLCState.NothingSpecial:
-                    mediaPlayer.Play();
-                    break;
-                default:
-                    mediaPlayer.Pause();
-                    break;
-            }
-        }
-
-        private void OnSliderValueChanged(TimeSpan value)
-        {
-            if (value == null) return;
-            if (MediaPlayer.IsSeekable)
-            {
-                long newTime = (long)value.TotalMilliseconds;
-                if (newTime > MediaPlayer.Length)
-                {
-                    MediaPlayer.Time = newTime - 100;
-                }
-                else
-                {
-                    MediaPlayer.Time = newTime;
-                }
-            }
+            App.DebugLog("");
         }
 
         private void MediaPlayer_LengthChanged(object sender, MediaPlayerLengthChangedEventArgs e)
         {
+            App.DebugLog("");
+
             var state = MediaPlayer?.State;
             var length = MediaPlayer == null ||
                 state == VLCState.Ended || state == VLCState.Error || state == VLCState.NothingSpecial ||
@@ -248,6 +220,42 @@ namespace VideoPlayerTrimmer.PlayerControls
         }
 
 
+        private void OnPlayPauseClicked()
+        {
+            switch (mediaPlayer.State)
+            {
+                case VLCState.Ended:
+                    mediaPlayer.Stop();
+                    goto case VLCState.Stopped;
+                case VLCState.Error:
+                case VLCState.Paused:
+                case VLCState.Stopped:
+                case VLCState.NothingSpecial:
+                    mediaPlayer.Play();
+                    break;
+                default:
+                    mediaPlayer.Pause();
+                    break;
+            }
+        }
+
+        private void OnSliderValueChanged(TimeSpan value)
+        {
+            if (value == null) return;
+            if (MediaPlayer.IsSeekable)
+            {
+                long newTime = (long)value.TotalMilliseconds;
+                if (newTime > MediaPlayer.Length)
+                {
+                    MediaPlayer.Time = newTime - 100;
+                }
+                else
+                {
+                    MediaPlayer.Time = newTime;
+                }
+            }
+        }
+
         private void UpdateState(VLCState playbackState)
         {
             if(playbackState == VLCState.Playing)
@@ -271,99 +279,99 @@ namespace VideoPlayerTrimmer.PlayerControls
                 return;
             }
 
-            try
-            {
-                var videoView = VideoView;
-                if (videoView == null)
-                {
-                    throw new NullReferenceException($"The {nameof(VideoView)} property must be set in order to use the aspect ratio feature.");
-                }
+            //try
+            //{
+            //    var videoView = VideoView;
+            //    if (videoView == null)
+            //    {
+            //        throw new NullReferenceException($"The {nameof(VideoView)} property must be set in order to use the aspect ratio feature.");
+            //    }
 
-                MediaTrack? mediaTrack;
-                try
-                {
-                    mediaTrack = mediaPlayer.Media?.Tracks?.FirstOrDefault(x => x.TrackType == TrackType.Video);
-                }
-                catch (Exception)
-                {
-                    mediaTrack = null;
-                }
-                if (mediaTrack == null || !mediaTrack.HasValue)
-                {
-                    return;
-                }
+            //    MediaTrack? mediaTrack;
+            //    try
+            //    {
+            //        mediaTrack = mediaPlayer.Media?.Tracks?.FirstOrDefault(x => x.TrackType == TrackType.Video);
+            //    }
+            //    catch (Exception)
+            //    {
+            //        mediaTrack = null;
+            //    }
+            //    if (mediaTrack == null || !mediaTrack.HasValue)
+            //    {
+            //        return;
+            //    }
 
-                ChangeCurrentAspectRatio();
+            //    ChangeCurrentAspectRatio();
 
-                var scalingFactor = Device.Info.ScalingFactor;
-                var displayW = videoView.Width * scalingFactor;
-                var displayH = videoView.Height * scalingFactor;
+            //    var scalingFactor = Device.Info.ScalingFactor;
+            //    var displayW = videoView.Width * scalingFactor;
+            //    var displayH = videoView.Height * scalingFactor;
 
-                switch (CurrentAspectRatio)
-                {
-                    case AspectRatio.BestFit:
-                        mediaPlayer.AspectRatio = string.Empty;
-                        mediaPlayer.Scale = 0;
-                        break;
-                    case AspectRatio.FitScreen:
-                    case AspectRatio.Fill:
-                        var videoSwapped = mediaTrack.Value.Data.Video.Orientation == VideoOrientation.LeftBottom ||
-                            mediaTrack.Value.Data.Video.Orientation == VideoOrientation.RightTop;
-                        if (CurrentAspectRatio == AspectRatio.FitScreen)
-                        {
-                            var videoW = mediaTrack.Value.Data.Video.Width;
-                            var videoH = mediaTrack.Value.Data.Video.Height;
+            //    switch (CurrentAspectRatio)
+            //    {
+            //        case AspectRatio.BestFit:
+            //            mediaPlayer.AspectRatio = string.Empty;
+            //            mediaPlayer.Scale = 0;
+            //            break;
+            //        case AspectRatio.FitScreen:
+            //        case AspectRatio.Fill:
+            //            var videoSwapped = mediaTrack.Value.Data.Video.Orientation == VideoOrientation.LeftBottom ||
+            //                mediaTrack.Value.Data.Video.Orientation == VideoOrientation.RightTop;
+            //            if (CurrentAspectRatio == AspectRatio.FitScreen)
+            //            {
+            //                var videoW = mediaTrack.Value.Data.Video.Width;
+            //                var videoH = mediaTrack.Value.Data.Video.Height;
 
-                            if (videoSwapped)
-                            {
-                                var swap = videoW;
-                                videoW = videoH;
-                                videoH = swap;
-                            }
-                            if (mediaTrack.Value.Data.Video.SarNum != mediaTrack.Value.Data.Video.SarDen)
-                                videoW = videoW * mediaTrack.Value.Data.Video.SarNum / mediaTrack.Value.Data.Video.SarDen;
+            //                if (videoSwapped)
+            //                {
+            //                    var swap = videoW;
+            //                    videoW = videoH;
+            //                    videoH = swap;
+            //                }
+            //                if (mediaTrack.Value.Data.Video.SarNum != mediaTrack.Value.Data.Video.SarDen)
+            //                    videoW = videoW * mediaTrack.Value.Data.Video.SarNum / mediaTrack.Value.Data.Video.SarDen;
 
-                            var ar = videoW / (float)videoH;
-                            var dar = displayW / (float)displayH;
+            //                var ar = videoW / (float)videoH;
+            //                var dar = displayW / (float)displayH;
 
-                            float scale;
-                            if (dar >= ar)
-                                scale = (float)displayW / videoW; /* horizontal */
-                            else
-                                scale = (float)displayH / videoH; /* vertical */
+            //                float scale;
+            //                if (dar >= ar)
+            //                    scale = (float)displayW / videoW; /* horizontal */
+            //                else
+            //                    scale = (float)displayH / videoH; /* vertical */
 
-                            mediaPlayer.Scale = scale;
-                            mediaPlayer.AspectRatio = string.Empty;
-                        }
-                        else
-                        {
-                            mediaPlayer.Scale = 0;
-                            mediaPlayer.AspectRatio = videoSwapped ? $"{displayH}:{displayW}" : $"{displayW}:{displayH}";
-                        }
-                        break;
-                    case AspectRatio._16_9:
-                        mediaPlayer.AspectRatio = "16:9";
-                        mediaPlayer.Scale = 0;
-                        break;
-                    case AspectRatio._4_3:
-                        mediaPlayer.AspectRatio = "4:3";
-                        mediaPlayer.Scale = 0;
-                        break;
-                    case AspectRatio.Original:
-                        mediaPlayer.AspectRatio = string.Empty;
-                        mediaPlayer.Scale = 1;
-                        break;
-                }
+            //                mediaPlayer.Scale = scale;
+            //                mediaPlayer.AspectRatio = string.Empty;
+            //            }
+            //            else
+            //            {
+            //                mediaPlayer.Scale = 0;
+            //                mediaPlayer.AspectRatio = videoSwapped ? $"{displayH}:{displayW}" : $"{displayW}:{displayH}";
+            //            }
+            //            break;
+            //        case AspectRatio._16_9:
+            //            mediaPlayer.AspectRatio = "16:9";
+            //            mediaPlayer.Scale = 0;
+            //            break;
+            //        case AspectRatio._4_3:
+            //            mediaPlayer.AspectRatio = "4:3";
+            //            mediaPlayer.Scale = 0;
+            //            break;
+            //        case AspectRatio.Original:
+            //            mediaPlayer.AspectRatio = string.Empty;
+            //            mediaPlayer.Scale = 1;
+            //            break;
+            //    }
 
-                //AspectRatioLabel.Text = AspectRatioLabels[CurrentAspectRatio];
-                //await AspectRatioLabel.FadeTo(1);
-                //await AspectRatioLabel.FadeTo(0, 2000);
-            }
-            catch (Exception ex)
-            {
-                //TODO
-                //ShowErrorMessageBox(ex);
-            }
+            //    //AspectRatioLabel.Text = AspectRatioLabels[CurrentAspectRatio];
+            //    //await AspectRatioLabel.FadeTo(1);
+            //    //await AspectRatioLabel.FadeTo(0, 2000);
+            //}
+            //catch (Exception ex)
+            //{
+            //    //TODO
+            //    //ShowErrorMessageBox(ex);
+            //}
         }
 
         private void ChangeCurrentAspectRatio()

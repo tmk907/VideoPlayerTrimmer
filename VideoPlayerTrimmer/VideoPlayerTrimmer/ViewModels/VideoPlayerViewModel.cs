@@ -55,6 +55,12 @@ namespace VideoPlayerTrimmer.ViewModels
             favoriteScenes = new FavoritesCollection(favoriteSceneDuration);
 
             VlcPlayerHelper = new VlcPlayerHelper(playerService);
+            VlcPlayerHelper.PlayerReady += VlcPlayerHelper_PlayerReady;
+        }
+
+        private void VlcPlayerHelper_PlayerReady(object sender, EventArgs e)
+        {
+            StartPlayingOrResume();
         }
 
         private VlcPlayerHelper vlcPlayerHelper;
@@ -111,7 +117,6 @@ namespace VideoPlayerTrimmer.ViewModels
             lastPosition = lastPosition > 750 ? lastPosition : 0;
 
             InitMediaPlayer();
-            StartPlayingOrResume();
         }
 
         protected override async Task UnInitializeVMAsync()
@@ -139,6 +144,7 @@ namespace VideoPlayerTrimmer.ViewModels
         private void InitMediaPlayer()
         {
             App.DebugLog("");
+
             VlcPlayerHelper.LoadFile(filePath);
 
             VlcPlayerHelper.MediaPlayer.TimeChanged += MediaPlayer_TimeChanged;
@@ -154,7 +160,24 @@ namespace VideoPlayerTrimmer.ViewModels
             VlcPlayerHelper.MediaPlayer.SnapshotTaken -= MediaPlayer_SnapshotTaken;
             VlcPlayerHelper.OnDisappearing();
         }
-        
+
+        public void StartPlayingOrResume()
+        {
+            App.DebugLog("");
+            if (isPausedByUser)
+            {
+
+            }
+            else
+            {
+                VlcPlayerHelper.MediaPlayer.Play();
+            }
+            if (lastPosition > 0)
+            {
+                VlcPlayerHelper.MediaPlayer.Time = lastPosition;
+            }
+        }
+
         private void MediaPlayer_SnapshotTaken(object sender, MediaPlayerSnapshotTakenEventArgs e)
         {
             App.DebugLog(e.Filename);
@@ -184,22 +207,7 @@ namespace VideoPlayerTrimmer.ViewModels
         private long userPosition = 0;
         private bool isPausedByUser = false;
 
-        public void StartPlayingOrResume()
-        {
-            App.DebugLog("");
-            if (isPausedByUser)
-            {
 
-            }
-            else
-            {
-                VlcPlayerHelper.MediaPlayer.Play();
-            }
-            if (lastPosition > 0)
-            {
-                VlcPlayerHelper.MediaPlayer.Time = lastPosition;
-            }
-        }
 
         #region VolumeAndBrightness
 

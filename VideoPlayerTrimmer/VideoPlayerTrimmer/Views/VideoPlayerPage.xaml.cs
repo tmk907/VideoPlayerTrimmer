@@ -1,14 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using VideoPlayerTrimmer.Framework;
+﻿using VideoPlayerTrimmer.Framework;
 using VideoPlayerTrimmer.ViewModels;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
-using Xamarin.RangeSlider.Forms;
 
 namespace VideoPlayerTrimmer.Views
 {
@@ -24,8 +17,9 @@ namespace VideoPlayerTrimmer.Views
         }
 
 
-        private int initialVolume;
-        private int initialBrightness;
+        //private int initialVolume;
+        //private int initialBrightness;
+
 
         //private void VolumePanUpdated(object sender, PanUpdatedEventArgs e)
         //{

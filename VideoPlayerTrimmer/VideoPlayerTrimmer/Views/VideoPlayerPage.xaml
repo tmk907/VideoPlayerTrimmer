@@ -4,6 +4,7 @@
              xmlns:views="clr-namespace:VideoPlayerTrimmer.Views"
              xmlns:converters="clr-namespace:VideoPlayerTrimmer.Converters"
              xmlns:player="clr-namespace:VideoPlayerTrimmer.PlayerControls"
+             xmlns:vlc="clr-namespace:LibVLCSharp.Forms.Shared;assembly=LibVLCSharp.Forms"
              x:Name="PlayerPage"
              Shell.NavBarIsVisible="false"
              Shell.TabBarIsVisible="false"
@@ -38,7 +39,7 @@
     <ContentPage.Content>
         <Grid>
             <Grid>
-                <ContentPresenter Content="{Binding VlcPlayerHelper.VideoView}"/>
+                <vlc:VideoView MediaPlayer="{Binding VlcPlayerHelper.MediaPlayer}"/>
                 <player:PlaybackControls
                     ElapsedTime="{Binding VlcPlayerHelper.ElapsedTime}"
                     TotalTime="{Binding VlcPlayerHelper.TotalTime}"
@@ -206,99 +207,7 @@
                         </Grid.GestureRecognizers>
                     </Grid>
                 </Grid>
-                <Grid
-                    Grid.ColumnSpan="2" Grid.Row="2"
-                    IsVisible="{Binding ShowControls}"
-                    BackgroundColor="{StaticResource SemiTransparent}" 
-                    HeightRequest="100">
-                    <Grid.RowDefinitions>
-                        <RowDefinition/>
-                        <RowDefinition Height="60"/>
-                    </Grid.RowDefinitions>
-                    <Grid Grid.Row="0" >
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <Label 
-                            Grid.Column="0"
-                            TextColor="White" 
-                            HorizontalOptions="StartAndExpand"
-                            Text="{Binding CurrentTime, Converter={StaticResource DurationConverter}}"
-                            VerticalTextAlignment="Center"/>
-                        <slider:RangeSlider 
-                            x:Name="Slider"
-                            Grid.Column="1"
-                            MinimumValue="0"
-                            VerticalOptions="Center"
-                            Margin="0,4,0,0"
-                            MinThumbHidden="True"
-                            UseSingleThumb="True"
-                            PrimaryThumb="Upper"
-                            MaximumValue="{Binding TotalTime, Converter={StaticResource ToSecondsConverter}, ConverterParameter=1}"
-                            UpperValue="{Binding CurrentTime, Converter={StaticResource ToSecondsConverter}, Mode=OneWay}"
-                            UpperValueChanged="RangeSlider_ValueChanged"/>
-                        <Label 
-                            Grid.Column="2"
-                            TextColor="White" 
-                            Text="{Binding TotalTime, Converter={StaticResource DurationConverter}}"
-                            VerticalTextAlignment="Center"/>
-                    </Grid>
-                    <FlexLayout Grid.Row="1" Direction="Row" JustifyContent="Center">
-                        <ic:IconButton 
-                            Command="{Binding ToggleAudioTracksCommand}"
-                            Text="ep-note"
-                            FontSize="28"
-                            BackgroundColor="#80111111"
-                            TextColor="White"
-                            WidthRequest="80"
-                            BorderColor="White"
-                            BorderWidth="1"
-                            Margin="4" />
-                        <ic:IconButton 
-                            Command="{Binding ToggleSubtitlesCommand}"
-                            Text="ep-message"
-                            FontSize="28"
-                            BackgroundColor="#80111111"
-                            TextColor="White"
-                            WidthRequest="80"
-                            BorderColor="White"
-                            BorderWidth="1"
-                            Margin="4"/>
-                        <ic:IconButton Text="{Binding PlayPauseIcon}"
-                                        FontSize="28"
-                                        BackgroundColor="#80111111"
-                                        TextColor="White"
-                                        WidthRequest="80"
-                                        BorderColor="White"
-                                        BorderWidth="1"
-                                        Margin="4"
-                            Command="{Binding PlayPauseCommand}"/>
-                        <ic:IconButton 
-                            Command="{Binding ToggleFavoriteCommand}"
-                            FontSize="28"
-                            Margin="4"
-                            BackgroundColor="Transparent"
-                            TextColor="White"
-                            WidthRequest="80"
-                            BorderColor="White"
-                            BorderWidth="1"
-                            Text="{Binding IsFavorite, Converter={StaticResource ToFavoriteIconConverter}}"/>
-                        <ic:IconButton 
-                            Command="{Binding ToggleMediaInfoCommand}"
-                            Text="ep-info"
-                            FontSize="28"
-                            BackgroundColor="#80111111"
-                            TextColor="White"
-                            WidthRequest="80"
-                            BorderColor="White"
-                            BorderWidth="1"
-                            Margin="4"/>
-                    </FlexLayout>
-                </Grid>
             </Grid>
-            
             -->
         </Grid>
     </ContentPage.Content>
