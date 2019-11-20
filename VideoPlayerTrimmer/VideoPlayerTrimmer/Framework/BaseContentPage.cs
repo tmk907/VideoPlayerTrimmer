@@ -12,7 +12,7 @@ namespace VideoPlayerTrimmer.Framework
 
         public BaseContentPage()
         {
-            App.DebugLog("BaseContentPage() " + this.GetType());
+            App.DebugLog(this.GetType().ToString());
             ViewModel = App.DIContainer.Resolve<T>();
             BindingContext = ViewModel;
             ViewModel.OnNavigating(App.NavigationService.GetNavigationParameters());
