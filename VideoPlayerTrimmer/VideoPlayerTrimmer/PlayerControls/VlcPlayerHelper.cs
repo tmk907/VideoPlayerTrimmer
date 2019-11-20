@@ -15,7 +15,7 @@ namespace VideoPlayerTrimmer.PlayerControls
         private readonly MediaPlayerBuilder _mediaPlayerBuilder;
         private AspectRatio CurrentAspectRatio = AspectRatio.Original;
 
-        public event EventHandler PlayerReady;
+        public event Action PlayerReady;
 
         public VlcPlayerHelper(MediaPlayerBuilder mediaPlayerBuilder)
         {
@@ -91,7 +91,7 @@ namespace VideoPlayerTrimmer.PlayerControls
             mediaPlayer.Playing -= MediaPlayerStartedPlaying;
             await Task.Delay(100);
             mediaPlayer.Pause();
-            PlayerReady.Invoke(null, null);
+            PlayerReady.Invoke();
         }
 
         public void OnDisappearing()

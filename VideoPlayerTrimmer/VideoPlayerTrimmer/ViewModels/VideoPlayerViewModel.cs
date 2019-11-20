@@ -58,7 +58,7 @@ namespace VideoPlayerTrimmer.ViewModels
             VlcPlayerHelper.PlayerReady += VlcPlayerHelper_PlayerReady;
         }
 
-        private void VlcPlayerHelper_PlayerReady(object sender, EventArgs e)
+        private void VlcPlayerHelper_PlayerReady()
         {
             StartPlayingOrResume();
         }
@@ -437,6 +437,7 @@ namespace VideoPlayerTrimmer.ViewModels
 
         private async Task AddSubtitlesFromFile()
         {
+            VlcPlayerHelper.MediaPlayer.Pause();
             try
             {
                 FileData fileData = await CrossFilePicker.Current.PickFile();
@@ -465,6 +466,7 @@ namespace VideoPlayerTrimmer.ViewModels
             {
                 App.DebugLog(ex.ToString());
             }
+            VlcPlayerHelper.MediaPlayer.Play();
         }
 
         private bool isMediaInfoPopupVisible = false;
