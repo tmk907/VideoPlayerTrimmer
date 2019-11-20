@@ -65,12 +65,22 @@ namespace VideoPlayerTrimmer
             DIContainer.Register<IVideoLibrary, VideoLibrary>().AsSingleton();
             DIContainer.Register<MediaPlayerBuilder>().AsSingleton();
 
-            var assembly = typeof(App).GetTypeInfo().Assembly;
-            var vms = AssemblyExtensions.SafeGetTypes(assembly).Where(x => x.IsSubclassOf(typeof(BaseViewModel)));
-            foreach (var vm in vms)
-            {
-                DIContainer.Register(vm);
-            }
+            //var assembly = typeof(App).GetTypeInfo().Assembly;
+            //var vms = AssemblyExtensions.SafeGetTypes(assembly).Where(x => x.IsSubclassOf(typeof(BaseViewModel)));
+            //foreach (var vm in vms)
+            //{
+            //    DIContainer.Register(vm);
+            //}
+
+            DIContainer.Register<ViewModels.FavoriteScenesViewModel>();
+            DIContainer.Register<ViewModels.FoldersViewModel>();
+            DIContainer.Register<ViewModels.SettingsViewModel>();
+            DIContainer.Register<ViewModels.TestViewModel>();
+            DIContainer.Register<ViewModels.TrimmerViewModel>();
+            DIContainer.Register<ViewModels.VideoPlayerViewModel>().AsMultiInstance();
+            DIContainer.Register<ViewModels.VideosViewModel>();
+
+
 
             Routing.RegisterRoute(PageNames.Videos, typeof(VideosPage));
             Routing.RegisterRoute(PageNames.Player, typeof(VideoPlayerPage));
