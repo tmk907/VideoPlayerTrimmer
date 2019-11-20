@@ -335,6 +335,8 @@ namespace VideoPlayerTrimmer.PlayerControls
             }
         }
 
+        private bool isAnimating = false;
+
         private async Task FadeOut()
         {
             await this.FadeTo(0, 300);
@@ -363,7 +365,10 @@ namespace VideoPlayerTrimmer.PlayerControls
 
         private static void IsControlVisiblePropertyChanged(BindableObject bindable, object oldValue, object newValue)
         {
-            ((PlaybackControls)bindable).AnimateVisibility();
+            if (!((PlaybackControls)bindable).isAnimating)
+            {
+                ((PlaybackControls)bindable).AnimateVisibility();
+            }
         }
 
 
@@ -376,11 +381,15 @@ namespace VideoPlayerTrimmer.PlayerControls
         {
             if (IsControlVisible)
             {
+                isAnimating = true;
                 await FadeOut();
+                isAnimating = false;
             }
             else
             {
+                isAnimating = true;
                 await FadeIn();
+                isAnimating = false;
             }
         }
     }
