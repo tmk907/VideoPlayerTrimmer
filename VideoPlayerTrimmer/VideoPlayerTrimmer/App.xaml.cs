@@ -22,7 +22,6 @@ namespace VideoPlayerTrimmer
         public static TinyIoCContainer DIContainer => TinyIoCContainer.Current;
         public static NavigationService NavigationService { get; private set; }
 
-
         public App()
         {
             InitializeComponent();
@@ -40,7 +39,7 @@ namespace VideoPlayerTrimmer
 #if DEBUG
             SafeFireAndForgetExtensions.Initialize(true);
 #endif
-            //VersionTracking.Track();
+            VersionTracking.Track();
 
             if (VersionTracking.IsFirstLaunchEver)
             {
@@ -115,7 +114,7 @@ namespace VideoPlayerTrimmer
 #if DEBUG
             AppCenter.Start($"android={Helpers.Secrets.AppCenter_Android_Secret};", typeof(Crashes));
 #else
-            AppCenter.Start($"android={Helpers.Secrets.AppCenter_Android_Secret};", typeof(Analytics), typeof(Crashes));
+            AppCenter.Start($"android={Helpers.Secrets.AppCenter_Android_Secret};", typeof(Crashes));
 #endif
         }
 
