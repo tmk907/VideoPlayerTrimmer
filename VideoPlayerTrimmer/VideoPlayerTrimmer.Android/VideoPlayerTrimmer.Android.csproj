@@ -67,6 +67,9 @@
     <PackageReference Include="glidex.forms">
       <Version>2.0.0.336</Version>
     </PackageReference>
+    <PackageReference Include="LibVLCSharp.Forms">
+      <Version>3.3.1</Version>
+    </PackageReference>
     <PackageReference Include="Mobile.BuildTools">
       <Version>1.4.0.638</Version>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
@@ -150,10 +153,6 @@
     <ProjectReference Include="..\..\FFBinding2\FFBinding2.csproj">
       <Project>{bb40b076-48f2-4848-aae3-67cb0b9d1ace}</Project>
       <Name>FFBinding2</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\LibVLCSharp.Forms\LibVLCSharp.Forms.csproj">
-      <Project>{56e8f9f1-7f0a-49a7-9b39-63bb5caa6fb6}</Project>
-      <Name>LibVLCSharp.Forms</Name>
     </ProjectReference>
     <ProjectReference Include="..\VideoPlayerTrimmer\VideoPlayerTrimmer.csproj">
       <Project>{3AED387B-1D29-4038-8D8C-DF3FE9A1622A}</Project>
