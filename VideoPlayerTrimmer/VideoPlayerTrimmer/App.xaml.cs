@@ -118,17 +118,20 @@ namespace VideoPlayerTrimmer
 #endif
         }
 
+        public static event Action OnSuspended;
+        public static event Action OnResumed;
+
         protected override void OnSleep()
         {
             App.DebugLog("1");
-            base.OnSleep();
+            OnSuspended?.Invoke();
             App.DebugLog("2");
         }
 
         protected override void OnResume()
         {
             App.DebugLog("1");
-            base.OnResume();
+            OnResumed?.Invoke();
             App.DebugLog("2");
         }
 

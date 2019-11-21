@@ -15,6 +15,25 @@ namespace VideoPlayerTrimmer.Framework
 
         protected Dictionary<string, string> navigationParameters;
 
+        private bool wasResumeCalled = false;
+        private bool wasDisappearedCalled = false;
+
+        public BaseViewModel()
+        {
+            App.OnResumed += App_OnResumed;
+            App.OnSuspended += App_OnSuspended;
+        }
+        
+        private void App_OnResumed()
+        {
+            OnResume();
+        }
+
+        private void App_OnSuspended()
+        {
+            OnSuspend();
+        }
+
         private bool isLoadingData;
         public bool IsLoadingData
         {
@@ -27,18 +46,51 @@ namespace VideoPlayerTrimmer.Framework
             navigationParameters = navigationArgs;
         }
 
-        public virtual void OnAppearing(bool firstTime)
+        public void OnAppearing(bool firstTime)
         {
             App.DebugLog(this.GetType().ToString());
+
             firstTimeAppeared = firstTime;
+            wasDisappearedCalled = false;
+            if (wasResumeCalled) return;
             cts = new CancellationTokenSource();
             InitializeVMAsyncInternal(cts.Token).SafeFireAndForget(true);
         }
 
-        public virtual void OnDisappearing(bool firstTime)
+        public void OnDisappearing(bool firstTime)
         {
             App.DebugLog(this.GetType().ToString());
+
+            wasResumeCalled = false;
+            wasDisappearedCalled = true;
+
             firstTimeDisappeared = firstTime;
+            cts.Cancel();
+            UnInitializeVMAsync().SafeFireAndForget(true);
+        }
+
+        private void OnResume()
+        {
+            App.DebugLog("");
+
+            wasResumeCalled = true;
+            wasDisappearedCalled = false;
+
+            cts = new CancellationTokenSource();
+            InitializeVMAsyncInternal(cts.Token).SafeFireAndForget(true);
+        }
+
+        private void OnSuspend()
+        {
+            App.DebugLog("");
+
+            wasResumeCalled = false;
+            if (wasDisappearedCalled)
+            {
+                wasDisappearedCalled = false;
+                return;
+            }
+
             cts.Cancel();
             UnInitializeVMAsync().SafeFireAndForget(true);
         }
