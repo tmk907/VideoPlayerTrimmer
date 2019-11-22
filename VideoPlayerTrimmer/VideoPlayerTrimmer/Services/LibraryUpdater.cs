@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using VideoPlayerTrimmer.Database;
 using VideoPlayerTrimmer.Database.Models;
@@ -12,15 +12,21 @@ namespace VideoPlayerTrimmer.Services
     {
         private readonly VideoDatabase database;
         private readonly IMediaScanner mediaScanner;
+        private static SemaphoreSlim semaphore;
 
         public LibraryUpdater(VideoDatabase database, IMediaScanner mediaScanner)
         {
             this.database = database;
             this.mediaScanner = mediaScanner;
+            semaphore = new SemaphoreSlim(1, 1);
         }
 
         public async Task UpdateAsync()
         {
+            App.DebugLog("1");
+            await semaphore.WaitAsync();
+            App.DebugLog("2");
+
             var videoSources = await mediaScanner.ScanVideosAsync();
             var oldVideos = (await database.GetAsync<VideoFileTable>(v => v.MediaStoreId)).ToDictionary(e => e.MediaStoreId);
             bool notFirstScan = oldVideos.Count > 0;
@@ -52,6 +58,7 @@ namespace VideoPlayerTrimmer.Services
                         Position = TimeSpan.Zero,
                         SizeInBytes = (int)source.SizeInBytes,
                         Title = source.Title,
+                        SelectedSubtitles = -1,
                     });
                 }
             }
@@ -62,6 +69,10 @@ namespace VideoPlayerTrimmer.Services
             }
             await database.InsertAllAsync(newVideos);
             await database.UpdateAllAsync(videosToDelete);
+
+            semaphore.Release();
+            App.DebugLog("3");
+
         }
 
         public void AddVideo(string path)

@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using VideoPlayerTrimmer.Framework;
 using VideoPlayerTrimmer.Models;
 using VideoPlayerTrimmer.Services;
-using Xamarin.Forms;
 
 namespace VideoPlayerTrimmer.ViewModels
 {
