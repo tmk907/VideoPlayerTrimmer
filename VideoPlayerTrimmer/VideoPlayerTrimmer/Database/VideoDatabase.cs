@@ -64,9 +64,9 @@ namespace VideoPlayerTrimmer.Database
             await connectionAsync.UpdateAllAsync(items);
         }
 
-        public async Task DeleteAsync<T>(T item)
+        public async Task DeleteAsync(object item)
         {
-            await connectionAsync.DeleteAsync<T>(item);
+            await connectionAsync.DeleteAsync(item);
         }
 
         public async Task DeleteAsync<T>(Expression<Func<T, bool>> condition) where T : new()

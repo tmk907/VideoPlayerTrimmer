@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
-using System.Text;
+using System.Linq;
 using VideoPlayerTrimmer.Framework;
 
 namespace VideoPlayerTrimmer.Models
@@ -33,6 +33,14 @@ namespace VideoPlayerTrimmer.Models
 
         public TimeSpan Duration { get; set; }
 
-        public VideoItemPreferences Preferences { get; set; }
+        public ObservableCollection<SubtitleFile> SubtitleFiles { get; set; } = new ObservableCollection<SubtitleFile>();
+
+        public TimeSpan Position { get; set; }
+
+        public bool IsFileSubtitleSelected { get { return SubtitleFiles.Any(x => x.IsSelected); } }
+
+        public int SelectedSubtitlesId { get; set; }
+
+        public TimeSpan EmbeddedSubtitlesDelay { get; set; }
     }
 }

@@ -20,5 +20,7 @@ namespace VideoPlayerTrimmer.Database.Models
         [Indexed]
         public bool IsDeleted { get; set; }
         public TimeSpan Position { get; set; }
+        public int SelectedSubtitles { get; set; }
+        public TimeSpan EmbeddedSubtitlesDelay { get; set; }
     }
 }

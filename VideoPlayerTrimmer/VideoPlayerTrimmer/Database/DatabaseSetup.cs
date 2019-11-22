@@ -31,6 +31,7 @@ namespace VideoPlayerTrimmer.Database
                 connection.CreateTable<VideoFileTable>();
                 connection.CreateTable<SavedSceneTable>();
                 connection.CreateTable<FavoriteSceneTable>();
+                connection.CreateTable<SubtitleFileTable>();
             }
         }
     }

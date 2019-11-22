@@ -71,7 +71,7 @@ namespace VideoPlayerTrimmer.Framework
 
         private void OnResume()
         {
-            App.DebugLog("");
+            App.DebugLog(this.GetType().ToString());
 
             wasResumeCalled = true;
             wasDisappearedCalled = false;
@@ -82,7 +82,7 @@ namespace VideoPlayerTrimmer.Framework
 
         private void OnSuspend()
         {
-            App.DebugLog("");
+            App.DebugLog(this.GetType().ToString());
 
             wasResumeCalled = false;
             if (wasDisappearedCalled)

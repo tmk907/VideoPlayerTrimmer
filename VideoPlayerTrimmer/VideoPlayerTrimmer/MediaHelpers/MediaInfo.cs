@@ -10,7 +10,7 @@ namespace VideoPlayerTrimmer.MediaHelpers
         public string VideoTitle { get; set; }
         public float Fps { get; set; }
         public List<AudioTrackInfo> AudioTracks { get; set; }
-        public List<SubtitleInfo> Subtitles { get; set; }
+        public List<string> Subtitles { get; set; }
         public string Resolution { get; set; }
 
     }

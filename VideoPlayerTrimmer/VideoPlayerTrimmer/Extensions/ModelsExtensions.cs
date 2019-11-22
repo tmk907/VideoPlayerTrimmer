@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using VideoPlayerTrimmer.Database.Models;
+﻿using VideoPlayerTrimmer.Database.Models;
 using VideoPlayerTrimmer.Models;
 
 namespace VideoPlayerTrimmer.Extensions
@@ -20,10 +17,9 @@ namespace VideoPlayerTrimmer.Extensions
                 MediaStoreId = table.MediaStoreId,
                 Title = table.Title,
                 VideoId = table.VideoId,
-                Preferences = new VideoItemPreferences()
-                {
-                    Position = table.Position
-                }
+                Position = table.Position,
+                SelectedSubtitlesId = table.SelectedSubtitles,
+                EmbeddedSubtitlesDelay = table.EmbeddedSubtitlesDelay,
             };
         }
     }

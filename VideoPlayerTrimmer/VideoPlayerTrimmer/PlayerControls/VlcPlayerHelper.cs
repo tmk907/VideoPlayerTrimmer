@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using VideoPlayerTrimmer.Framework;
 using VideoPlayerTrimmer.MediaHelpers;
+using VideoPlayerTrimmer.Models;
 using VideoPlayerTrimmer.Services;
 using Xamarin.Forms;
 
@@ -13,7 +14,8 @@ namespace VideoPlayerTrimmer.PlayerControls
     public class VlcPlayerHelper : BindableBase
     {
         private readonly MediaPlayerBuilder _mediaPlayerBuilder;
-        private AspectRatio CurrentAspectRatio = AspectRatio.Original;
+        private AspectRatio _currentAspectRatio = AspectRatio.Original;
+        private StartupConfiguration _startupConfiguration;
 
         public event Action PlayerReady;
 
@@ -74,16 +76,35 @@ namespace VideoPlayerTrimmer.PlayerControls
 
         public void LoadFile(string filePath)
         {
+            LoadFile(filePath, new StartupConfiguration());
+        }
+
+        public void LoadFile(string filePath, StartupConfiguration startupConfiguration)
+        {
             App.DebugLog(filePath);
+
+            _startupConfiguration = startupConfiguration;
 
             LibVLC = _mediaPlayerBuilder.LibVLC;
 
             MediaPlayer = _mediaPlayerBuilder.GetMediaPlayer(filePath);
             AddMediaPlayerEvents();
+            StartPlayback();
+
+            App.DebugLog("");
+        }
+
+        private void StartPlayback()
+        {
+            App.DebugLog("");
+
+            foreach (var fileUrl in _startupConfiguration.ExternalSubtitles)
+            {
+                mediaPlayer.Media.AddSlave(MediaSlaveType.Subtitle, 0, fileUrl);
+            }
 
             mediaPlayer.Playing += MediaPlayerStartedPlaying;
             MediaPlayer.Play();
-            App.DebugLog("");
         }
 
         private async void MediaPlayerStartedPlaying(object sender, EventArgs e)
@@ -91,6 +112,41 @@ namespace VideoPlayerTrimmer.PlayerControls
             mediaPlayer.Playing -= MediaPlayerStartedPlaying;
             await Task.Delay(100);
             mediaPlayer.Pause();
+
+            if (_startupConfiguration.IsEmbeddedSubtitlesSelected)
+            {
+                mediaPlayer.SetSpu(_startupConfiguration.SelectedSubtitlesSpu);
+                SetSubtitlesDelay(_startupConfiguration.SelectedSubtitlesDelay);
+            }
+            else if (_startupConfiguration.IsFileSubtitlesSelected)
+            {
+                var spuIds = mediaPlayer.SpuDescription.Where(x => x.Id != -1).Select(x => x.Id);
+                var extSubsCount = mediaPlayer.Media.Slaves.Where(x => x.Type == MediaSlaveType.Subtitle).Count();
+
+                if (spuIds.Count() > 0 && extSubsCount > 0)
+                {
+                    var embSubsCount = spuIds.Count() - extSubsCount;
+
+                    var slaveIndex = 0;
+                    foreach (var item in mediaPlayer.Media.Slaves.Where(x => x.Type == MediaSlaveType.Subtitle))
+                    {
+                        if (_startupConfiguration.SelectedSubtitlesFileUrl == item.Uri) break;
+                        slaveIndex++;
+                    }
+
+                    var selectedFileSpu = spuIds.ElementAt(embSubsCount + slaveIndex);
+
+                    mediaPlayer.SetSpu(selectedFileSpu);
+                    SetSubtitlesDelay(_startupConfiguration.SelectedSubtitlesDelay);
+                }
+            }
+            
+            mediaPlayer.Time = (long)_startupConfiguration.ResumeTime;
+            if (_startupConfiguration.AutoPlay)
+            {
+                MediaPlayer.Play();
+            }
+
             PlayerReady.Invoke();
         }
 
@@ -118,7 +174,7 @@ namespace VideoPlayerTrimmer.PlayerControls
             MediaPlayer.ESAdded += MediaPlayer_ESAdded;
             mediaPlayer.ESDeleted += MediaPlayer_ESDeleted;
         }
-
+       
         private void RemoveMediaPlayerEvents()
         {
             App.DebugLog("");
@@ -136,10 +192,7 @@ namespace VideoPlayerTrimmer.PlayerControls
             mediaPlayer.ESDeleted -= MediaPlayer_ESDeleted;
         }
 
-        private void VideoView_MediaPlayerChanged(object sender, MediaPlayerChangedEventArgs e)
-        {
-            App.DebugLog("");
-        }
+        #region MediaPlayer events
 
         private void MediaPlayer_Opening(object sender, EventArgs e)
         {
@@ -219,6 +272,7 @@ namespace VideoPlayerTrimmer.PlayerControls
             App.DebugLog("");
         }
 
+        #endregion
 
         private void OnPlayPauseClicked()
         {
@@ -377,7 +431,7 @@ namespace VideoPlayerTrimmer.PlayerControls
         private void ChangeCurrentAspectRatio()
         {
             var newRatio = AspectRatio.Original;
-            switch (CurrentAspectRatio)
+            switch (_currentAspectRatio)
             {
                 case AspectRatio.BestFit:
                     newRatio = AspectRatio.Fill;
@@ -395,7 +449,7 @@ namespace VideoPlayerTrimmer.PlayerControls
                     newRatio = AspectRatio.Original;
                     break;
             }
-            CurrentAspectRatio = newRatio;
+            _currentAspectRatio = newRatio;
         }
 
         public IEnumerable<AudioTrackInfo> GetAudioTracks()
@@ -416,15 +470,15 @@ namespace VideoPlayerTrimmer.PlayerControls
             mediaPlayer.SetAudioTrack(trackIndex);
         }
 
-        public IEnumerable<SubtitleInfo> GetSubtitleTracks()
+        public IEnumerable<VlcSubtitles> GetSubtitleTracks()
         {
-            var subtitles = new List<SubtitleInfo>();
-
+            var subtitles = new List<VlcSubtitles>();
+            var ids = mediaPlayer.Media.Tracks.Where(x => x.TrackType == TrackType.Text).Select(x => x.Id).ToList();
             foreach (var item in mediaPlayer.SpuDescription)
             {
-                subtitles.Add(new SubtitleInfo() { VlcId = item.Id, Name = item.Name });
-            }
-            var sub = subtitles.SingleOrDefault(a => a.VlcId == mediaPlayer.Spu);
+                subtitles.Add(new VlcSubtitles(item.Id, item.Name));
+            }            
+            var sub = subtitles.SingleOrDefault(a => a.Spu == mediaPlayer.Spu);
             if (sub != null)
             {
                 sub.IsSelected = true;
@@ -433,19 +487,28 @@ namespace VideoPlayerTrimmer.PlayerControls
             return subtitles;
         }
 
-        public void SetSubtitles(int trackIndex)
+        public void SetSubtitles(VlcSubtitles subtitles)
         {
-            mediaPlayer.SetSpu(trackIndex);
+            mediaPlayer.SetSpu(subtitles.Spu);
         }
 
-        public void SetSubtitles(string filePath)
+        public void AddSubtitles(string fileUrl)
         {
-            mediaPlayer.AddSlave(MediaSlaveType.Subtitle, filePath, true);
+            _startupConfiguration.ResumeTime = mediaPlayer.Time;
+            mediaPlayer.Stop();
+            _startupConfiguration.ExternalSubtitles.Add(fileUrl);
+            _startupConfiguration.SelectedSubtitlesFileUrl = fileUrl;
+
+            StartPlayback();
+
+            //mediaPlayer.Media.AddSlave(MediaSlaveType.Subtitle, 4, fileUrl);
+            //mediaPlayer.Play();
+            //mediaPlayer.Time = resumeTime;
         }
 
-        public void SetSubtitlesDelay(long milliseconds)
+        public void SetSubtitlesDelay(TimeSpan delay)
         {
-            mediaPlayer.SetSpuDelay(milliseconds);
+            mediaPlayer.SetSpuDelay((long)delay.TotalMilliseconds);
         }
     }
 
