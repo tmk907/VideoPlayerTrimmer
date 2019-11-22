@@ -1,9 +1,7 @@
 ﻿using SQLite;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
 using System.Threading.Tasks;
 using VideoPlayerTrimmer.Database.Models;
 
@@ -11,68 +9,70 @@ namespace VideoPlayerTrimmer.Database
 {
     public class VideoDatabase
     {
-        private readonly SQLiteAsyncConnection connection;
+        private readonly SQLiteAsyncConnection connectionAsync;
 
         public VideoDatabase(string dbPath)
         {
-            connection = new SQLiteAsyncConnection(dbPath);
+            connectionAsync = new SQLiteAsyncConnection(dbPath);
         }
 
-        public async Task<T> GetFirstAsync<T>(Expression<Func<T, bool>> condition) where T : new()
+        public Task<T> GetFirstAsync<T>(Expression<Func<T, bool>> condition) where T : new()
         {
-            return await connection.Table<T>().FirstOrDefaultAsync(condition);
+            return connectionAsync.Table<T>().FirstOrDefaultAsync(condition);
         }
 
-        public async Task<List<T>> GetAsync<T>(Expression<Func<T,object>> order, Expression<Func<T,bool>> condition = null) where T: new()
+        public Task<List<T>> GetAsync<T>(Expression<Func<T,object>> order, Expression<Func<T,bool>> condition = null) where T: new()
         {
             if (condition == null)
             {
-                return await connection.Table<T>().OrderBy(order).ToListAsync();
+                return connectionAsync.Table<T>().OrderBy(order).ToListAsync();
             }
-            return await connection.Table<T>().Where(condition).OrderBy(order).ToListAsync();
+            return connectionAsync.Table<T>().Where(condition).OrderBy(order).ToListAsync();
         }
 
         public async Task InsertAsync<T>(T item)
         {
-            await connection.InsertAsync(item);// is id saved in item?
+            await connectionAsync.InsertAsync(item);// is id saved in item?
         }
 
         public async Task InsertAllAsync<T>(IEnumerable<T> items)
         {
-            await connection.RunInTransactionAsync(tran =>
-            {
-                foreach (var item in items)
-                {
-                    tran.Insert(item);
-                }
-            });
+            //await connection.RunInTransactionAsync(tran =>
+            //{
+            //    foreach (var item in items)
+            //    {
+            //        tran.Insert(item);
+            //    }
+            //});
+            await connectionAsync.InsertAllAsync(items);
         }
 
         public async Task UpdateAsync<T>(T item)
         {
-            await connection.UpdateAsync(item);
+            await connectionAsync.UpdateAsync(item);
         }
 
         public async Task UpdateAllAsync<T>(IEnumerable<T> items)
         {
-            await connection.RunInTransactionAsync(tran =>
-            {
-                foreach (var item in items)
-                {
-                    tran.Update(item);
-                }
-            });
+            //await connection.RunInTransactionAsync(tran =>
+            //{
+            //    foreach (var item in items)
+            //    {
+            //        tran.Update(item);
+            //    }
+            //});
+            await connectionAsync.UpdateAllAsync(items);
         }
 
         public async Task DeleteAsync<T>(T item)
         {
-            await connection.DeleteAsync<T>(item);
+            await connectionAsync.DeleteAsync<T>(item);
         }
 
         public async Task DeleteAsync<T>(Expression<Func<T, bool>> condition) where T : new()
         {
-            var items = await connection.Table<T>().Where(condition).ToListAsync();
-            await connection.RunInTransactionAsync(tran =>
+            var items = await connectionAsync.Table<T>().Where(condition).ToListAsync();
+            await connectionAsync.RunInTransactionAsync(tran =>
             {
                 foreach (var item in items)
                 {
@@ -83,8 +83,8 @@ namespace VideoPlayerTrimmer.Database
 
         public async Task UpdateIsNewAsync(int videoId, bool isNew)
         {
-            App.DebugLog($"UPDATE {nameof(VideoFileTable)} SET {nameof(VideoFileTable.IsNew)} = ? WHERE {nameof(VideoFileTable.VideoId)} = ?");
-            await connection.ExecuteAsync($"UPDATE {nameof(VideoFileTable)} SET {nameof(VideoFileTable.IsNew)} = ? WHERE {nameof(VideoFileTable.VideoId)} = ?", isNew, videoId);
+            App.DebugLog($"UPDATE {nameof(VideoFileTable)} SET {nameof(VideoFileTable.IsNew)} = {isNew} WHERE {nameof(VideoFileTable.VideoId)} = {videoId}");
+            await connectionAsync.ExecuteAsync($"UPDATE {nameof(VideoFileTable)} SET {nameof(VideoFileTable.IsNew)} = ? WHERE {nameof(VideoFileTable.VideoId)} = ?", isNew, videoId);
         }
     }
 }
