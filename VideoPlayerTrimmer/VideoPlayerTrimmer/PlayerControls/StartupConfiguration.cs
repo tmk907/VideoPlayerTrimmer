@@ -5,11 +5,13 @@ namespace VideoPlayerTrimmer.PlayerControls
 {
     public class StartupConfiguration
     {
+        public string FilePath { get; set; }
+
         public bool AutoPlay { get; set; } = true;
         public long ResumeTime { get; set; } = 0;
 
-        public TimeSpan SelectedSubtitlesDelay { get; set; } = TimeSpan.Zero;
-        public List<string> ExternalSubtitles { get; } = new List<string>();
+        public TimeSpan EmbeddedSubtitlesDelay { get; set; } = TimeSpan.Zero;
+        public Dictionary<string,TimeSpan> ExternalSubtitles { get; } = new Dictionary<string, TimeSpan>();
         public int SelectedSubtitlesSpu { get; set; } = -1;
         public string SelectedSubtitlesFileUrl { get; set; } = "";
         

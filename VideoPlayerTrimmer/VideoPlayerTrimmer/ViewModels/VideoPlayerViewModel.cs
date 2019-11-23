@@ -1,7 +1,4 @@
-﻿using AsyncAwaitBestPractices.MVVM;
-using LibVLCSharp.Shared;
-using Plugin.FilePicker;
-using Plugin.FilePicker.Abstractions;
+﻿using LibVLCSharp.Shared;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -11,6 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using VideoPlayerTrimmer.Extensions;
+using VideoPlayerTrimmer.FilePicker;
 using VideoPlayerTrimmer.Framework;
 using VideoPlayerTrimmer.MediaHelpers;
 using VideoPlayerTrimmer.Models;
@@ -28,11 +26,10 @@ namespace VideoPlayerTrimmer.ViewModels
         private readonly IOrientationService orientationService;
         private readonly IStatusBarService statusBarService;
         private string filePath;
-        private bool returnFromSubtitlesPicker = false;
 
         public VideoPlayerViewModel(MediaPlayerBuilder playerService, 
             IVideoLibrary videoLibrary, IVolumeService volumeController, IBrightnessService brightnessController,
-            IOrientationService orientationService, IStatusBarService statusBarService)
+            IOrientationService orientationService, IStatusBarService statusBarService, IFileService fileService)
         {
             App.DebugLog("");
             this.videoLibrary = videoLibrary;
@@ -40,6 +37,7 @@ namespace VideoPlayerTrimmer.ViewModels
             this.brightnessController = brightnessController;
             this.orientationService = orientationService;
             this.statusBarService = statusBarService;
+            FileService = fileService;
             ToggleFavoriteCommand = new Command(ToggleFavorite);
             ToggleControlsVisibilityCommand = new Command(ToggleControlsVisibility);
             ToggleAudioTracksCommand = new Command(ToggleAudioTracks);
@@ -47,7 +45,8 @@ namespace VideoPlayerTrimmer.ViewModels
             ToggleMediaInfoCommand = new Command(ToggleMediaInfo);
             SelectSubtitlesCommand = new Command<object>(SelectSubtitles, (e) => canChangeSubtitles);
             SelectAudioTrackCommand = new Command<object>(SelectAudioTrack, (e) => canChangeAudioTrack);
-            AddSubtitlesFromFileCommand = new AsyncCommand(AddSubtitlesFromFile);
+            AddSubtitlesFromFileCommand = new Command(AddSubtitlesFromFile);
+            SubtitleFileTappedCommand = new Command<object>(o => SubtitleFileTapped(o));
             MaxVolume = volumeController.GetMaxVolume();
             Volume = volumeController.GetVolume();
             volumeController.VolumeChanged += VolumeController_VolumeChanged;
@@ -55,12 +54,6 @@ namespace VideoPlayerTrimmer.ViewModels
             favoriteScenes = new FavoritesCollection(favoriteSceneDuration);
 
             VlcPlayerHelper = new VlcPlayerHelper(playerService);
-            VlcPlayerHelper.PlayerReady += VlcPlayerHelper_PlayerReady;
-        }
-
-        private void VlcPlayerHelper_PlayerReady()
-        {
-            StartPlayingOrResume();
         }
 
 
@@ -70,7 +63,6 @@ namespace VideoPlayerTrimmer.ViewModels
             get { return videoItem; }
             set { SetProperty(ref videoItem, value); }
         }
-
 
         private VlcPlayerHelper vlcPlayerHelper;
         public VlcPlayerHelper VlcPlayerHelper
@@ -143,7 +135,7 @@ namespace VideoPlayerTrimmer.ViewModels
             {
                 videoItem.SelectedSubtitlesId = -1;
             }
-            else if (Subtitles.Any(x => x.IsSelected))
+            else if (Subtitles.Where(x => x.Spu != -1).Any(x => x.IsSelected))
             {
                 var spu = Subtitles.First(x => x.IsSelected).Spu;
                 videoItem.SelectedSubtitlesId = spu;
@@ -171,19 +163,24 @@ namespace VideoPlayerTrimmer.ViewModels
             {
                 AutoPlay = !isPausedByUser,
                 ResumeTime = lastPosition,
+                FilePath = filePath
             };
+            foreach(var sub in videoItem.SubtitleFiles)
+            {
+                startupConfiguration.ExternalSubtitles.Add(sub.FileUrl, sub.Delay);
+            }
             if (videoItem.IsFileSubtitleSelected)
             {
                 var selected = videoItem.SubtitleFiles.FirstOrDefault(x => x.IsSelected);
                 startupConfiguration.SelectedSubtitlesFileUrl = selected.FileUrl;
-                startupConfiguration.SelectedSubtitlesDelay = selected.Delay;
+                startupConfiguration.EmbeddedSubtitlesDelay = selected.Delay;
             }
             else
             {
-                startupConfiguration.SelectedSubtitlesDelay = videoItem.EmbeddedSubtitlesDelay;
+                startupConfiguration.EmbeddedSubtitlesDelay = videoItem.EmbeddedSubtitlesDelay;
                 startupConfiguration.SelectedSubtitlesSpu = videoItem.SelectedSubtitlesId;
             }
-            VlcPlayerHelper.LoadFile(filePath, startupConfiguration);
+            VlcPlayerHelper.LoadFile(startupConfiguration);
 
             VlcPlayerHelper.MediaPlayer.TimeChanged += MediaPlayer_TimeChanged;
             VlcPlayerHelper.MediaPlayer.SnapshotTaken += MediaPlayer_SnapshotTaken;
@@ -197,19 +194,6 @@ namespace VideoPlayerTrimmer.ViewModels
             VlcPlayerHelper.MediaPlayer.TimeChanged -= MediaPlayer_TimeChanged;
             VlcPlayerHelper.MediaPlayer.SnapshotTaken -= MediaPlayer_SnapshotTaken;
             VlcPlayerHelper.OnDisappearing();
-        }
-        
-        public void StartPlayingOrResume()
-        {
-            App.DebugLog("");
-            if (returnFromSubtitlesPicker)
-            {
-                var selectedSubs = videoItem.SubtitleFiles.Single(x => x.IsSelected);
-                vlcPlayerHelper.AddSubtitles(selectedSubs.FileUrl);
-                vlcPlayerHelper.SetSubtitlesDelay(selectedSubs.Delay);
-                returnFromSubtitlesPicker = false;
-                return;
-            }
         }
 
         private void MediaPlayer_SnapshotTaken(object sender, MediaPlayerSnapshotTakenEventArgs e)
@@ -230,7 +214,7 @@ namespace VideoPlayerTrimmer.ViewModels
         public Command ToggleMediaInfoCommand { get; }
         public Command<object> SelectSubtitlesCommand { get; }
         public Command<object> SelectAudioTrackCommand { get; }
-        public IAsyncCommand AddSubtitlesFromFileCommand { get; }
+        public Command AddSubtitlesFromFileCommand { get; }
 
 
         private long lastPosition = 0;
@@ -473,35 +457,70 @@ namespace VideoPlayerTrimmer.ViewModels
                 sub.IsSelected = false;
             }
             subtitles.IsSelected = true;
+            foreach(var sub in videoItem.SubtitleFiles)
+            {
+                sub.IsSelected = false;
+            }
         }
 
-        private async Task AddSubtitlesFromFile()
+        private void MarkSubtitlesAsSelected(SubtitleFile subtitles)
         {
-            try
+            foreach (var sub in videoItem.SubtitleFiles)
             {
-                returnFromSubtitlesPicker = true;
-                FileData fileData = await CrossFilePicker.Current.PickFile();
-                if (fileData == null) return; // user canceled file picking
-
-                var subs = videoItem.SubtitleFiles.FirstOrDefault(x => x.FilePath == fileData.FilePath);
-                if (subs == null)
-                {
-                    videoItem.SubtitleFiles.Add(new SubtitleFile(fileData.FilePath, videoItem.VideoId)
-                    {
-                        IsSelected = true
-                    });
-                }
-                else
-                {
-                    subs.IsSelected = true;
-                }
+                sub.IsSelected = false;
             }
-            catch (Exception ex)
-            {
-                App.DebugLog(ex.ToString());
-            }
-            IsSubtitlesPopupVisible = false;
+            subtitles.IsSelected = true;
         }
+
+        private void AddSubtitlesFromFile()
+        {
+            StartupPath = videoItem.FolderPath;
+            IsSubtitleFilePickerVisible = true;
+            IsSubtitlesPopupVisible = false;
+            IsControlVisible = false;
+        }
+
+        public Command<object> SubtitleFileTappedCommand { get; }
+
+        private void SubtitleFileTapped(object item)
+        {
+            var file = item as FileItem;
+            var subs = videoItem.SubtitleFiles.FirstOrDefault(x => x.FilePath == file.Path);
+            if (subs == null)
+            {
+                subs = new SubtitleFile(file.Path, videoItem.VideoId);
+                videoItem.SubtitleFiles.Add(subs);
+            }
+            MarkSubtitlesAsSelected(subs);
+            vlcPlayerHelper.AddSubtitles(subs.FileUrl);
+            //vlcPlayerHelper.SetSubtitlesDelay(subs.Delay);
+            IsSubtitleFilePickerVisible = false;
+        }
+
+        private bool isSubtitleFilePickerVisible;
+        public bool IsSubtitleFilePickerVisible
+        {
+            get { return isSubtitleFilePickerVisible; }
+            set { SetProperty(ref isSubtitleFilePickerVisible, value); }
+        }
+
+
+        private IFileService fileService;
+        public IFileService FileService
+        {
+            get { return fileService; }
+            set { SetProperty(ref fileService, value); }
+        }
+
+        private string startupPath;
+        public string StartupPath
+        {
+            get { return startupPath; }
+            set { SetProperty(ref startupPath, value); }
+        }
+
+        public List<string> Extensions { get; } = new List<string>() { ".srt", ".txt", ".ass" };
+
 
         private bool isMediaInfoPopupVisible = false;
         public bool IsMediaInfoPopupVisible

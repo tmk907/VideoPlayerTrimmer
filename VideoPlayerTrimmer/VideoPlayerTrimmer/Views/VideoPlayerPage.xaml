@@ -5,6 +5,7 @@
              xmlns:converters="clr-namespace:VideoPlayerTrimmer.Converters"
              xmlns:player="clr-namespace:VideoPlayerTrimmer.PlayerControls"
              xmlns:vlc="clr-namespace:LibVLCSharp.Forms.Shared;assembly=LibVLCSharp.Forms"
+             xmlns:file="clr-namespace:VideoPlayerTrimmer.FilePicker"
              x:Name="PlayerPage"
              Shell.NavBarIsVisible="false"
              Shell.TabBarIsVisible="false"
@@ -156,6 +157,12 @@
                         </StackLayout>
                     </ScrollView>
                 </ContentView>
+                <file:SimpleFilePicker AllowedFileExtensions="{Binding Extensions}"
+                                       InitialFolderPath="{Binding StartupPath}"
+                                       FileService="{Binding FileService}"
+                                       FileTappedCommand="{Binding SubtitleFileTappedCommand}"
+                                       Margin="24,8,24,8"
+                                       IsVisible="{Binding IsSubtitleFilePickerVisible}"/>
             </Grid>
             <!--<Grid BackgroundColor="Transparent">
                 <Grid.ColumnDefinitions>

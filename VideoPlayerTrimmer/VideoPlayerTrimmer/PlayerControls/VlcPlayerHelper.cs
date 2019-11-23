@@ -67,27 +67,16 @@ namespace VideoPlayerTrimmer.PlayerControls
             private set => SetProperty(ref libVLC, value);
         }
 
-        //private VideoView videoView;
-        //public VideoView VideoView
-        //{
-        //    get => videoView;
-        //    set => SetProperty(ref videoView, value);
-        //}
 
-        public void LoadFile(string filePath)
+        public void LoadFile(StartupConfiguration startupConfiguration)
         {
-            LoadFile(filePath, new StartupConfiguration());
-        }
-
-        public void LoadFile(string filePath, StartupConfiguration startupConfiguration)
-        {
-            App.DebugLog(filePath);
+            App.DebugLog(startupConfiguration.FilePath);
 
             _startupConfiguration = startupConfiguration;
 
             LibVLC = _mediaPlayerBuilder.LibVLC;
 
-            MediaPlayer = _mediaPlayerBuilder.GetMediaPlayer(filePath);
+            MediaPlayer = _mediaPlayerBuilder.GetMediaPlayer();
             AddMediaPlayerEvents();
             StartPlayback();
 
@@ -98,10 +87,8 @@ namespace VideoPlayerTrimmer.PlayerControls
         {
             App.DebugLog("");
 
-            foreach (var fileUrl in _startupConfiguration.ExternalSubtitles)
-            {
-                mediaPlayer.Media.AddSlave(MediaSlaveType.Subtitle, 0, fileUrl);
-            }
+            var media = _mediaPlayerBuilder.GetMedia(_startupConfiguration);
+            MediaPlayer.Media = media;
 
             mediaPlayer.Playing += MediaPlayerStartedPlaying;
             MediaPlayer.Play();
@@ -116,7 +103,7 @@ namespace VideoPlayerTrimmer.PlayerControls
             if (_startupConfiguration.IsEmbeddedSubtitlesSelected)
             {
                 mediaPlayer.SetSpu(_startupConfiguration.SelectedSubtitlesSpu);
-                SetSubtitlesDelay(_startupConfiguration.SelectedSubtitlesDelay);
+                SetSubtitlesDelay(_startupConfiguration.EmbeddedSubtitlesDelay);
             }
             else if (_startupConfiguration.IsFileSubtitlesSelected)
             {
@@ -137,7 +124,7 @@ namespace VideoPlayerTrimmer.PlayerControls
                     var selectedFileSpu = spuIds.ElementAt(embSubsCount + slaveIndex);
 
                     mediaPlayer.SetSpu(selectedFileSpu);
-                    SetSubtitlesDelay(_startupConfiguration.SelectedSubtitlesDelay);
+                    SetSubtitlesDelay(_startupConfiguration.EmbeddedSubtitlesDelay);
                 }
             }
             
@@ -147,7 +134,7 @@ namespace VideoPlayerTrimmer.PlayerControls
                 MediaPlayer.Play();
             }
 
-            PlayerReady.Invoke();
+            PlayerReady?.Invoke();
         }
 
         public void OnDisappearing()
@@ -496,14 +483,13 @@ namespace VideoPlayerTrimmer.PlayerControls
         {
             _startupConfiguration.ResumeTime = mediaPlayer.Time;
             mediaPlayer.Stop();
-            _startupConfiguration.ExternalSubtitles.Add(fileUrl);
+            if (!_startupConfiguration.ExternalSubtitles.ContainsKey(fileUrl))
+            {
+                _startupConfiguration.ExternalSubtitles.Add(fileUrl, TimeSpan.Zero);
+            }
             _startupConfiguration.SelectedSubtitlesFileUrl = fileUrl;
 
             StartPlayback();
-
-            //mediaPlayer.Media.AddSlave(MediaSlaveType.Subtitle, 4, fileUrl);
-            //mediaPlayer.Play();
-            //mediaPlayer.Time = resumeTime;
         }
 
         public void SetSubtitlesDelay(TimeSpan delay)

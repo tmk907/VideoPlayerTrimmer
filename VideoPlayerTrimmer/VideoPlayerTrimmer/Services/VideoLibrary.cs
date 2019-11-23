@@ -42,6 +42,7 @@ namespace VideoPlayerTrimmer.Services
                         .Select(x => new SubtitleFile(x.FilePath, videoRow.VideoId)
                         {
                             Delay = x.Delay,
+                            IsSelected = x.IsSelected
                         }));
                 }
                 _videoItems.Add(video);
@@ -150,14 +151,16 @@ namespace VideoPlayerTrimmer.Services
                     {
                         Delay = sub.Delay,
                         FilePath = sub.FilePath,
-                        VideoId = videoItem.VideoId
+                        VideoId = videoItem.VideoId,
+                        IsSelected = sub.IsSelected
                     });
                 }
                 else
                 {
-                    if(subTable.Delay != sub.Delay)
+                    if(subTable.Delay != sub.Delay || subTable.IsSelected != sub.IsSelected)
                     {
                         subTable.Delay = sub.Delay;
+                        subTable.IsSelected = sub.IsSelected;
                         updatedFileSubtitles.Add(subTable);
                     }
                     subtileFileTable.Remove(subTable);

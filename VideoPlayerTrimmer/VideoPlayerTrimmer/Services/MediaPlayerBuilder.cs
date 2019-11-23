@@ -1,6 +1,7 @@
 ﻿using LibVLCSharp.Shared;
 using System;
 using System.Collections.Generic;
+using VideoPlayerTrimmer.PlayerControls;
 
 namespace VideoPlayerTrimmer.Services
 {
@@ -20,6 +21,12 @@ namespace VideoPlayerTrimmer.Services
             }
         }
 
+        public MediaPlayer GetMediaPlayer()
+        {
+            var mediaPlayer = new MediaPlayer(LibVLC);
+            return mediaPlayer;
+        }
+
         public MediaPlayer GetMediaPlayer(string filePath)
         {
             var media = new Media(LibVLC, filePath);
@@ -31,6 +38,27 @@ namespace VideoPlayerTrimmer.Services
             }
             var mediaPlayer = new MediaPlayer(media);
             return mediaPlayer;
+        }
+
+        public Media GetMedia(StartupConfiguration startupConfiguration)
+        {
+            var media = new Media(LibVLC, startupConfiguration.FilePath);
+            if (Settings.UseHardwareAcceleration)
+            {
+                var configuration = new MediaConfiguration();
+                configuration.EnableHardwareDecoding = true;
+                media.AddOption(configuration);
+            }
+            //if (!startupConfiguration.AutoPlay)
+            //{
+            //    media.AddOption(":start-paused");
+            //}
+            foreach (var fileUrl in startupConfiguration.ExternalSubtitles.Keys)
+            {
+                media.AddSlave(MediaSlaveType.Subtitle, 0, fileUrl);
+            }
+
+            return media;
         }
 
         public MediaPlayer GetMediaPlayerForTrimming(string filePath, string outputPath, int startSec, int endSec)
