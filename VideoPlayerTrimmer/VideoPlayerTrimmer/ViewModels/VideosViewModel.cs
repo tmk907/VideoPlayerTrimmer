@@ -59,8 +59,10 @@ namespace VideoPlayerTrimmer.ViewModels
             var videoItem = item as VideoItem;
             if (backToTrimmer)
             {
-                await App.NavigationService.NavigateToAsync($"{PageNames.TrimmerNav}" +
-                    $"?{NavigationParameterNames.VideoPath}={videoItem.FilePath}");
+                App.NavigationService.BackNavigationParameters = $"{NavigationParameterNames.VideoPath}={videoItem.FilePath}";
+                await App.NavigationService.NavigateBackAsync();
+                //await App.NavigationService.NavigateToAsync($"{PageNames.TrimmerNav}" +
+                //    $"?{NavigationParameterNames.VideoPath}={videoItem.FilePath}");
             }
             else
             {

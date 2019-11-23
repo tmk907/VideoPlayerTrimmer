@@ -1,17 +1,24 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Text;
 using Xamarin.Forms;
 
 namespace VideoPlayerTrimmer.Converters
 {
-    class BoolToFavoriteIconConverter : IValueConverter
+    class BoolToStringConverter : IValueConverter
     {
+        public string IfFalse { get; set; }
+        public string IfTrue { get; set; }
+
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            bool isfavorite = (bool)value;
-            return isfavorite ? "ep-heart" : "ep-heart-outlined";
+            if ((bool)value)
+            {
+                return IfTrue;
+            }
+            else
+            {
+                return IfFalse;
+            }
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

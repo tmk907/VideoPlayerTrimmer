@@ -6,8 +6,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using VideoPlayerTrimmer.Extensions;
 using VideoPlayerTrimmer.Framework;
-using VideoPlayerTrimmer.MediaHelpers;
 using VideoPlayerTrimmer.Models;
+using VideoPlayerTrimmer.PlayerControls;
 using VideoPlayerTrimmer.Services;
 using Xamarin.Forms;
 
@@ -26,17 +26,14 @@ namespace VideoPlayerTrimmer.ViewModels
             fFmpegConverter.ConversionStarted += FFmpegConverter_ConversionStarted;
             fFmpegConverter.ConversionEnded += FFmpegConverter_ConversionEnded;
 
-            MediaHelper = new MediaPlayerHelper(playerService);
-            MediaHelper.IsPausedByUser = true;
-            MediaHelper.MediaPlayerReady += MediaPlayerHelper_MediaPlayerReady;
-            MediaHelper.PlaybackStateChanged += MediaHelper_PlaybackStateChanged;
+            VlcPlayerHelper = new VlcPlayerHelper(playerService);
+            vlcPlayerHelper.PlayerReady += VlcPlayerHelper_PlayerReady;
 
             GoToNextFavSceneCommand = new Command(GoToNextFavScene);
             GoToPrevFavSceneCommand = new Command(GoToPrevFavScene);
             IncrementPositionCommand = new Command<object>((e) => IncrementPosition(e));
             DecrementPositionCommand = new Command<object>((e) => DecrementPosition(e));
             JumpToStartCommand = new Command(() => JumpToStart());
-            TogglePlayPauseCommand = new Command(TogglePlayPause);
 
             OffsetOptions = new ObservableCollection<OffsetOption>()
             {
@@ -49,6 +46,30 @@ namespace VideoPlayerTrimmer.ViewModels
 
             EndPosition = TimeSpan.FromMinutes(1);
             TotalDuration = EndPosition;
+        }
+
+        private void VlcPlayerHelper_PlayerReady()
+        {
+            if (vlcPlayerHelper.MediaPlayer.Fps > 0)
+            {
+                var frameDuration = 1.0 / vlcPlayerHelper.MediaPlayer.Fps;
+                Device.BeginInvokeOnMainThread(() =>
+                {
+                    var frameOption = OffsetOptions.FirstOrDefault(o => o.Name == "1 Frame");
+                    if (frameOption != null)
+                    {
+                        OffsetOptions.Remove(frameOption);
+                    }
+                    OffsetOptions.Add(new OffsetOption("1 Frame", TimeSpan.FromSeconds(frameDuration)));
+                });
+            }
+        }
+
+        private VlcPlayerHelper vlcPlayerHelper;
+        public VlcPlayerHelper VlcPlayerHelper
+        {
+            get { return vlcPlayerHelper; }
+            set { vlcPlayerHelper = value; }
         }
 
         private void FFmpegConverter_ConversionEnded(object sender, EventArgs e)
@@ -83,37 +104,11 @@ namespace VideoPlayerTrimmer.ViewModels
             });
         }
 
-        private void MediaHelper_TimeChanged(object sender, LibVLCSharp.Shared.MediaPlayerTimeChangedEventArgs e)
+        private void MediaPlayer_TimeChanged(object sender, LibVLCSharp.Shared.MediaPlayerTimeChangedEventArgs e)
         {
             var time = TimeSpan.FromMilliseconds(e.Time);
             CurrentPosition = time;
         }
-
-        private void MediaPlayerHelper_MediaPlayerReady(object sender, EventArgs e)
-        {
-            var t = TimeSpan.FromMilliseconds(MediaHelper.MediaPlayer.Length);
-            if (MediaHelper.MediaPlayer.Fps > 0)
-            {
-                var frameDuration = 1.0 / MediaHelper.MediaPlayer.Fps;
-                var f = OffsetOptions.FirstOrDefault(o => o.Name == "1 Frame");
-                if (f != null)
-                {
-                    OffsetOptions.Remove(f);
-                }
-                OffsetOptions.Add(new OffsetOption("1 Frame", TimeSpan.FromSeconds(frameDuration)));
-            }
-            if (t.TotalMilliseconds!= totalDuration.TotalMilliseconds)
-            {
-
-            }
-        }
-
-        private void MediaHelper_PlaybackStateChanged(object sender, PlaybackStateEventArgs e)
-        {
-            IsPlaying = e.PlaybackState == PlaybackState.Playing;
-        }
-
-        public MediaPlayerHelper MediaHelper { get; }
 
         private TimeSpan startPosition = TimeSpan.Zero;
         public TimeSpan StartPosition
@@ -122,7 +117,7 @@ namespace VideoPlayerTrimmer.ViewModels
             set
             {
                 SetProperty(ref startPosition, value);
-                MediaHelper.SeekTo(startPosition);
+                vlcPlayerHelper.SeekTo(startPosition);
             }
         }
 
@@ -133,7 +128,7 @@ namespace VideoPlayerTrimmer.ViewModels
             set
             {
                 SetProperty(ref endPosition, value);
-                MediaHelper.SeekTo(endPosition);
+                vlcPlayerHelper.SeekTo(endPosition);
             }
         }
 
@@ -146,12 +141,6 @@ namespace VideoPlayerTrimmer.ViewModels
             set { SetProperty(ref currentPosition, value); }
         }
 
-        private bool isPlaying = false;
-        public bool IsPlaying
-        {
-            get { return isPlaying; }
-            set { SetProperty(ref isPlaying, value); }
-        }
 
         private TimeSpan defaultFavSceneDuration = TimeSpan.FromSeconds(10);
 
@@ -209,6 +198,7 @@ namespace VideoPlayerTrimmer.ViewModels
         public Command<object> DecrementPositionCommand { get; }
         public Command JumpToStartCommand { get; }
 
+
         private TimeSpan previewPosition = TimeSpan.Zero;
 
         private TimeSpan totalDuration;
@@ -244,13 +234,6 @@ namespace VideoPlayerTrimmer.ViewModels
             IsFavoriteScene = true;
             StartPosition = favoriteScenes[selectedfavSceneIndex].Position;
             EndPosition = Min(totalDuration, startPosition + defaultFavSceneDuration);
-        }
-
-        private void TogglePlayPause()
-        {
-            App.DebugLog("");
-            MediaHelper.TogglePlayPause();
-            IsPlaying = MediaHelper.IsPlaying;
         }
 
         private void IncrementPosition(object arg)
@@ -302,36 +285,71 @@ namespace VideoPlayerTrimmer.ViewModels
 
         private void JumpToStart()
         {
-            MediaHelper.SeekTo(StartPosition);
-        }
-
-        public override void OnNavigating(Dictionary<string, string> navigationArgs)
-        {
-            base.OnNavigating(navigationArgs);
-
-            if (navigationParameters.ContainsKey(NavigationParameterNames.VideoPath))
-            {
-                filePath = navigationParameters[NavigationParameterNames.VideoPath];
-            }
+            vlcPlayerHelper.SeekTo(StartPosition);
         }
 
         protected override async Task InitializeVMAsync(CancellationToken token)
         {
             App.DebugLog("");
 
+            var dict = App.NavigationService.ParseNavigationParameters(App.NavigationService.BackNavigationParameters);
+            if (dict.ContainsKey(NavigationParameterNames.VideoPath))
+            {
+                filePath = dict[NavigationParameterNames.VideoPath];
+            }
+
             if (!String.IsNullOrEmpty(filePath))
             {
                 await OpenFileAsync();
+                InitMediaPlayer();
             }
-            MediaHelper.TimeChanged += MediaHelper_TimeChanged;
         }
 
         protected override Task UnInitializeVMAsync()
         {
             App.DebugLog("");
-            MediaHelper.TimeChanged -= MediaHelper_TimeChanged;
-            MediaHelper.UnInitMediaPlayer();
+            UnInitMediaPlayer();
             return Task.CompletedTask;
+        }
+
+        private void InitMediaPlayer()
+        {
+            App.DebugLog("");
+            var startupConfiguration = new StartupConfiguration()
+            {
+                AutoPlay = false,
+                FilePath = filePath
+            };
+            foreach (var sub in videoItem.SubtitleFiles)
+            {
+                startupConfiguration.ExternalSubtitles.Add(sub.FileUrl, sub.Delay);
+            }
+            if (videoItem.IsFileSubtitleSelected)
+            {
+                var selected = videoItem.SubtitleFiles.FirstOrDefault(x => x.IsSelected);
+                startupConfiguration.SelectedSubtitlesFileUrl = selected.FileUrl;
+                startupConfiguration.EmbeddedSubtitlesDelay = selected.Delay;
+            }
+            else
+            {
+                startupConfiguration.EmbeddedSubtitlesDelay = videoItem.EmbeddedSubtitlesDelay;
+                startupConfiguration.SelectedSubtitlesSpu = videoItem.SelectedSubtitlesId;
+            }
+            VlcPlayerHelper.LoadFile(startupConfiguration);
+
+            VlcPlayerHelper.MediaPlayer.TimeChanged += MediaPlayer_TimeChanged;
+        }
+
+        private void UnInitMediaPlayer()
+        {
+            App.DebugLog("");
+
+            if (!String.IsNullOrEmpty(filePath))
+            {
+                VlcPlayerHelper.MediaPlayer.Pause();
+                vlcPlayerHelper.MediaPlayer.TimeChanged -= MediaPlayer_TimeChanged;
+                VlcPlayerHelper.OnDisappearing();
+            }
         }
 
         private string filePath;
@@ -347,7 +365,6 @@ namespace VideoPlayerTrimmer.ViewModels
             TotalDuration = videoItem.Duration;
             var list = await videoLibrary.GetFavoriteScenes(videoItem.VideoId);
             favoriteScenes.AddRange(list);
-            MediaHelper.InitMediaPlayer(filePath);
             //await ffmpegService.Test(filePath);
         }
 

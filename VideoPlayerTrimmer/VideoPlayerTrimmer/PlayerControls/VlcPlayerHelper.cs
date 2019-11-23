@@ -25,7 +25,7 @@ namespace VideoPlayerTrimmer.PlayerControls
 
             PlayPauseCommand = new Command(() => OnPlayPauseClicked());
             AspectRatioClickedCommand = new Command(() => OnAspectRatioClicked());
-            SliderValueChangedCommand = new Command<TimeSpan>((val) => OnSliderValueChanged(val));
+            SliderValueChangedCommand = new Command<TimeSpan>((val) => SeekTo(val));
         }
 
         public Command PlayPauseCommand { get; }
@@ -280,23 +280,6 @@ namespace VideoPlayerTrimmer.PlayerControls
             }
         }
 
-        private void OnSliderValueChanged(TimeSpan value)
-        {
-            if (value == null) return;
-            if (MediaPlayer.IsSeekable)
-            {
-                long newTime = (long)value.TotalMilliseconds;
-                if (newTime > MediaPlayer.Length)
-                {
-                    MediaPlayer.Time = newTime - 100;
-                }
-                else
-                {
-                    MediaPlayer.Time = newTime;
-                }
-            }
-        }
-
         private void UpdateState(VLCState playbackState)
         {
             if(playbackState == VLCState.Playing)
@@ -455,6 +438,24 @@ namespace VideoPlayerTrimmer.PlayerControls
         public void SetAudioTrack(int trackIndex)
         {
             mediaPlayer.SetAudioTrack(trackIndex);
+        }
+
+        public void SeekTo(TimeSpan position)
+        {
+            if (position == null || mediaPlayer == null) return;
+            if (MediaPlayer.IsSeekable)
+            {
+                long newTime = (long)position.TotalMilliseconds;
+                if (newTime > MediaPlayer.Length)
+                {
+                    newTime = newTime - 100;
+                }
+                MediaPlayer.Time = newTime;
+                if (!mediaPlayer.IsPlaying)
+                {
+                    Device.BeginInvokeOnMainThread(() => { ElapsedTime = TimeSpan.FromMilliseconds(newTime); });
+                }
+            }
         }
 
         public IEnumerable<VlcSubtitles> GetSubtitleTracks()

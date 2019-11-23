@@ -27,7 +27,9 @@ namespace VideoPlayerTrimmer.Framework
             return ParseNavigationParameters(NavigationTargetLocation?.ToString());
         }
 
-        private Dictionary<string,string> ParseNavigationParameters(string query)
+        public string BackNavigationParameters { get; set; }
+
+        public Dictionary<string,string> ParseNavigationParameters(string query)
         {
             var lookupDict = new Dictionary<string, string>();
             if (query == null)

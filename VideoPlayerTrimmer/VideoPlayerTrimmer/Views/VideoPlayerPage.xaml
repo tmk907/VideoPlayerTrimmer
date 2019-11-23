@@ -14,7 +14,6 @@
         <ResourceDictionary>
             <converters:TimeSpanToVideoDurationConverter x:Key="DurationConverter" />
             <converters:TimeSpanToSecondsConverter x:Key="ToSecondsConverter"/>
-            <converters:BoolToFavoriteIconConverter x:Key="ToFavoriteIconConverter"/>
 
             <x:String x:Key="fas-check">&#xf00c;</x:String>
             <x:String x:Key="FontAwesomeSolid">FontAwesome5Solid.otf#Regular</x:String>
@@ -162,6 +161,7 @@
                                        FileService="{Binding FileService}"
                                        FileTappedCommand="{Binding SubtitleFileTappedCommand}"
                                        Title="{Binding VideoItem.Title}"
+                                       CloseCommand="{Binding CloseFilePickerCommand}"
                                        Margin="24,8,24,8"
                                        IsVisible="{Binding IsSubtitleFilePickerVisible}"/>
             </Grid>

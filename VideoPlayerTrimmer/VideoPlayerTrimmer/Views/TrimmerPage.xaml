@@ -6,30 +6,68 @@
              xmlns:views="clr-namespace:VideoPlayerTrimmer.Views"
              xmlns:slider="clr-namespace:Xamarin.RangeSlider.Forms;assembly=Xamarin.RangeSlider.Forms"
              xmlns:vlc="clr-namespace:LibVLCSharp.Forms.Shared;assembly=LibVLCSharp.Forms"
-                          xmlns:fonts="clr-namespace:VideoPlayerTrimmer.Fonts"
+             xmlns:fonts="clr-namespace:VideoPlayerTrimmer.Fonts"
              xmlns:converters="clr-namespace:VideoPlayerTrimmer.Converters"
              mc:Ignorable="d"
              x:Class="VideoPlayerTrimmer.Views.TrimmerPage">
     <ContentPage.Resources>
         <Color x:Key="SemiTransparent">#AA000000</Color>
-        <converters:BoolToFavoriteIconConverter x:Key="ToFavIcon"/>
-        <converters:BoolToPlayPauseIcon x:Key="ToPlayPauseIcon"/>
+        
+        <Color x:Key="TextColorDarkTheme">#FFFFFF</Color>
+        <Color x:Key="TextColorLightTheme">#000000</Color>
+
+        <Color x:Key="BackgroundColorDarkTheme">#000000</Color>
+        <Color x:Key="BackgroundColorLightTheme">#FFFFFF</Color>
+        
+        <converters:BoolToStringConverter x:Key="ToPlayPauseIcon" 
+                                        IfFalse="{x:Static fonts:FontAwesomeSolid.Play}"
+                                        IfTrue="{x:Static fonts:FontAwesomeSolid.Pause}"/>
+        <converters:BoolToStringConverter x:Key="ToFavoriteIcon" 
+                                        IfFalse="{x:Static fonts:FontAwesomeRegular.Heart}"
+                                        IfTrue="{x:Static fonts:FontAwesomeSolid.Heart}"/>
+        <converters:BoolToStringConverter x:Key="ToFavoriteFontFamily" 
+                                        IfFalse="FontAwesome5Regular.otf#Regular"
+                                        IfTrue="FontAwesome5Solid.otf#Regular"/>
+        
         <converters:TimeSpanToVideoDurationConverter x:Key="ToDuration"/>
         <converters:TimeSpanToSecondsConverter x:Key="ToSeconds"/>
+        
+        <Style x:Key="ButtonStyle" TargetType="Button">
+            <Setter Property="BackgroundColor" Value="Transparent" />
+            <Setter Property="FontFamily" Value="{StaticResource FontAwesomeSolid}" />
+            <Setter Property="FontSize" Value="30" />
+            <Setter Property="TextColor" Value="{StaticResource TextColorDarkTheme}"/>
+            <Setter Property="HeightRequest" Value="40" />
+            <Setter Property="HorizontalOptions" Value="FillAndExpand" />
+            <Setter Property="Margin" Value="0" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="VerticalOptions" Value="Center" />
+            <Setter Property="WidthRequest" Value="60"/>
+            <Setter Property="HeightRequest" Value="50"/>
+        </Style>
+
+        <Style x:Key="ButtonWithBorderStyle" TargetType="Button" BasedOn="{StaticResource ButtonStyle}">
+            <Setter Property="BorderWidth" Value="1"/>
+            <Setter Property="BorderColor" Value="{StaticResource AccentColor}"/>
+            <Setter Property="TextColor" Value="{StaticResource TextColorDarkTheme}"/>
+            <Setter Property="HeightRequest" Value="30" />
+        </Style>
     </ContentPage.Resources>
     <Shell.TitleView>
-        <StackLayout Orientation="Horizontal" VerticalOptions="Center">
+        <StackLayout Orientation="Horizontal" Spacing="0">
             <Label Text="Trimmer" Style="{StaticResource TitleLabelStyle}"/>
-            <Button 
-                Grid.Column="1" 
-                Text="{x:Static fonts:FontAwesomeSolid.Folder}"
-                FontFamily="{x:StaticResource FontAwesomeSolid}"
-                Clicked="Open_Clicked"/>
-            <Button 
-                Grid.Column="2" 
-                Text="{x:Static fonts:FontAwesomeSolid.Save}" 
-                FontFamily="{x:StaticResource FontAwesomeSolid}"
-                Clicked="Save_Clicked"/>
+            <StackLayout Orientation="Horizontal" Spacing="0" HorizontalOptions="EndAndExpand">
+                <Button 
+                    Grid.Column="1" 
+                    Text="{x:Static fonts:FontAwesomeSolid.Folder}"
+                    Style="{StaticResource ButtonStyle}"
+                    Clicked="Open_Clicked"/>
+                <Button 
+                    Grid.Column="2" 
+                    Text="{x:Static fonts:FontAwesomeSolid.Save}"
+                    Style="{StaticResource ButtonStyle}"
+                    Clicked="Save_Clicked"/>
+            </StackLayout>
         </StackLayout>
     </Shell.TitleView>
     <ContentPage.Content>
@@ -37,19 +75,16 @@
             <StackLayout Orientation="Vertical" Spacing="0">
                 <FlexLayout x:Name="flexLayout" Direction="Column">
                     <Grid>
-                        <vlc:VideoView
-                        x:Name="videoView"
-                        MediaPlayer="{Binding MediaHelper.MediaPlayer}"
-                        MediaPlayerChanged="VideoView_MediaPlayerChanged"
-                        WidthRequest="600"
-                        HeightRequest="200"
-                    />
+                        <vlc:VideoView 
+                            MediaPlayer="{Binding VlcPlayerHelper.MediaPlayer}"
+                            WidthRequest="600"
+                            HeightRequest="200"/>
                         <Frame 
-                        WidthRequest="110" HeightRequest="70" 
-                        BackgroundColor="{StaticResource SemiTransparent}"
-                        Padding="0"
-                        HorizontalOptions="Center"
-                        VerticalOptions="Center">
+                            WidthRequest="110" HeightRequest="70" 
+                            BackgroundColor="{StaticResource SemiTransparent}"
+                            Padding="0"
+                            HorizontalOptions="Center"
+                            VerticalOptions="Center">
                             <StackLayout Orientation="Vertical" Spacing="2">
                                 <Label Text="{Binding CurrentPosition, Converter={StaticResource ToDuration}}"
                                     TextColor="White"
@@ -58,21 +93,23 @@
                                     VerticalTextAlignment="Center"/>
                                 <StackLayout Orientation="Horizontal" HorizontalOptions="Center">
                                     <Button 
-                                    BackgroundColor="Transparent"
-                                    TextColor="White"
-                                    BorderColor="White"
-                                    BorderWidth="1"
-                                    Command="{Binding JumpToStartCommand}" 
-                                    WidthRequest="50"
-                                    Text="ep-controller-jump-to-start"/>
+                                        BackgroundColor="Transparent"
+                                        TextColor="White"
+                                        BorderColor="White"
+                                        BorderWidth="1"
+                                        Command="{Binding JumpToStartCommand}" 
+                                        WidthRequest="50"
+                                        FontFamily="{StaticResource FontAwesomeSolid}"
+                                        Text="{x:Static fonts:FontAwesomeSolid.StepBackward}"/>
                                     <Button 
-                                    BackgroundColor="Transparent"
-                                    TextColor="White"
-                                    BorderColor="White"
-                                    BorderWidth="1"
-                                    WidthRequest="50"
-                                    Command="{Binding TogglePlayPauseCommand}" 
-                                    Text="{Binding IsPlaying, Converter={StaticResource ToPlayPauseIcon}}"/>
+                                        BackgroundColor="Transparent"
+                                        TextColor="White"
+                                        BorderColor="White"
+                                        BorderWidth="1"
+                                        WidthRequest="50"
+                                        Command="{Binding VlcPlayerHelper.PlayPauseCommand}" 
+                                        FontFamily="{StaticResource FontAwesomeSolid}"
+                                        Text="{Binding VlcPlayerHelper.IsPlaying, Converter={StaticResource ToPlayPauseIcon}}"/>
                                 </StackLayout>
                             </StackLayout>
                         </Frame>
@@ -80,14 +117,18 @@
                     <StackLayout Orientation="Vertical">
                         <StackLayout Orientation="Horizontal" HorizontalOptions="Center">
                             <Button Command="{Binding GoToPrevFavSceneCommand}" 
-                            Text="ep-arrow-long-left"
-                            WidthRequest="50"/>
-                            <Label Text="{Binding IsFavoriteScene, Converter={StaticResource ToFavIcon}}" 
-                            VerticalOptions="Center"
-                            FontSize="22"/>
+                                Text="{x:Static fonts:FontAwesomeSolid.ArrowLeft}"
+                                    FontFamily="{StaticResource FontAwesomeSolid}"
+                                WidthRequest="50"/>
+                            <Label 
+                                Text="{Binding IsFavoriteScene, Converter={StaticResource ToFavoriteIcon}}"
+                                FontFamily="{Binding IsFavoriteScene, Converter={StaticResource ToFavoriteFontFamily}}" 
+                                VerticalOptions="Center"
+                                FontSize="22"/>
                             <Button Command="{Binding GoToNextFavSceneCommand}" 
-                            Text="ep-arrow-long-right"
-                            WidthRequest="50"/>
+                                Text="{x:Static fonts:FontAwesomeSolid.ArrowRight}"
+                                FontFamily="{StaticResource FontAwesomeSolid}"
+                                WidthRequest="50"/>
                         </StackLayout>
                         <Grid Margin="12">
                             <Grid.ColumnDefinitions>
@@ -100,52 +141,55 @@
                             </Grid.RowDefinitions>
                             <StackLayout Orientation="Horizontal" Grid.Column="0" Grid.Row="0">
                                 <Label Text="Start" 
-                    VerticalTextAlignment="Center" 
-                    WidthRequest="40"/>
+                                    VerticalTextAlignment="Center" 
+                                    WidthRequest="40"/>
                                 <Label Text="{Binding StartPosition, Converter={StaticResource ToDuration}}" 
-                    HorizontalTextAlignment="End"
-                    VerticalTextAlignment="Center"
-                    WidthRequest="80"/>
+                                    HorizontalTextAlignment="End"
+                                    VerticalTextAlignment="Center"
+                                    WidthRequest="80"/>
                                 <Button Command="{Binding DecrementPositionCommand}" CommandParameter="A" 
-                            Text="ep-minus"
-                            WidthRequest="50"/>
+                                    Text="{x:Static fonts:FontAwesomeSolid.Minus}"
+                                    FontFamily="{StaticResource FontAwesomeSolid}"
+                                    WidthRequest="50"/>
                                 <Button Command="{Binding IncrementPositionCommand}" CommandParameter="A" 
-                            Text="ep-plus"
-                            WidthRequest="50"/>
+                                    Text="{x:Static fonts:FontAwesomeSolid.Plus}"
+                                    FontFamily="{StaticResource FontAwesomeSolid}"
+                                    WidthRequest="50"/>
                             </StackLayout>
                             <StackLayout Orientation="Horizontal" Grid.Column="0" Grid.Row="1">
                                 <Label Text="End" 
-                    VerticalTextAlignment="Center" 
-                    WidthRequest="40"/>
+                                    VerticalTextAlignment="Center" 
+                                    WidthRequest="40"/>
                                 <Label Text="{Binding EndPosition, Converter={StaticResource ToDuration}}" 
-                    HorizontalTextAlignment="End"
-                    VerticalTextAlignment="Center"
-                    WidthRequest="80"/>
+                                    HorizontalTextAlignment="End"
+                                    VerticalTextAlignment="Center"
+                                    WidthRequest="80"/>
                                 <Button Command="{Binding DecrementPositionCommand}" CommandParameter="B" 
-                            Text="ep-minus"
-                            WidthRequest="50"/>
+                                    Text="{x:Static fonts:FontAwesomeSolid.Minus}"
+                                    FontFamily="{StaticResource FontAwesomeSolid}"
+                                    WidthRequest="50"/>
                                 <Button Command="{Binding IncrementPositionCommand}" CommandParameter="B" 
-                            Text="ep-plus"
-                            WidthRequest="50"/>
-
+                                    Text="{x:Static fonts:FontAwesomeSolid.Plus}"
+                                    FontFamily="{StaticResource FontAwesomeSolid}"
+                                    WidthRequest="50"/>
                             </StackLayout>
                             <Picker Grid.Column="1" Grid.RowSpan="2"
-                    ItemsSource="{Binding OffsetOptions}" SelectedItem="{Binding SelectedOffsetOption}"
-                    VerticalOptions="Center"
-                    HorizontalOptions="Center"
-                    WidthRequest="80"/>
+                                ItemsSource="{Binding OffsetOptions}" SelectedItem="{Binding SelectedOffsetOption}"
+                                VerticalOptions="Center"
+                                HorizontalOptions="Center"
+                                WidthRequest="80"/>
                         </Grid>
                     </StackLayout>
                 </FlexLayout>
                 <slider:RangeSlider
-                Margin="0,8,0,8"
-                BarHeight="6"
-                MinimumValue="0"
-                MaximumValue="{Binding TotalDuration, Converter={StaticResource ToSeconds}}"
-                LowerValue="{Binding StartPosition, Converter={StaticResource ToSeconds}}"
-                UpperValue="{Binding EndPosition, Converter={StaticResource ToSeconds}}"
-                StepValue="1"
-                StepValueContinuously="True"/>
+                    Margin="0,8,0,8"
+                    BarHeight="6"
+                    MinimumValue="0"
+                    MaximumValue="{Binding TotalDuration, Converter={StaticResource ToSeconds}}"
+                    LowerValue="{Binding StartPosition, Converter={StaticResource ToSeconds}}"
+                    UpperValue="{Binding EndPosition, Converter={StaticResource ToSeconds}}"
+                    StepValue="1"
+                    StepValueContinuously="True"/>
                 <StackLayout Orientation="Horizontal">
                     <Label Text="Fast trimming"/>
                     <Switch IsToggled="{Binding FastTrim}"/>
