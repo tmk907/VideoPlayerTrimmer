@@ -17,6 +17,7 @@ using VideoPlayerTrimmer.Droid.Services;
 using LibVLCSharp.Forms.Shared;
 using VideoPlayerTrimmer.Droid.BroadcastReceivers;
 using LibVLCSharp.Forms.Platforms.Android;
+using VideoPlayerTrimmer.FilePicker;
 
 namespace VideoPlayerTrimmer.Droid
 {
@@ -93,6 +94,7 @@ namespace VideoPlayerTrimmer.Droid
             App.DIContainer.Register<IStatusBarService, StatusBarService>();
             App.DIContainer.Register<IFFmpegService, FFmpegService2>();
             App.DIContainer.Register<IFFmpegConverter, FFmpegConverter>();
+            App.DIContainer.Register<IFileService, FileService>();
         }
     }
 }

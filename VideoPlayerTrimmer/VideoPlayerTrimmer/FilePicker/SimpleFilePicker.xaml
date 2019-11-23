@@ -1,0 +1,97 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentView xmlns="http://xamarin.com/schemas/2014/forms" 
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="clr-namespace:VideoPlayerTrimmer.FilePicker"
+             mc:Ignorable="d"
+             x:Class="VideoPlayerTrimmer.FilePicker.SimpleFilePicker"
+             x:Name="this">
+    <ContentView.Resources>
+        <x:String x:Key="FolderIcon">&#xf07b;</x:String>
+        <x:String x:Key="FileIcon">&#xf15b;</x:String>
+        
+        <local:StorageItemToIconConverter x:Key="IconConverter" 
+                                          FileIcon="{StaticResource FileIcon}" 
+                                          FolderIcon="{StaticResource FolderIcon}"/>
+
+        <Color x:Key="TextColorDarkTheme">#FFFFFF</Color>
+        <Color x:Key="TextColorLightTheme">#000000</Color>
+
+        <Color x:Key="BackgroundColorDarkTheme">#000000</Color>
+        <Color x:Key="BackgroundColorLightTheme">#FFFFFF</Color>
+
+
+        <Style TargetType="Label">
+            <Setter Property="TextColor" Value="{StaticResource TextColorDarkTheme}"/>
+        </Style>
+        <Style x:Key="ButtonStyle" TargetType="Button">
+            <Setter Property="BackgroundColor" Value="Transparent" />
+            <Setter Property="FontFamily" Value="{StaticResource FontAwesomeSolid}" />
+            <Setter Property="FontSize" Value="30" />
+            <Setter Property="TextColor" Value="{StaticResource TextColorDarkTheme}"/>
+            <Setter Property="HeightRequest" Value="40" />
+            <Setter Property="HorizontalOptions" Value="FillAndExpand" />
+            <Setter Property="Margin" Value="0" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="VerticalOptions" Value="Center" />
+            <Setter Property="BorderWidth" Value="1"/>
+            <Setter Property="BorderColor" Value="{StaticResource AccentColor}"/>
+        </Style>
+    </ContentView.Resources>
+  <ContentView.Content>
+        <Frame HasShadow="True" CornerRadius="2" BackgroundColor="{StaticResource BackgroundColorDarkTheme}" Padding="0">
+            <Grid Margin="8,0,8,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <StackLayout Grid.Row="0" Orientation="Vertical" Spacing="0">
+                    <Label Text="{Binding Source={x:Reference this}, Path=CurrentFolder.Name}"
+                           FontSize="18"
+                           LineBreakMode="CharacterWrap"/>
+                    <Label Text="{Binding Source={x:Reference this}, Path=CurrentFolder.Path}"
+                           FontSize="12"
+                           LineBreakMode="CharacterWrap"/>
+                    <StackLayout Orientation="Horizontal" Spacing="8">
+                        <Button Text="&#xf104;"
+                                Style="{StaticResource ButtonStyle}"
+                                Clicked="GoToPreviousClicked"/>
+                        <Button Text="&#xf0d8;"
+                                Style="{StaticResource ButtonStyle}"
+                                Clicked="GoToParentClicked"/>
+                    </StackLayout>
+                </StackLayout>
+                <CollectionView
+                Grid.Row="1"
+                x:Name="CollectionView"
+                ItemsSource="{Binding Source={x:Reference this}, Path=StorageItems}">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Grid BackgroundColor="Transparent" HeightRequest="50">
+                                <Grid.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="StorageItemTapped" CommandParameter="{Binding}"/>
+                                </Grid.GestureRecognizers>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="20"/>
+                                    <ColumnDefinition/>
+                                </Grid.ColumnDefinitions>
+                                <Label Grid.Column="0" Text="{Binding Converter={StaticResource IconConverter}}"
+                                       TextColor="{StaticResource AccentColor}"
+                                       VerticalTextAlignment="Center"
+                                       HorizontalTextAlignment="Center"
+                                       FontFamily="{StaticResource FontAwesomeRegular}"
+                                       WidthRequest="20"/>
+                                <Label Grid.Column="1" Text="{Binding Name}"
+                                   FontSize="17"
+                                   LineBreakMode="WordWrap"
+                                   MaxLines="2"
+                                   VerticalTextAlignment="Center"/>
+                            </Grid>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </Grid>
+        </Frame>
+    </ContentView.Content>
+</ContentView>
