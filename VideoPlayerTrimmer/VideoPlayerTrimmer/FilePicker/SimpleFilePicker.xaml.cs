@@ -20,6 +20,18 @@ namespace VideoPlayerTrimmer.FilePicker
             InitializeComponent();
         }
 
+
+        public static readonly BindableProperty TitleProperty =
+            BindableProperty.Create(nameof(Title),
+                                    typeof(string),
+                                    typeof(SimpleFilePicker),
+                                    default(string));
+        public string Title
+        {
+            get { return (string)GetValue(TitleProperty); }
+            set { SetValue(TitleProperty, value); }
+        }
+
         public static readonly BindableProperty InitialFolderPathProperty =
             BindableProperty.Create(nameof(InitialFolderPath),
                                     typeof(string),
@@ -51,6 +63,19 @@ namespace VideoPlayerTrimmer.FilePicker
             get { return (ICommand)GetValue(FileTappedCommandProperty); }
             set { SetValue(FileTappedCommandProperty, value); }
         }
+
+
+        public static readonly BindableProperty CloseCommandProperty =
+            BindableProperty.Create(nameof(CloseCommand),
+                                    typeof(ICommand),
+                                    typeof(SimpleFilePicker),
+                                    default(ICommand));
+        public ICommand CloseCommand
+        {
+            get { return (ICommand)GetValue(CloseCommandProperty); }
+            set { SetValue(CloseCommandProperty, value); }
+        }
+
 
         public static readonly BindableProperty FileServiceProperty =
             BindableProperty.Create(nameof(FileService),

@@ -4,23 +4,20 @@
              xmlns:d="http://xamarin.com/schemas/2014/forms/design"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:local="clr-namespace:VideoPlayerTrimmer.FilePicker"
+             xmlns:fonts="clr-namespace:VideoPlayerTrimmer.Fonts"
              mc:Ignorable="d"
              x:Class="VideoPlayerTrimmer.FilePicker.SimpleFilePicker"
-             x:Name="this">
+             x:Name="view">
     <ContentView.Resources>
-        <x:String x:Key="FolderIcon">&#xf07b;</x:String>
-        <x:String x:Key="FileIcon">&#xf15b;</x:String>
-        
         <local:StorageItemToIconConverter x:Key="IconConverter" 
-                                          FileIcon="{StaticResource FileIcon}" 
-                                          FolderIcon="{StaticResource FolderIcon}"/>
+                                          FileIcon="{x:Static fonts:FontAwesomeSolid.File}" 
+                                          FolderIcon="{x:Static fonts:FontAwesomeSolid.Folder}"/>
 
         <Color x:Key="TextColorDarkTheme">#FFFFFF</Color>
         <Color x:Key="TextColorLightTheme">#000000</Color>
 
         <Color x:Key="BackgroundColorDarkTheme">#000000</Color>
         <Color x:Key="BackgroundColorLightTheme">#FFFFFF</Color>
-
 
         <Style TargetType="Label">
             <Setter Property="TextColor" Value="{StaticResource TextColorDarkTheme}"/>
@@ -47,25 +44,34 @@
                     <RowDefinition/>
                 </Grid.RowDefinitions>
                 <StackLayout Grid.Row="0" Orientation="Vertical" Spacing="0">
-                    <Label Text="{Binding Source={x:Reference this}, Path=CurrentFolder.Name}"
+                    <Frame HasShadow="True" Padding="0" Margin="0" BackgroundColor="{StaticResource BackgroundColorDarkTheme}">
+                        <Label Text="{Binding Source={x:Reference view}, Path=Title}"
+                           FontSize="18"
+                           TextDecorations="Underline"
+                           LineBreakMode="TailTruncation"/>
+                    </Frame>
+                    <Label Text="{Binding Source={x:Reference view}, Path=CurrentFolder.Name}"
                            FontSize="18"
                            LineBreakMode="CharacterWrap"/>
-                    <Label Text="{Binding Source={x:Reference this}, Path=CurrentFolder.Path}"
+                    <Label Text="{Binding Source={x:Reference view}, Path=CurrentFolder.Path}"
                            FontSize="12"
                            LineBreakMode="CharacterWrap"/>
                     <StackLayout Orientation="Horizontal" Spacing="8">
-                        <Button Text="&#xf104;"
+                        <Button Text="{x:Static fonts:FontAwesomeSolid.AngleLeft}"
                                 Style="{StaticResource ButtonStyle}"
                                 Clicked="GoToPreviousClicked"/>
-                        <Button Text="&#xf0d8;"
+                        <Button Text="{x:Static fonts:FontAwesomeSolid.CaretUp}"
                                 Style="{StaticResource ButtonStyle}"
                                 Clicked="GoToParentClicked"/>
+                        <Button Text="{x:Static fonts:FontAwesomeSolid.Times}"
+                                Style="{StaticResource ButtonStyle}"
+                                Command="{Binding CloseCommand}"/>
                     </StackLayout>
                 </StackLayout>
                 <CollectionView
-                Grid.Row="1"
-                x:Name="CollectionView"
-                ItemsSource="{Binding Source={x:Reference this}, Path=StorageItems}">
+                    Grid.Row="1"
+                    x:Name="CollectionView"
+                    ItemsSource="{Binding Source={x:Reference view}, Path=StorageItems}">
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
                             <Grid BackgroundColor="Transparent" HeightRequest="50">

@@ -47,6 +47,7 @@ namespace VideoPlayerTrimmer.ViewModels
             SelectAudioTrackCommand = new Command<object>(SelectAudioTrack, (e) => canChangeAudioTrack);
             AddSubtitlesFromFileCommand = new Command(AddSubtitlesFromFile);
             SubtitleFileTappedCommand = new Command<object>(o => SubtitleFileTapped(o));
+            CloseFilePickerCommand = new Command(() => { IsSubtitleFilePickerVisible = false; });
             MaxVolume = volumeController.GetMaxVolume();
             Volume = volumeController.GetVolume();
             volumeController.VolumeChanged += VolumeController_VolumeChanged;
@@ -481,6 +482,7 @@ namespace VideoPlayerTrimmer.ViewModels
         }
 
         public Command<object> SubtitleFileTappedCommand { get; }
+        public Command CloseFilePickerCommand { get; }
 
         private void SubtitleFileTapped(object item)
         {

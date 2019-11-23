@@ -161,6 +161,7 @@
                                        InitialFolderPath="{Binding StartupPath}"
                                        FileService="{Binding FileService}"
                                        FileTappedCommand="{Binding SubtitleFileTappedCommand}"
+                                       Title="{Binding VideoItem.Title}"
                                        Margin="24,8,24,8"
                                        IsVisible="{Binding IsSubtitleFilePickerVisible}"/>
             </Grid>
