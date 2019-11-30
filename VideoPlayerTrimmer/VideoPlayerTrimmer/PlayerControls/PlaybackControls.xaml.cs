@@ -392,5 +392,46 @@ namespace VideoPlayerTrimmer.PlayerControls
                 isAnimating = false;
             }
         }
+
+        public static readonly BindableProperty BrightnessViewModelProperty =
+            BindableProperty.Create(nameof(BrightnessViewModel),
+                                    typeof(IBrightnessViewModel),
+                                    typeof(PlaybackControls),
+                                    default(IBrightnessViewModel));
+        public IBrightnessViewModel BrightnessViewModel
+        {
+            get { return (IBrightnessViewModel)GetValue(BrightnessViewModelProperty); }
+            set { SetValue(BrightnessViewModelProperty, value); }
+        }
+
+        public static readonly BindableProperty VolumeViewModelProperty =
+            BindableProperty.Create(nameof(VolumeViewModel),
+                            typeof(IVolumeViewModel),
+                            typeof(PlaybackControls),
+                            default(IVolumeViewModel));
+        public IVolumeViewModel VolumeViewModel
+        {
+            get { return (IVolumeViewModel)GetValue(VolumeViewModelProperty); }
+            set { SetValue(VolumeViewModelProperty, value); }
+        }
+
+
+        private void LeftGrid_PanUpdated(object sender, PanUpdatedEventArgs e)
+        {
+            if (e.StatusType == GestureStatus.Started)
+            {
+                brightnessControl.GridHeight = GesturesGrid.Height;
+            }
+            brightnessControl.BrightnessPanUpdated(e);
+        }
+
+        private void RightGrid_PanUpdated(object sender, PanUpdatedEventArgs e)
+        {
+            if (e.StatusType == GestureStatus.Started)
+            {
+                volumeControl.GridHeight = GesturesGrid.Height;
+            }
+            volumeControl.VolumePanUpdated(e);
+        }
     }
 }

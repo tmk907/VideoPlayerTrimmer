@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentView xmlns="http://xamarin.com/schemas/2014/forms" 
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:fonts="clr-namespace:VideoPlayerTrimmer.Fonts"
+             mc:Ignorable="d"
+             x:Class="VideoPlayerTrimmer.PlayerControls.VolumeControl"
+             x:Name="this">
+    <ContentView.Resources>
+        <Color x:Key="SemiTransparent">#99000000</Color>
+    </ContentView.Resources>
+    <ContentView.Content>
+        <StackLayout
+            Orientation="Horizontal"
+            VerticalOptions="Center"
+            HorizontalOptions="Center"
+            IsVisible="{Binding Source={x:Reference this}, Path=VolumeViewModel.IsVolumeIndicatorVisible}">
+            <Label 
+                BackgroundColor="{StaticResource SemiTransparent}"
+                Text="{Static fonts:FontAwesomeSolid.VolumeUp}"
+                FontFamily="{StaticResource FontAwesomeSolid}"
+                FontSize="40" 
+                TextColor="White"/>
+            <Label 
+                BackgroundColor="{StaticResource SemiTransparent}" 
+                Text="{Binding Source={x:Reference this}, Path=VolumeViewModel.Volume}" 
+                FontSize="30" 
+                TextColor="White"/>
+        </StackLayout>
+    </ContentView.Content>
+</ContentView>

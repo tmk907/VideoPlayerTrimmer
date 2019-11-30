@@ -93,10 +93,31 @@
                 <RowDefinition/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
-            <Grid Grid.Row="0" BackgroundColor="Transparent">
-                <Grid.GestureRecognizers>
-                    <TapGestureRecognizer Tapped="TapGestureRecognizer_Tapped"/>
-                </Grid.GestureRecognizers>
+            <Grid Grid.Row="0" x:Name="GesturesGrid">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <local:VolumeControl
+                    Grid.Column="0"
+                    x:Name="volumeControl"
+                    VolumeViewModel="{Binding Source={x:Reference this}, Path=VolumeViewModel}"/>
+                <local:BrightnessControl 
+                    Grid.Column="1"
+                    x:Name="brightnessControl"
+                    BrightnessViewModel="{Binding Source={x:Reference this}, Path=BrightnessViewModel}"/>
+                <Grid Grid.Column="0" BackgroundColor="Transparent">
+                    <Grid.GestureRecognizers>
+                        <PanGestureRecognizer PanUpdated="LeftGrid_PanUpdated"/>
+                        <TapGestureRecognizer Tapped="TapGestureRecognizer_Tapped"/>
+                    </Grid.GestureRecognizers>
+                </Grid>
+                <Grid Grid.Column="1" BackgroundColor="Transparent">
+                    <Grid.GestureRecognizers>
+                        <PanGestureRecognizer PanUpdated="RightGrid_PanUpdated"/>
+                        <TapGestureRecognizer Tapped="TapGestureRecognizer_Tapped"/>
+                    </Grid.GestureRecognizers>
+                </Grid>
             </Grid>
             <Grid Grid.Row="1" RowSpacing="0" ColumnSpacing="0"
                   IsVisible="{Binding Source={x:Reference this}, Path=IsControlVisible}">

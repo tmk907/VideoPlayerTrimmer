@@ -53,6 +53,8 @@
                     SubtitlesClickedCommand="{Binding ToggleSubtitlesCommand}"
                     VideoDetailsClickedCommand="{Binding ToggleMediaInfoCommand}"
                     FavoriteClickedCommand="{Binding ToggleFavoriteCommand}"
+                    BrightnessViewModel="{Binding BrightnessViewModel}"
+                    VolumeViewModel="{Binding VolumeViewModel}"
                 />
                 <ContentView IsVisible="{Binding IsMediaInfoPopupVisible}" BackgroundColor="Transparent">
                     <ContentView.GestureRecognizers>
@@ -120,7 +122,12 @@
                                     </DataTemplate>
                                 </BindableLayout.ItemTemplate>
                             </StackLayout>
-                            <Button Text="Add file" Command="{Binding AddSubtitlesFromFileCommand}" HorizontalOptions="Center"/>
+                            <StackLayout Orientation="Horizontal">
+                                <Button Text="Add file" Command="{Binding AddSubtitlesFromFileCommand}" HorizontalOptions="Center"/>
+                                <Picker BackgroundColor="Red"
+                                    ItemsSource="{Binding EncodingList}"
+                                    SelectedItem="{Binding SelectedEncoding, Mode=TwoWay}"/>
+                            </StackLayout>
                         </StackLayout>
                     </ScrollView>
                 </ContentView>
