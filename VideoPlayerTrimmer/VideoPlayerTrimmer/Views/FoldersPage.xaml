@@ -59,7 +59,8 @@
                 ItemsSource="{Binding Folders}"
                 x:Name="CollectionView"
                 Margin="8,0,8,0"
-                SelectionMode="None">
+                SelectionMode="None"
+                ItemSizingStrategy="MeasureFirstItem">
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
                         <Grid HeightRequest="60" Style="{StaticResource DataTemplateRootGridStyle}">

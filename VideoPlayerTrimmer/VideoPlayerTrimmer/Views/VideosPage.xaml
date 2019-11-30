@@ -18,7 +18,8 @@
             x:Name="MyCollectionView"
             ItemsSource="{Binding VideoItems}"
             SelectionMode="None"
-            Margin="2">
+            Margin="2"
+            ItemSizingStrategy="MeasureFirstItem">
             <CollectionView.ItemTemplate>
                 <DataTemplate>
                     <Grid HeightRequest="70" Style="{StaticResource DataTemplateRootGridStyle}">
