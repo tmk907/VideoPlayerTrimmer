@@ -36,10 +36,10 @@ namespace VideoPlayerTrimmer.PlayerControls
             switch (e.StatusType)
             {
                 case GestureStatus.Started:
-                    VolumeViewModel.IsVolumeIndicatorVisible = true;
                     initialVolume = VolumeViewModel.Volume;
                     break;
                 case GestureStatus.Running:
+                    VolumeViewModel.IsVolumeIndicatorVisible = true;
                     VolumeViewModel.Volume = CalculateValue(e.TotalY, initialVolume, VolumeViewModel.MaxVolume);
                     VolumeViewModel.ApplyVolume();
                     break;

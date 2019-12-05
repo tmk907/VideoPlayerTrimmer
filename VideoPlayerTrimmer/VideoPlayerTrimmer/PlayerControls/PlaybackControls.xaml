@@ -29,6 +29,7 @@
         <x:String x:Key="fas-expand-arrows-alt">&#xf31e;</x:String>
 
         <Color x:Key="TextForeground">#E3F2FD</Color>
+        <Color x:Key="SemiTransparentBackground">#99000000</Color>
 
         <Style x:Key="TimeLabelStyle" TargetType="Label">
             <Setter Property="HorizontalOptions" Value="StartAndExpand" />
@@ -108,14 +109,16 @@
                     BrightnessViewModel="{Binding Source={x:Reference this}, Path=BrightnessViewModel}"/>
                 <Grid Grid.Column="0" BackgroundColor="Transparent">
                     <Grid.GestureRecognizers>
-                        <PanGestureRecognizer PanUpdated="LeftGrid_PanUpdated"/>
+                        <PanGestureRecognizer PanUpdated="LeftGrid_PanUpdated" />
                         <TapGestureRecognizer Tapped="TapGestureRecognizer_Tapped"/>
+                        <TapGestureRecognizer Tapped="TapGestureRecognizer_Tapped2" NumberOfTapsRequired="2"/>
                     </Grid.GestureRecognizers>
                 </Grid>
                 <Grid Grid.Column="1" BackgroundColor="Transparent">
                     <Grid.GestureRecognizers>
                         <PanGestureRecognizer PanUpdated="RightGrid_PanUpdated"/>
                         <TapGestureRecognizer Tapped="TapGestureRecognizer_Tapped"/>
+                        <TapGestureRecognizer Tapped="TapGestureRecognizer_Tapped2" NumberOfTapsRequired="2"/>
                     </Grid.GestureRecognizers>
                 </Grid>
             </Grid>
@@ -126,7 +129,7 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
-                <StackLayout Grid.Row="{StaticResource SliderTimeRow}" Orientation="Horizontal" BackgroundColor="#99000000">
+                <StackLayout Grid.Row="{StaticResource SliderTimeRow}" Orientation="Horizontal" BackgroundColor="{StaticResource SemiTransparentBackground}">
                     <StackLayout Orientation="Horizontal" HorizontalOptions="Start">
                         <Label Text="{Binding Source={x:Reference this}, Path=ElapsedTime, Converter={StaticResource TimeSpanConverter}}" Style="{StaticResource TimeLabelStyle}"/>
                     </StackLayout>
@@ -134,7 +137,7 @@
                         <Label Text="{Binding Source={x:Reference this}, Path=TotalTime, Converter={StaticResource TimeSpanConverter}}" Style="{StaticResource TimeLabelStyle}"/>
                     </StackLayout>
                 </StackLayout>
-                <StackLayout Grid.Row="{StaticResource SliderRow}" Orientation="Horizontal" Spacing="0" BackgroundColor="#99000000">
+                <StackLayout Grid.Row="{StaticResource SliderRow}" Orientation="Horizontal" Spacing="0" BackgroundColor="{StaticResource SemiTransparentBackground}">
                     <Slider 
                     Value="{Binding Source={x:Reference this}, Path=SliderValue}"
                     IsEnabled="True"
@@ -144,7 +147,7 @@
                     Minimum="0" Maximum="{Binding Source={x:Reference this}, Path=SliderMaxValue}"
                     Style="{StaticResource SeekBarStyle}" />
                 </StackLayout>
-                <StackLayout Grid.Row="{StaticResource ButtonsRow}" Orientation="Horizontal" BackgroundColor="#99000000"
+                <StackLayout Grid.Row="{StaticResource ButtonsRow}" Orientation="Horizontal" BackgroundColor="{StaticResource SemiTransparentBackground}"
                 HeightRequest="86" Spacing="0">
                     <StackLayout Orientation="Horizontal" HorizontalOptions="Start" VerticalOptions="Center" Spacing="0">
                         <Button 

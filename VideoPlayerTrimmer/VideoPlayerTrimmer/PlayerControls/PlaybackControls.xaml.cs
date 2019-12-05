@@ -326,6 +326,15 @@ namespace VideoPlayerTrimmer.PlayerControls
             isSliderDragging = false;
         }
 
+        private void Execute(ICommand command)
+        {
+            if (command == null) return;
+            if (command.CanExecute(null))
+            {
+                command.Execute(null);
+            }
+
+        }
         private void Execute<T>(ICommand command, T parameter)
         {
             if (command == null) return;
@@ -339,13 +348,13 @@ namespace VideoPlayerTrimmer.PlayerControls
 
         private async Task FadeOut()
         {
-            await this.FadeTo(0, 300);
+            await this.FadeTo(0, 300, Easing.CubicInOut);
             IsControlVisible = false;
         }
 
         private async Task FadeIn()
         {
-            await this.FadeTo(1, 300);
+            await this.FadeTo(1, 300, Easing.CubicInOut);
             IsControlVisible = true;
         }
 
@@ -367,28 +376,28 @@ namespace VideoPlayerTrimmer.PlayerControls
         {
             if (!((PlaybackControls)bindable).isAnimating)
             {
-                ((PlaybackControls)bindable).AnimateVisibility();
+                ((PlaybackControls)bindable).AnimateVisibility((bool)newValue);
             }
         }
 
 
         private void TapGestureRecognizer_Tapped(object sender, EventArgs e)
         {
-            AnimateVisibility();
+            AnimateVisibility(!IsControlVisible);
         }
 
-        private async void AnimateVisibility()
+        private async void AnimateVisibility(bool targetVisibility)
         {
-            if (IsControlVisible)
+            if (targetVisibility)
             {
                 isAnimating = true;
-                await FadeOut();
+                await FadeIn();
                 isAnimating = false;
             }
             else
             {
                 isAnimating = true;
-                await FadeIn();
+                await FadeOut();
                 isAnimating = false;
             }
         }
@@ -415,23 +424,101 @@ namespace VideoPlayerTrimmer.PlayerControls
             set { SetValue(VolumeViewModelProperty, value); }
         }
 
+        private Direction leftGridDirection = Direction.None;
+        private Direction rightGridDirection = Direction.None;
+        private double gridWidth = 100;
+        private double initialSliderPosition = 0;
 
         private void LeftGrid_PanUpdated(object sender, PanUpdatedEventArgs e)
         {
-            if (e.StatusType == GestureStatus.Started)
+            switch (e.StatusType)
             {
-                brightnessControl.GridHeight = GesturesGrid.Height;
+                case GestureStatus.Started:
+                    gridWidth = GesturesGrid.Width;
+                    brightnessControl.GridHeight = GesturesGrid.Height;
+                    brightnessControl.BrightnessPanUpdated(e);
+                    initialSliderPosition = SliderValue;
+                    break;
+                case GestureStatus.Running:
+                    if (leftGridDirection == Direction.None)
+                    {
+                        leftGridDirection = ToDirection(e.TotalX, e.TotalY);
+                    }
+                    if (leftGridDirection == Direction.Horizontal && ToDirection(e.TotalX, e.TotalY) == Direction.Horizontal)
+                    {
+                        SwipePositionChange(e.TotalX);
+                    }
+                    else if (leftGridDirection == Direction.Vertical && ToDirection(e.TotalX, e.TotalY) == Direction.Vertical)
+                    {
+                        brightnessControl.BrightnessPanUpdated(e);
+                    }
+                    break;
+                case GestureStatus.Completed:
+                case GestureStatus.Canceled:
+                    brightnessControl.BrightnessPanUpdated(e);
+                    leftGridDirection = Direction.None;
+                    break;
             }
-            brightnessControl.BrightnessPanUpdated(e);
         }
 
         private void RightGrid_PanUpdated(object sender, PanUpdatedEventArgs e)
         {
-            if (e.StatusType == GestureStatus.Started)
+            switch (e.StatusType)
             {
-                volumeControl.GridHeight = GesturesGrid.Height;
+                case GestureStatus.Started:
+                    gridWidth = GesturesGrid.Width;
+                    volumeControl.GridHeight = GesturesGrid.Height;
+                    volumeControl.VolumePanUpdated(e);
+                    initialSliderPosition = SliderValue;
+                    break;
+                case GestureStatus.Running:
+                    if (rightGridDirection == Direction.None)
+                    {
+                        rightGridDirection = ToDirection(e.TotalX, e.TotalY);
+                    }
+                    if (rightGridDirection == Direction.Horizontal && ToDirection(e.TotalX, e.TotalY) == Direction.Horizontal)
+                    {
+                        SwipePositionChange(e.TotalX);
+                    }
+                    else if (rightGridDirection == Direction.Vertical && ToDirection(e.TotalX, e.TotalY) == Direction.Vertical)
+                    {
+                        volumeControl.VolumePanUpdated(e);
+                    }
+                    break;
+                case GestureStatus.Completed:
+                case GestureStatus.Canceled:
+                    volumeControl.VolumePanUpdated(e);
+                    rightGridDirection = Direction.None;
+                    break;
             }
-            volumeControl.VolumePanUpdated(e);
+        }
+
+        private Direction ToDirection(double totalX, double totalY)
+        {
+            return Math.Abs(totalX) > Math.Abs(totalY) ? Direction.Horizontal : Direction.Vertical;
+        }
+
+        private void SwipePositionChange(double totalX)
+        {
+            var a = totalX / (gridWidth * 2);
+            var b = a * SliderMaxValue;
+            var c = initialSliderPosition + b;
+            var d = Math.Max(0, Math.Min(c, SliderMaxValue));
+            var newPosition = TimeSpan.FromMilliseconds(d / SliderMaxValue * TotalTime.TotalMilliseconds);
+            App.DebugLog($"Swipe {a} {b} {c} {d} {newPosition}");
+            Execute(SliderValueChangedCommand, newPosition);
+        }
+
+        private void TapGestureRecognizer_Tapped2(object sender, EventArgs e)
+        {
+            Execute(FavoriteClickedCommand);
+        }
+
+        private enum Direction
+        {
+            None,
+            Horizontal,
+            Vertical
         }
     }
 }

@@ -31,10 +31,10 @@ namespace VideoPlayerTrimmer.PlayerControls
             switch (e.StatusType)
             {
                 case GestureStatus.Started:
-                    BrightnessViewModel.IsBrightnessIndicatorVisible = true;
                     initialBrightness = BrightnessViewModel.Brightness;
                     break;
                 case GestureStatus.Running:
+                    BrightnessViewModel.IsBrightnessIndicatorVisible = true;
                     BrightnessViewModel.Brightness = CalculateValue(e.TotalY, initialBrightness, BrightnessViewModel.MaxBrightness);
                     BrightnessViewModel.ApplyBrightness();
                     break;
