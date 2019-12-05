@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using VideoPlayerTrimmer.Extensions;
+using VideoPlayerTrimmer.FilePicker;
 using VideoPlayerTrimmer.Framework;
 using VideoPlayerTrimmer.Models;
 using VideoPlayerTrimmer.PlayerControls;
@@ -15,16 +16,14 @@ namespace VideoPlayerTrimmer.ViewModels
 {
     public class TrimmerViewModel : BaseViewModel
     {
-        public TrimmerViewModel(IVideoLibrary videoLibrary, MediaPlayerBuilder playerService, 
-            IFFmpegConverter fFmpegConverter)
+        public TrimmerViewModel(IVideoLibrary videoLibrary, MediaPlayerBuilder playerService, ConverterHelper converterHelper)
         {
             App.DebugLog("");
             this.videoLibrary = videoLibrary;
             this.playerService = playerService;
-            this.fFmpegConverter = fFmpegConverter;
-            fFmpegConverter.ConversionProgressChanged += FFmpegConverter_ProgressChanged;
-            fFmpegConverter.ConversionStarted += FFmpegConverter_ConversionStarted;
-            fFmpegConverter.ConversionEnded += FFmpegConverter_ConversionEnded;
+            _converterHelper = converterHelper;
+            _converterHelper.ConversionStarted += ConversionStarted;
+            _converterHelper.ConversionEnded += ConversionEnded;
 
             VlcPlayerHelper = new VlcPlayerHelper(playerService);
             vlcPlayerHelper.PlayerReady += VlcPlayerHelper_PlayerReady;
@@ -48,6 +47,22 @@ namespace VideoPlayerTrimmer.ViewModels
             TotalDuration = EndPosition;
         }
 
+        private void ConversionStarted()
+        {
+            Xamarin.Essentials.MainThread.BeginInvokeOnMainThread(() =>
+            {
+                IsConverting = true;
+            });
+        }
+
+        private void ConversionEnded()
+        {
+            Xamarin.Essentials.MainThread.BeginInvokeOnMainThread(() =>
+            {
+                IsConverting = false;
+            });
+        }
+        
         private void VlcPlayerHelper_PlayerReady()
         {
             if (vlcPlayerHelper.MediaPlayer.Fps > 0)
@@ -70,38 +85,6 @@ namespace VideoPlayerTrimmer.ViewModels
         {
             get { return vlcPlayerHelper; }
             set { vlcPlayerHelper = value; }
-        }
-
-        private void FFmpegConverter_ConversionEnded(object sender, EventArgs e)
-        {
-            Xamarin.Essentials.MainThread.BeginInvokeOnMainThread(()=>
-            {
-                IsConverting = false;
-                if (!String.IsNullOrEmpty(convertedVideoPath))
-                {
-                    videoLibrary.AddVideo(convertedVideoPath);
-                }
-                convertedVideoPath = null;
-                App.DebugLog("FFmpegConverter_ConversionEnded IsConverting");
-            });
-        }
-
-        private void FFmpegConverter_ConversionStarted(object sender, EventArgs e)
-        {
-            Xamarin.Essentials.MainThread.BeginInvokeOnMainThread(() =>
-            {
-                IsConverting = true;
-                App.DebugLog("FFmpegConverter_ConversionStarted IsConverting");
-            });
-        }
-
-        private void FFmpegConverter_ProgressChanged(object sender, int e)
-        {
-            Xamarin.Essentials.MainThread.BeginInvokeOnMainThread(() =>
-            {
-                IsConverting = true;
-                App.DebugLog("FFmpegConverter_ProgressChanged IsConverting");
-            });
         }
 
         private void MediaPlayer_TimeChanged(object sender, LibVLCSharp.Shared.MediaPlayerTimeChangedEventArgs e)
@@ -189,6 +172,14 @@ namespace VideoPlayerTrimmer.ViewModels
         {
             get { return isConverting; }
             set { SetProperty(ref isConverting, value); }
+        }
+
+
+        private string outputPath;
+        public string OutputPath
+        {
+            get { return outputPath; }
+            set { SetProperty(ref outputPath, value); }
         }
 
         public Command GoToPrevFavSceneCommand { get; }
@@ -322,19 +313,23 @@ namespace VideoPlayerTrimmer.ViewModels
             };
             foreach (var sub in videoItem.SubtitleFiles)
             {
-                startupConfiguration.ExternalSubtitles.Add(sub.FileUrl, sub.Delay);
+                startupConfiguration.ExternalSubtitles.Add(new SubitlesConfig()
+                {
+                    FileUrl = sub.FileUrl,
+                    Delay = sub.Delay,
+                    Encoding = sub.Encoding,
+                    IsSelected = sub.IsSelected
+                });
             }
             if (videoItem.IsFileSubtitleSelected)
             {
-                var selected = videoItem.SubtitleFiles.FirstOrDefault(x => x.IsSelected);
-                startupConfiguration.SelectedSubtitlesFileUrl = selected.FileUrl;
-                startupConfiguration.EmbeddedSubtitlesDelay = selected.Delay;
             }
             else
             {
-                startupConfiguration.EmbeddedSubtitlesDelay = videoItem.EmbeddedSubtitlesDelay;
                 startupConfiguration.SelectedSubtitlesSpu = videoItem.SelectedSubtitlesId;
             }
+            startupConfiguration.EmbeddedSubtitlesDelay = videoItem.EmbeddedSubtitlesDelay;
+
             VlcPlayerHelper.LoadFile(startupConfiguration);
 
             VlcPlayerHelper.MediaPlayer.TimeChanged += MediaPlayer_TimeChanged;
@@ -356,6 +351,8 @@ namespace VideoPlayerTrimmer.ViewModels
         private VideoItem videoItem;
         private readonly IVideoLibrary videoLibrary;
         private readonly MediaPlayerBuilder playerService;
+        private readonly ConverterHelper _converterHelper;
+        private readonly IFileService _fileService;
         private readonly IFFmpegConverter fFmpegConverter;
 
         private async Task OpenFileAsync()
@@ -376,74 +373,15 @@ namespace VideoPlayerTrimmer.ViewModels
 
         public async Task SaveVideoAsync()
         {
-            IsConverting = true;
-            if (fastTrim)
+            await _converterHelper.ConvertVideoAsync(new ConversionOptions()
             {
-                await SaveUsingVLCAsync();
-            }
-            else
-            {
-                if (saveToGif && SelectedDuration.TotalSeconds < 20)
-                {
-                    await SaveAsGif();
-                }
-                else
-                {
-                    await ConvertVideo();
-                }
-            }
-            IsConverting = false;
-        }
-
-        private async Task SaveUsingVLCAsync()
-        {
-            int start = (int)startPosition.TotalSeconds;
-            int end = (int)endPosition.TotalSeconds;
-            string startFull = start + "." + startPosition.Milliseconds.ToString("D3");
-            string endFull = end + "." + endPosition.Milliseconds.ToString("D3");
-            string outputFilename = $@"{videoItem.FileNameWithoutExtension} [{startPosition.ToVideoDuration()}].mp4";
-            string outputPath = System.IO.Path.Combine(videoItem.FolderPath, outputFilename);
-            var mp = playerService.GetMediaPlayerForTrimming(videoItem.FilePath, outputPath, start, end);
-            mp.Play();
-            mp.EndReached += Mp_EndReached;
-            while (true)
-            {
-                await Task.Delay(1000);
-                if (!mp.IsPlaying)
-                {
-                    break;
-                }
-            }
-            mp.Stop();
-            App.DebugLog("stopped");
-            mp.EndReached -= Mp_EndReached;
-            mp.Dispose();
-            videoLibrary.AddVideo(outputPath);
-        }
-
-        private void Mp_EndReached(object sender, EventArgs e)
-        {
-            App.DebugLog("Video saved");
-        }
-
-        private string convertedVideoPath;
-        private async Task ConvertVideo()
-        {
-            int start = (int)startPosition.TotalSeconds;
-            string outputFilename = $@"{videoItem.FileNameWithoutExtension} [{startPosition.ToVideoDuration()}].mp4";
-            string outputPath = System.IO.Path.Combine(videoItem.FolderPath, outputFilename);
-            convertedVideoPath = outputPath;
-            var options = new FFmpegToVideoConversionOptions(startPosition, endPosition, videoItem.FilePath, outputPath);
-            await fFmpegConverter.CovertToVideo(options);
-        }
-
-        private async Task SaveAsGif()
-        {
-            int start = (int)startPosition.TotalSeconds;
-            string outputFilename = $@"{videoItem.FileNameWithoutExtension} [{startPosition.ToVideoDuration()}].gif";
-            string outputPath = System.IO.Path.Combine(videoItem.FolderPath, outputFilename);
-            var options = new FFmpegToGifConversionOptions(startPosition, endPosition, videoItem.FilePath, outputPath);
-            await fFmpegConverter.ConvertToGif(options);
+                EndPosition = endPosition,
+                FastMode = fastTrim,
+                FileNameWithoutExtension = videoItem.FileNameWithoutExtension,
+                FilePath = videoItem.FilePath,
+                SaveAsGif = saveToGif,
+                StartPosition = startPosition
+            });
         }
     }
 

@@ -63,6 +63,7 @@ namespace VideoPlayerTrimmer
             DIContainer.Register<VideoDatabase>(Database);
             DIContainer.Register<IVideoLibrary, VideoLibrary>().AsSingleton();
             DIContainer.Register<MediaPlayerBuilder>().AsSingleton();
+            DIContainer.Register<ConverterHelper>();
 
             //var assembly = typeof(App).GetTypeInfo().Assembly;
             //var vms = AssemblyExtensions.SafeGetTypes(assembly).Where(x => x.IsSubclassOf(typeof(BaseViewModel)));

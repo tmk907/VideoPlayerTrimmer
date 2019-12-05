@@ -11,6 +11,11 @@ namespace VideoPlayerTrimmer.Droid.Services
 {
     public class FileService : IFileService
     {
+        public string GetInternalMemoryRootPath()
+        {
+            return Environment.ExternalStorageDirectory.Path;
+        }
+
         public bool CanGoToParent(string path)
         {
             if (string.IsNullOrEmpty(path))

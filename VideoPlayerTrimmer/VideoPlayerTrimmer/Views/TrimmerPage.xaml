@@ -72,6 +72,7 @@
     </Shell.TitleView>
     <ContentPage.Content>
         <Grid>
+            <ScrollView>
             <StackLayout Orientation="Vertical" Spacing="0">
                 <FlexLayout x:Name="flexLayout" Direction="Column">
                     <Grid>
@@ -198,7 +199,12 @@
                     <Label Text="Save as gif"/>
                     <Switch IsToggled="{Binding SaveToGif}"/>
                 </StackLayout>
+                <StackLayout Orientation="Horizontal">
+                    <Label Text="File saved to:" Margin="0,0,8,0" WidthRequest="150"/>
+                    <Label Text="{Binding OutputPath}"/>
+                </StackLayout>
             </StackLayout>
+            </ScrollView>
             <Grid BackgroundColor="{StaticResource SemiTransparent}" IsVisible="{Binding NoFileSelected}">
                 <Button Clicked="Open_Clicked" Text="Choose video" HorizontalOptions="Center" VerticalOptions="Center"/>
             </Grid>
