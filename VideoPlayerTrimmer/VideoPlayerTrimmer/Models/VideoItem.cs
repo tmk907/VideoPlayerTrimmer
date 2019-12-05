@@ -37,7 +37,8 @@ namespace VideoPlayerTrimmer.Models
 
         public TimeSpan Position { get; set; }
 
-        public bool IsFileSubtitleSelected { get { return SubtitleFiles.Any(x => x.IsSelected); } }
+        public SubtitleFile SelectedSubtitleFile { get { return SubtitleFiles.FirstOrDefault(x => x.IsSelected); } }
+        public bool IsFileSubtitleSelected { get { return SelectedSubtitleFile != null; } }
 
         public int SelectedSubtitlesId { get; set; }
 

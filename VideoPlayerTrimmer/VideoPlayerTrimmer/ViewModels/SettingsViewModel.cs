@@ -37,5 +37,17 @@ namespace VideoPlayerTrimmer.ViewModels
             get => Settings.UseHardwareAcceleration;
             set => Settings.UseHardwareAcceleration = value;
         }
+
+        public string MediaOption
+        {
+            get => Settings.MediaOption;
+            set => Settings.MediaOption = value;
+        }
+
+        public string PlayerOption
+        {
+            get => Settings.PlayerOption;
+            set => Settings.PlayerOption = value;
+        }
     }
 }

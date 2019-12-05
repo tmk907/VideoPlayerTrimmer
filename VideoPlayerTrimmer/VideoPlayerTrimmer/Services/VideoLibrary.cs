@@ -42,7 +42,8 @@ namespace VideoPlayerTrimmer.Services
                         .Select(x => new SubtitleFile(x.FilePath, videoRow.VideoId)
                         {
                             Delay = x.Delay,
-                            IsSelected = x.IsSelected
+                            IsSelected = x.IsSelected,
+                            Encoding = PlayerControls.LibVlcOptions.Encoding.UTF8,
                         }));
                 }
                 _videoItems.Add(video);
@@ -152,15 +153,17 @@ namespace VideoPlayerTrimmer.Services
                         Delay = sub.Delay,
                         FilePath = sub.FilePath,
                         VideoId = videoItem.VideoId,
-                        IsSelected = sub.IsSelected
+                        IsSelected = sub.IsSelected,
+                        Encoding = sub.Encoding,
                     });
                 }
                 else
                 {
-                    if(subTable.Delay != sub.Delay || subTable.IsSelected != sub.IsSelected)
+                    if(subTable.Delay != sub.Delay || subTable.IsSelected != sub.IsSelected || subTable.Encoding != sub.Encoding)
                     {
                         subTable.Delay = sub.Delay;
                         subTable.IsSelected = sub.IsSelected;
+                        subTable.Encoding = sub.Encoding;
                         updatedFileSubtitles.Add(subTable);
                     }
                     subtileFileTable.Remove(subTable);

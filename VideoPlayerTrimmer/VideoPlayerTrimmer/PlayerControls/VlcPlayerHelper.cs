@@ -16,6 +16,7 @@ namespace VideoPlayerTrimmer.PlayerControls
         private readonly MediaPlayerBuilder _mediaPlayerBuilder;
         private AspectRatio _currentAspectRatio = AspectRatio.Original;
         private StartupConfiguration _startupConfiguration;
+        private Dictionary<int, string> spuToFileUrlMapping = new Dictionary<int, string>();
 
         public event Action PlayerReady;
 
@@ -89,6 +90,7 @@ namespace VideoPlayerTrimmer.PlayerControls
 
             var media = _mediaPlayerBuilder.GetMedia(_startupConfiguration);
             MediaPlayer.Media = media;
+            spuToFileUrlMapping.Clear();
 
             mediaPlayer.Playing += MediaPlayerStartedPlaying;
             MediaPlayer.Play();
@@ -100,31 +102,22 @@ namespace VideoPlayerTrimmer.PlayerControls
             await Task.Delay(100);
             mediaPlayer.Pause();
 
+            GetVlcSubtitles();
+            
             if (_startupConfiguration.IsEmbeddedSubtitlesSelected)
             {
                 mediaPlayer.SetSpu(_startupConfiguration.SelectedSubtitlesSpu);
-                SetSubtitlesDelay(_startupConfiguration.EmbeddedSubtitlesDelay);
+                ChangeSubtitlesDelay(_startupConfiguration.EmbeddedSubtitlesDelay);
             }
             else if (_startupConfiguration.IsFileSubtitlesSelected)
             {
-                var spuIds = mediaPlayer.SpuDescription.Where(x => x.Id != -1).Select(x => x.Id);
-                var extSubsCount = mediaPlayer.Media.Slaves.Where(x => x.Type == MediaSlaveType.Subtitle).Count();
-
-                if (spuIds.Count() > 0 && extSubsCount > 0)
+                var selectedFileSpu = spuToFileUrlMapping
+                    .FirstOrDefault(x => x.Value == _startupConfiguration.SelectedSubtitlesFile.FileUrl).Key;
+                
+                if (selectedFileSpu != -1)
                 {
-                    var embSubsCount = spuIds.Count() - extSubsCount;
-
-                    var slaveIndex = 0;
-                    foreach (var item in mediaPlayer.Media.Slaves.Where(x => x.Type == MediaSlaveType.Subtitle))
-                    {
-                        if (_startupConfiguration.SelectedSubtitlesFileUrl == item.Uri) break;
-                        slaveIndex++;
-                    }
-
-                    var selectedFileSpu = spuIds.ElementAt(embSubsCount + slaveIndex);
-
                     mediaPlayer.SetSpu(selectedFileSpu);
-                    SetSubtitlesDelay(_startupConfiguration.EmbeddedSubtitlesDelay);
+                    ChangeSubtitlesDelay(_startupConfiguration.EmbeddedSubtitlesDelay);
                 }
             }
             
@@ -135,6 +128,44 @@ namespace VideoPlayerTrimmer.PlayerControls
             }
 
             PlayerReady?.Invoke();
+        }
+
+        public List<VlcSubtitles> GetVlcSubtitles()
+        {
+            var list = new List<VlcSubtitles>();
+
+            spuToFileUrlMapping.Clear();
+
+            var allSubs = mediaPlayer.SpuDescription.Where(x => x.Id != -1);
+            var extSubs = mediaPlayer.Media.Slaves.Where(x => x.Type == MediaSlaveType.Subtitle);
+
+            var embSubsCount = allSubs.Count() - extSubs.Count();
+
+            if (allSubs.Count() > 0)
+            {
+                list.Add(new VlcSubtitles(-1, "Disable"));
+            }
+
+            foreach (var spu in allSubs.Take(embSubsCount))
+            {
+                spuToFileUrlMapping.Add(spu.Id, "");
+                list.Add(new VlcSubtitles(spu.Id,spu.Name)
+                {
+                    IsSelected = mediaPlayer.Spu == spu.Id
+                });
+            }
+            int i = 0;
+            foreach (var spu in allSubs.Skip(embSubsCount))
+            {
+                spuToFileUrlMapping[spu.Id] = extSubs.ElementAt(i).Uri;
+                list.Add(new VlcSubtitles(spu.Id, spu.Name)
+                {
+                    IsSelected = mediaPlayer.Spu == spu.Id,
+                    FileUrl = extSubs.ElementAt(i).Uri
+                });
+                i++;
+            }
+            return list;
         }
 
         public void OnDisappearing()
@@ -458,42 +489,70 @@ namespace VideoPlayerTrimmer.PlayerControls
             }
         }
 
-        public IEnumerable<VlcSubtitles> GetSubtitleTracks()
-        {
-            var subtitles = new List<VlcSubtitles>();
-            var ids = mediaPlayer.Media.Tracks.Where(x => x.TrackType == TrackType.Text).Select(x => x.Id).ToList();
-            foreach (var item in mediaPlayer.SpuDescription)
-            {
-                subtitles.Add(new VlcSubtitles(item.Id, item.Name));
-            }            
-            var sub = subtitles.SingleOrDefault(a => a.Spu == mediaPlayer.Spu);
-            if (sub != null)
-            {
-                sub.IsSelected = true;
-            }
+        //public IEnumerable<VlcSubtitles> GetSubtitleTracks()
+        //{
+        //    var subtitles = new List<VlcSubtitles>();
+        //    var ids = mediaPlayer.Media.Tracks.Where(x => x.TrackType == TrackType.Text).Select(x => x.Id).ToList();
+        //    foreach (var item in mediaPlayer.SpuDescription)
+        //    {
+        //        subtitles.Add(new VlcSubtitles(item.Id, item.Name));
+        //    }            
+        //    var sub = subtitles.SingleOrDefault(a => a.Spu == mediaPlayer.Spu);
+        //    if (sub != null)
+        //    {
+        //        sub.IsSelected = true;
+        //    }
 
-            return subtitles;
-        }
+        //    return subtitles;
+        //}
 
         public void SetSubtitles(VlcSubtitles subtitles)
         {
             mediaPlayer.SetSpu(subtitles.Spu);
+            //var fileUrl = mediaPlayer.Spu == -1 ? "" : spuToFileUrlMapping[mediaPlayer.Spu];
+            //var prevFileUrl = spuToFileUrlMapping[subtitles.Spu];
+
+            //if (fileUrl == "" && prevFileUrl == "")
+            //{
+
+            //}
+
+            //var newSubs = _startupConfiguration.ExternalSubtitles.FirstOrDefault(x => x.FileUrl == fileUrl);
+            //if (_startupConfiguration.IsEmbeddedSubtitlesSelected)
+            //{
+            //    if (newSubs == null || _startupConfiguration.EmbeddedSubtitlesEncoding == newSubs.Encoding)
+            //    {
+            //        mediaPlayer.SetSpu(subtitles.Spu);
+            //        return;
+            //    }
+            //}
+            //else if (_startupConfiguration.IsFileSubtitlesSelected && _startupConfiguration.SelectedSubtitlesFile.Encoding == newSubs.Encoding)
+            //{
+            //    mediaPlayer.SetSpu(subtitles.Spu);
+            //    return;
+            //}
+
+            //_startupConfiguration.ResumeTime = mediaPlayer.Time;
+            //foreach(var sub in _startupConfiguration.ExternalSubtitles)
+            //{
+            //    sub.IsSelected = false;
+            //}
+            //newSubs.IsSelected = true;
+
+            //mediaPlayer.Stop();
+
+            //StartPlayback();
         }
 
-        public void AddSubtitles(string fileUrl)
+        public void Reset(StartupConfiguration startupConfiguration)
         {
-            _startupConfiguration.ResumeTime = mediaPlayer.Time;
+            startupConfiguration.ResumeTime = mediaPlayer.Time;
+            _startupConfiguration = startupConfiguration;
             mediaPlayer.Stop();
-            if (!_startupConfiguration.ExternalSubtitles.ContainsKey(fileUrl))
-            {
-                _startupConfiguration.ExternalSubtitles.Add(fileUrl, TimeSpan.Zero);
-            }
-            _startupConfiguration.SelectedSubtitlesFileUrl = fileUrl;
-
             StartPlayback();
         }
 
-        public void SetSubtitlesDelay(TimeSpan delay)
+        public void ChangeSubtitlesDelay(TimeSpan delay)
         {
             mediaPlayer.SetSpuDelay((long)delay.TotalMilliseconds);
         }

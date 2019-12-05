@@ -19,6 +19,7 @@ namespace VideoPlayerTrimmer.Models
         public string FileName => Path.GetDirectoryName(FilePath);
         public string FileUrl => "file://" + FilePath;
         public TimeSpan Delay { get; set; }
+        public string Encoding { get; set; }
 
         protected bool isSelected;
         public bool IsSelected

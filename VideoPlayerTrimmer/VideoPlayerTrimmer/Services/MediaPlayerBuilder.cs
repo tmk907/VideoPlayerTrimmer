@@ -1,6 +1,7 @@
 ﻿using LibVLCSharp.Shared;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using VideoPlayerTrimmer.PlayerControls;
 
 namespace VideoPlayerTrimmer.Services
@@ -23,8 +24,16 @@ namespace VideoPlayerTrimmer.Services
 
         public MediaPlayer GetMediaPlayer()
         {
-            var mediaPlayer = new MediaPlayer(LibVLC);
-            return mediaPlayer;
+            if (!string.IsNullOrWhiteSpace(Settings.PlayerOption))
+            {
+                var mediaPlayer = new MediaPlayer(new LibVLC(Settings.PlayerOption));
+                return mediaPlayer;
+            }
+            else
+            {
+                var mediaPlayer = new MediaPlayer(LibVLC);
+                return mediaPlayer;
+            }
         }
 
         public MediaPlayer GetMediaPlayer(string filePath)
@@ -53,9 +62,26 @@ namespace VideoPlayerTrimmer.Services
             //{
             //    media.AddOption(":start-paused");
             //}
-            foreach (var fileUrl in startupConfiguration.ExternalSubtitles.Keys)
+            if (!string.IsNullOrWhiteSpace(Settings.MediaOption))
             {
-                media.AddSlave(MediaSlaveType.Subtitle, 0, fileUrl);
+                try
+                {
+                    media.AddOption(Settings.MediaOption);
+                }
+                catch (Exception ex)
+                {
+                    App.DebugLog(ex.ToString());
+                }
+            }
+            if (startupConfiguration.IsFileSubtitlesSelected)
+            {
+                media.AddOption(startupConfiguration.SelectedSubtitlesFile.EncodingOption);
+            }
+            //media.AddOption(":freetype-font=/storage/emulated/0/Download/arial.ttf");
+            //media.AddOption(":freetype-color=16711680");
+            foreach (var sub in startupConfiguration.ExternalSubtitles)
+            {
+                media.AddSlave(MediaSlaveType.Subtitle, 0, sub.FileUrl);
             }
 
             return media;

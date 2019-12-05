@@ -14,6 +14,9 @@ namespace VideoPlayerTrimmer.PlayerControls
         
         public int Spu { get; set; }
 
+        public string FileUrl { get; set; }
+        public bool IsFile { get { return !string.IsNullOrEmpty(FileUrl); } }
+
         private bool isSelected;
 
         public bool IsSelected

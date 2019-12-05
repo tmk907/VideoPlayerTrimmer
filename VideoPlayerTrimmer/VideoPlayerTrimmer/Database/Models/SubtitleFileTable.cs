@@ -11,5 +11,6 @@ namespace VideoPlayerTrimmer.Database.Models
         public TimeSpan Delay { get; set; }
         public int VideoId { get; set; }
         public bool IsSelected { get; set; }
+        public string Encoding { get; set; }
     }
 }

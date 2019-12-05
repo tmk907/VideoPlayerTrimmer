@@ -24,5 +24,17 @@ namespace VideoPlayerTrimmer.Services
             get { return Preferences.Get(nameof(UseHardwareAcceleration), false); }
             set { Preferences.Set(nameof(UseHardwareAcceleration), value); }
         }
+
+        public static string MediaOption
+        {
+            get { return Preferences.Get(nameof(MediaOption), ""); }
+            set { Preferences.Set(nameof(MediaOption), value); }
+        }
+
+        public static string PlayerOption
+        {
+            get { return Preferences.Get(nameof(PlayerOption), ""); }
+            set { Preferences.Set(nameof(PlayerOption), value); }
+        }
     }
 }

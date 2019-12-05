@@ -18,6 +18,8 @@
             <x:String x:Key="fas-check">&#xf00c;</x:String>
             <x:String x:Key="FontAwesomeSolid">FontAwesome5Solid.otf#Regular</x:String>
 
+            <Color x:Key="TextColorDarkTheme">#FFFFFF</Color>
+            
             <Color x:Key="SemiTransparent">#AA000000</Color>
             <Style x:Key="HeaderLabel" TargetType="Label">
                 <Setter Property="FontSize" Value="17"/>
@@ -41,11 +43,11 @@
             <Grid>
                 <vlc:VideoView MediaPlayer="{Binding VlcPlayerHelper.MediaPlayer}"/>
                 <player:PlaybackControls
+                    IsControlVisible="{Binding IsControlVisible, Mode=TwoWay}"
                     ElapsedTime="{Binding VlcPlayerHelper.ElapsedTime}"
                     TotalTime="{Binding VlcPlayerHelper.TotalTime}"
                     IsPlaying="{Binding VlcPlayerHelper.IsPlaying}"
                     IsFavorite="{Binding IsFavorite}"
-                    IsControlVisible="{Binding IsControlVisible, Mode=TwoWay}"
                     AspectRatioClickedCommand="{Binding VlcPlayerHelper.AspectRatioClickedCommand}"
                     PlayPauseClickedCommand="{Binding VlcPlayerHelper.PlayPauseCommand}"
                     SliderValueChangedCommand="{Binding VlcPlayerHelper.SliderValueChangedCommand}"
@@ -115,7 +117,7 @@
                                             <Label Grid.Column="0" 
                                                    Text="{StaticResource fas-check}" FontFamily="{StaticResource FontAwesomeSolid}"
                                                    IsVisible="{Binding IsSelected}" 
-                                                      TextColor="White" FontSize="16" VerticalTextAlignment="End" />
+                                                   TextColor="{StaticResource TextColorDarkTheme}" FontSize="16" VerticalTextAlignment="End" />
                                             <Label Grid.Column="1" Text="{Binding Name}" 
                                                Style="{StaticResource DescriptionLabel}"/>
                                         </Grid>
@@ -124,7 +126,9 @@
                             </StackLayout>
                             <StackLayout Orientation="Horizontal">
                                 <Button Text="Add file" Command="{Binding AddSubtitlesFromFileCommand}" HorizontalOptions="Center"/>
-                                <Picker BackgroundColor="Red"
+                                <Picker 
+                                    WidthRequest="200"
+                                    TextColor="{StaticResource TextColorDarkTheme}"
                                     ItemsSource="{Binding EncodingList}"
                                     SelectedItem="{Binding SelectedEncoding, Mode=TwoWay}"/>
                             </StackLayout>
@@ -153,7 +157,7 @@
                                             <Label Grid.Column="0"
                                                    IsVisible="{Binding IsSelected}" 
                                                    Text="{StaticResource fas-check}" FontFamily="{StaticResource FontAwesomeSolid}"
-                                                   TextColor="White" FontSize="16" VerticalTextAlignment="End" />
+                                                   TextColor="{StaticResource TextColorDarkTheme}" FontSize="16" VerticalTextAlignment="End" />
                                             <Label Grid.Column="1" Text="{Binding Name}" 
                                                Style="{StaticResource DescriptionLabel}"/>
                                         </Grid>
@@ -188,7 +192,7 @@
                     FontSize="Large"
                     BackgroundColor="{StaticResource SemiTransparent}" 
                     Text="{Binding Title}"
-                    TextColor="White"
+                    TextColor="{StaticResource TextColorDarkTheme}"
                     HorizontalTextAlignment="Start" />
                 <Grid Grid.Column="0" Grid.Row="1">
                     <Grid ColumnSpacing="10" VerticalOptions="Center" IsVisible="{Binding IsVolumeIndicatorVisible}">
@@ -196,8 +200,8 @@
                             <ColumnDefinition/>
                             <ColumnDefinition/>
                         </Grid.ColumnDefinitions>
-                        <ic:IconLabel BackgroundColor="{StaticResource SemiTransparent}" Text="ep-controller-volume" FontSize="40" TextColor="White" Grid.Column="0" HorizontalOptions="End"/>
-                        <Label BackgroundColor="{StaticResource SemiTransparent}" Text="{Binding Volume}" FontSize="30" TextColor="White" Grid.Column="1" HorizontalOptions="Start"/>
+                        <ic:IconLabel BackgroundColor="{StaticResource SemiTransparent}" Text="ep-controller-volume" FontSize="40" TextColor="{StaticResource TextColorDarkTheme}" Grid.Column="0" HorizontalOptions="End"/>
+                        <Label BackgroundColor="{StaticResource SemiTransparent}" Text="{Binding Volume}" FontSize="30" TextColor="{StaticResource TextColorDarkTheme}" Grid.Column="1" HorizontalOptions="Start"/>
                     </Grid>
                     <Grid x:Name="BrighnessGrid" BackgroundColor="Transparent">
                         <Grid.GestureRecognizers>
@@ -212,8 +216,8 @@
                             <ColumnDefinition/>
                             <ColumnDefinition/>
                         </Grid.ColumnDefinitions>
-                        <ic:IconLabel BackgroundColor="{StaticResource SemiTransparent}" Text="ep-adjust" FontSize="40" TextColor="White" Grid.Column="0" HorizontalOptions="End"/>
-                        <Label BackgroundColor="{StaticResource SemiTransparent}" Text="{Binding Brightness}" FontSize="30" TextColor="White" Grid.Column="1" HorizontalOptions="Start"/>
+                        <ic:IconLabel BackgroundColor="{StaticResource SemiTransparent}" Text="ep-adjust" FontSize="40" TextColor="{StaticResource TextColorDarkTheme}" Grid.Column="0" HorizontalOptions="End"/>
+                        <Label BackgroundColor="{StaticResource SemiTransparent}" Text="{Binding Brightness}" FontSize="30" TextColor="{StaticResource TextColorDarkTheme}" Grid.Column="1" HorizontalOptions="Start"/>
                     </Grid>
                     <Grid x:Name="VolumeGrid" BackgroundColor="Transparent">
                         <Grid.GestureRecognizers>

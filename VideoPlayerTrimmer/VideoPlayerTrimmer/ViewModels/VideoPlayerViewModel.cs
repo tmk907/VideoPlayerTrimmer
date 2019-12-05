@@ -21,8 +21,6 @@ namespace VideoPlayerTrimmer.ViewModels
     public class VideoPlayerViewModel : BaseViewModel
     {
         private readonly IVideoLibrary videoLibrary;
-        private readonly IVolumeService volumeController;
-        private readonly IBrightnessService brightnessController;
         private readonly IOrientationService orientationService;
         private readonly IStatusBarService statusBarService;
         private string filePath;
@@ -33,8 +31,6 @@ namespace VideoPlayerTrimmer.ViewModels
         {
             App.DebugLog("");
             this.videoLibrary = videoLibrary;
-            this.volumeController = volumeController;
-            this.brightnessController = brightnessController;
             this.orientationService = orientationService;
             this.statusBarService = statusBarService;
             FileService = fileService;
@@ -48,21 +44,34 @@ namespace VideoPlayerTrimmer.ViewModels
             AddSubtitlesFromFileCommand = new Command(AddSubtitlesFromFile);
             SubtitleFileTappedCommand = new Command<object>(o => SubtitleFileTapped(o));
             CloseFilePickerCommand = new Command(() => { IsSubtitleFilePickerVisible = false; });
-            MaxVolume = volumeController.GetMaxVolume();
-            Volume = volumeController.GetVolume();
-            volumeController.VolumeChanged += VolumeController_VolumeChanged;
-            Brightness = Settings.VideoBrightness;
+
+            volumeViewModel = new VolumeViewModel(volumeController);
+            brightnessViewModel = new BrightnessViewModel(brightnessController);
+            
             favoriteScenes = new FavoritesCollection(favoriteSceneDuration);
 
             VlcPlayerHelper = new VlcPlayerHelper(playerService);
         }
-
-
+        
         private VideoItem videoItem;
         public VideoItem VideoItem
         {
             get { return videoItem; }
             set { SetProperty(ref videoItem, value); }
+        }
+
+        private VolumeViewModel volumeViewModel;
+        public VolumeViewModel VolumeViewModel
+        {
+            get { return volumeViewModel; }
+            set { SetProperty(ref volumeViewModel, value); }
+        }
+
+        private BrightnessViewModel brightnessViewModel;
+        public BrightnessViewModel BrightnessViewModel
+        {
+            get { return brightnessViewModel; }
+            set { SetProperty(ref brightnessViewModel, value); }
         }
 
         private VlcPlayerHelper vlcPlayerHelper;
@@ -110,7 +119,7 @@ namespace VideoPlayerTrimmer.ViewModels
 
             statusBarService.IsVisible = false;
             orientationService.ChangeToLandscape();
-            ApplyBrightness();
+            brightnessViewModel.ApplyBrightness();
             
             if (userPosition != 0)
             {
@@ -149,7 +158,7 @@ namespace VideoPlayerTrimmer.ViewModels
             UnInitMediaPlayer();
 
             statusBarService.IsVisible = true;
-            brightnessController.RestoreBrightness();
+            brightnessViewModel.RestoreBrightness();
             orientationService.RestoreOrientation();
 
             await videoLibrary.MarkAsPlayedAsync(videoItem);
@@ -168,19 +177,23 @@ namespace VideoPlayerTrimmer.ViewModels
             };
             foreach(var sub in videoItem.SubtitleFiles)
             {
-                startupConfiguration.ExternalSubtitles.Add(sub.FileUrl, sub.Delay);
+                startupConfiguration.ExternalSubtitles.Add(new SubitlesConfig()
+                {
+                    FileUrl = sub.FileUrl,
+                    Delay = sub.Delay,
+                    Encoding = sub.Encoding,
+                    IsSelected = sub.IsSelected
+                });
             }
             if (videoItem.IsFileSubtitleSelected)
             {
-                var selected = videoItem.SubtitleFiles.FirstOrDefault(x => x.IsSelected);
-                startupConfiguration.SelectedSubtitlesFileUrl = selected.FileUrl;
-                startupConfiguration.EmbeddedSubtitlesDelay = selected.Delay;
             }
             else
             {
-                startupConfiguration.EmbeddedSubtitlesDelay = videoItem.EmbeddedSubtitlesDelay;
                 startupConfiguration.SelectedSubtitlesSpu = videoItem.SelectedSubtitlesId;
             }
+            startupConfiguration.EmbeddedSubtitlesDelay = videoItem.EmbeddedSubtitlesDelay;
+
             VlcPlayerHelper.LoadFile(startupConfiguration);
 
             VlcPlayerHelper.MediaPlayer.TimeChanged += MediaPlayer_TimeChanged;
@@ -221,77 +234,6 @@ namespace VideoPlayerTrimmer.ViewModels
         private long lastPosition = 0;
         private long userPosition = 0;
         private bool isPausedByUser = false;
-
-
-
-        #region VolumeAndBrightness
-
-        private int volume = 0;
-        public int Volume
-        {
-            get { return volume; }
-            set
-            {
-                SetProperty(ref volume, value);
-            }
-        }
-
-        public void ApplyVolume()
-        {
-            App.DebugLog(volume.ToString());
-            volumeController.SetVolume(volume);
-        }
-
-        private int maxVolume = 10;
-        public int MaxVolume
-        {
-            get { return maxVolume; }
-            set { SetProperty(ref maxVolume, value); }
-        }
-
-        private bool isVolumeIndicatorVisible = false;
-        public bool IsVolumeIndicatorVisible
-        {
-            get { return isVolumeIndicatorVisible; }
-            set { SetProperty(ref isVolumeIndicatorVisible, value); }
-        }
-
-        private async void VolumeController_VolumeChanged(object sender, VolumeChangedEventArgs e)
-        {
-            await Task.Delay(500);
-            Xamarin.Forms.Device.BeginInvokeOnMainThread(() =>
-            {
-                Volume = volumeController.GetVolume();
-            });
-        }
-
-        private int brightness;
-        public int Brightness
-        {
-            get { return brightness; }
-            set
-            {
-                SetProperty(ref brightness, value);
-                Settings.VideoBrightness = value;
-            }
-        }
-
-        public int MaxBrightness { get; } = 15;
-
-        public void ApplyBrightness()
-        {
-            App.DebugLog(brightness.ToString());
-            brightnessController.SetBrightness(((float)brightness) / (float)MaxBrightness);
-        }
-
-        private bool isBrightnessIndicatorVisible = false;
-        public bool IsBrightnessIndicatorVisible
-        {
-            get { return isBrightnessIndicatorVisible; }
-            set { SetProperty(ref isBrightnessIndicatorVisible, value); }
-        }
-
-        #endregion
 
         private string title = "";
         public string Title
@@ -417,6 +359,7 @@ namespace VideoPlayerTrimmer.ViewModels
                 AudioTracks.AddRange(VlcPlayerHelper.GetAudioTracks());
             }
             IsAudioTracksPopupVisible = !IsAudioTracksPopupVisible;
+            IsControlVisible = false;
         }
 
         private bool isSubtitlesPopupVisible = false;
@@ -446,9 +389,18 @@ namespace VideoPlayerTrimmer.ViewModels
             if (!IsSubtitlesPopupVisible)
             {
                 Subtitles.Clear();
-                Subtitles.AddRange(vlcPlayerHelper.GetSubtitleTracks());
+                Subtitles.AddRange(vlcPlayerHelper.GetVlcSubtitles());
+                if (VideoItem.IsFileSubtitleSelected)
+                {
+                    SelectedEncoding = VideoItem.SelectedSubtitleFile.Encoding;
+                }
+                else
+                {
+                    SelectedEncoding = LibVlcOptions.GetSubtitleEncoding();
+                }
             }
             IsSubtitlesPopupVisible = !IsSubtitlesPopupVisible;
+            IsControlVisible = false;
         }
         
         private void MarkSubtitlesAsSelected(VlcSubtitles subtitles)
@@ -461,6 +413,11 @@ namespace VideoPlayerTrimmer.ViewModels
             foreach(var sub in videoItem.SubtitleFiles)
             {
                 sub.IsSelected = false;
+            }
+            var selected = videoItem.SubtitleFiles.FirstOrDefault(x => x.FileUrl == subtitles.FileUrl);
+            if (selected != null)
+            {
+                selected.IsSelected = true;
             }
         }
 
@@ -494,8 +451,9 @@ namespace VideoPlayerTrimmer.ViewModels
                 videoItem.SubtitleFiles.Add(subs);
             }
             MarkSubtitlesAsSelected(subs);
-            vlcPlayerHelper.AddSubtitles(subs.FileUrl);
-            //vlcPlayerHelper.SetSubtitlesDelay(subs.Delay);
+            var config = BuildStartupConfiguration();
+            vlcPlayerHelper.Reset(config);
+
             IsSubtitleFilePickerVisible = false;
         }
 
@@ -506,6 +464,47 @@ namespace VideoPlayerTrimmer.ViewModels
             set { SetProperty(ref isSubtitleFilePickerVisible, value); }
         }
 
+        public List<string> EncodingList { get; } = LibVlcOptions.Encoding.All;
+
+        private string selectedEncoding = LibVlcOptions.GetSubtitleEncoding();
+        public string SelectedEncoding
+        {
+            get { return selectedEncoding; }
+            set 
+            {
+                if (value != selectedEncoding)
+                {
+                    if (videoItem.IsFileSubtitleSelected)
+                    {
+                        videoItem.SelectedSubtitleFile.Encoding = value;
+                        var config = BuildStartupConfiguration();
+                        vlcPlayerHelper.Reset(config);
+                    }
+                }
+                SetProperty(ref selectedEncoding, value); 
+            }
+        }
+
+        private StartupConfiguration BuildStartupConfiguration()
+        {
+            var config = new StartupConfiguration()
+            {
+                AutoPlay = vlcPlayerHelper.IsPlaying,
+                EmbeddedSubtitlesDelay = videoItem.EmbeddedSubtitlesDelay,
+                EmbeddedSubtitlesEncoding = LibVlcOptions.GetSubtitleEncoding(),
+                FilePath = videoItem.FilePath,
+                ResumeTime = (long)vlcPlayerHelper.ElapsedTime.TotalMilliseconds,
+            };
+            config.ExternalSubtitles.AddRange(videoItem.SubtitleFiles.Select(x => new SubitlesConfig()
+            {
+                Delay = x.Delay,
+                Encoding = x.Encoding,
+                FileUrl = x.FileUrl,
+                IsSelected = x.IsSelected
+            }));
+
+            return config;
+        }
 
         private IFileService fileService;
         public IFileService FileService
@@ -522,7 +521,6 @@ namespace VideoPlayerTrimmer.ViewModels
         }
 
         public List<string> Extensions { get; } = new List<string>() { ".srt", ".txt", ".ass" };
-
 
         private bool isMediaInfoPopupVisible = false;
         public bool IsMediaInfoPopupVisible
