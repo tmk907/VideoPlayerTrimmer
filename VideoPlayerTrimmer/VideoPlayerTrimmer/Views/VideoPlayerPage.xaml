@@ -125,7 +125,7 @@
                                 </BindableLayout.ItemTemplate>
                             </StackLayout>
                             <StackLayout Orientation="Horizontal">
-                                <Button Text="Add file" Command="{Binding AddSubtitlesFromFileCommand}" HorizontalOptions="Center"/>
+                                <Button Text="Add file" Command="{Binding OpenSubtitlesFromFileCommand}" HorizontalOptions="Center"/>
                                 <Picker 
                                     WidthRequest="200"
                                     TextColor="{StaticResource TextColorDarkTheme}"
@@ -167,14 +167,12 @@
                         </StackLayout>
                     </ScrollView>
                 </ContentView>
-                <file:SimpleFilePicker AllowedFileExtensions="{Binding Extensions}"
-                                       InitialFolderPath="{Binding StartupPath}"
-                                       FileService="{Binding FileService}"
-                                       FileTappedCommand="{Binding SubtitleFileTappedCommand}"
+                <file:SimpleFilePicker AllowedFileExtensions="{Binding FilePickerVM.Extensions}"
+                                       InitialFolderPath="{Binding FilePickerVM.StartupPath}"
+                                       FileService="{Binding FilePickerVM.FileService}"
+                                       FileTappedCommand="{Binding FilePickerVM.SubtitleFileTappedCommand}"
                                        Title="{Binding VideoItem.Title}"
-                                       CloseCommand="{Binding CloseFilePickerCommand}"
-                                       Margin="24,8,24,8"
-                                       IsVisible="{Binding IsSubtitleFilePickerVisible}"/>
+                                       IsOpen="{Binding FilePickerVM.IsOpen, Mode=TwoWay}"/>
             </Grid>
             <!--<Grid BackgroundColor="Transparent">
                 <Grid.ColumnDefinitions>

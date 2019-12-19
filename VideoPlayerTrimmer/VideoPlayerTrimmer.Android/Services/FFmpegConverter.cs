@@ -1,14 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using Android.App;
-using Android.Content;
-using Android.OS;
-using Android.Runtime;
-using Android.Views;
-using Android.Widget;
 using NL.Bravobit.Ffmpeg;
 using Plugin.CurrentActivity;
 using VideoPlayerTrimmer.Droid.Services;
@@ -24,52 +17,21 @@ namespace VideoPlayerTrimmer.Droid.Services
         public event EventHandler ConversionStarted;
         public event EventHandler ConversionEnded;
 
-        public Task CovertToVideo(FFmpegToVideoConversionOptions options)
+        public Task Convert(List<string>commands, TimeSpan start, TimeSpan end)
         {
-            var commands = new List<string>();
-            commands.Add("-y");
-            commands.Add("-ss");
-            commands.Add(options.StartPosition.ToString("g").Replace(',', '.'));
-            commands.Add("-i");
-            commands.Add(options.InputFilePath);
-            commands.Add("-to");
-            commands.Add(options.EndPosition.ToString("g").Replace(',', '.'));
-            commands.Add("-copyts");
-            commands.Add("-c:v");
-            commands.Add(options.VideoCodec);
-            commands.Add("-preset");
-            commands.Add(options.Preset);
-            commands.Add("-c:a");
-            commands.Add(options.AudioCodec);
-            commands.Add("-avoid_negative_ts");
-            commands.Add("1");
-            commands.Add(options.OutputFilePath);
-            return Task.Factory.StartNew(() => ExcecuteCommand(commands.ToArray(), options), TaskCreationOptions.LongRunning);
+            App.DebugLog("FFmpeg command:");
+            App.DebugLog(string.Join(" ", commands));
+
+            return Task.Factory.StartNew(() => ExcecuteCommand(commands.ToArray(), start, end), TaskCreationOptions.LongRunning);
         }
 
-        public Task ConvertToGif(FFmpegToGifConversionOptions options)
-        {
-            var commands= new List<string>();
-            commands.Add("-y");
-            commands.Add("ss");
-            commands.Add(options.StartPosition.ToString("g").Replace(',', '.'));
-            commands.Add("-t");
-            commands.Add(options.Duration.ToString("g").Replace(',', '.'));
-            commands.Add("-i");
-            commands.Add(options.InputFilePath);
-            commands.Add("-filter_complex");
-            commands.Add($"\"[0:v] fps=12,scale={options.Width}:-1,split [a][b];[a] palettegen [p];[b][p] paletteuse\"");
-            commands.Add(options.OutputFilePath);
-            return Task.Factory.StartNew(() => ExcecuteCommand(commands.ToArray(), options));
-        }
-
-        private void ExcecuteCommand(string[] cmd, FFmpegConversionOptions options)
+        private void ExcecuteCommand(string[] cmd, TimeSpan start, TimeSpan end)
         {
             var ffmpeg = FFmpeg.GetInstance(CrossCurrentActivity.Current.Activity.ApplicationContext);
             if (ffmpeg.IsSupported)
             {
                 App.DebugLog("Start conversion");
-                ffmpeg.Execute(cmd.ToArray(), new MyExecuteBinaryResponseHandler2(this, options));
+                ffmpeg.Execute(cmd.ToArray(), new MyExecuteBinaryResponseHandler2(this, start, end));
                 App.DebugLog("Stop conversion");
             }
         }
@@ -92,14 +54,17 @@ namespace VideoPlayerTrimmer.Droid.Services
 
     public class MyExecuteBinaryResponseHandler2 : ExecuteBinaryResponseHandler
     {
-        private Action<int> onProgressAction;
         private readonly FFmpegConverter converter;
-        private readonly FFmpegConversionOptions options;
+        private readonly TimeSpan _start;
+        private readonly TimeSpan _end;
+        private readonly TimeSpan _duration;
 
-        public MyExecuteBinaryResponseHandler2(FFmpegConverter converter, FFmpegConversionOptions options)
+        public MyExecuteBinaryResponseHandler2(FFmpegConverter converter, TimeSpan start, TimeSpan end)
         {
             this.converter = converter;
-            this.options = options;
+            _start = start;
+            _end = end;
+            _duration = end - start;
         }
 
         public override void OnStart()
@@ -130,7 +95,7 @@ namespace VideoPlayerTrimmer.Droid.Services
                 TimeSpan.TryParse(duration, out position);
                 if (position != TimeSpan.Zero)
                 {
-                    int progress = (int)((position.TotalSeconds - options.StartPosition.TotalSeconds) / options.Duration.TotalSeconds* 100);
+                    int progress = (int)(position.TotalSeconds / _duration.TotalSeconds* 100);
                     converter.OnProgessChanged(progress);
                     App.DebugLog("Conversion progress " + progress + "%");
                 }

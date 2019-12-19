@@ -5,6 +5,8 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:views="clr-namespace:VideoPlayerTrimmer.Views"
              xmlns:slider="clr-namespace:Xamarin.RangeSlider.Forms;assembly=Xamarin.RangeSlider.Forms"
+             xmlns:controls="clr-namespace:VideoPlayerTrimmer.Controls"
+             xmlns:filePicker="clr-namespace:VideoPlayerTrimmer.FilePicker"
              xmlns:vlc="clr-namespace:LibVLCSharp.Forms.Shared;assembly=LibVLCSharp.Forms"
              xmlns:fonts="clr-namespace:VideoPlayerTrimmer.Fonts"
              xmlns:converters="clr-namespace:VideoPlayerTrimmer.Converters"
@@ -19,6 +21,8 @@
         <Color x:Key="BackgroundColorDarkTheme">#000000</Color>
         <Color x:Key="BackgroundColorLightTheme">#FFFFFF</Color>
         
+        <converters:InvertedBoolConverter x:Key="InvertedBool"/>
+        <converters:TextToVisibilityConverter x:Key="TextToVisibility"/>
         <converters:BoolToStringConverter x:Key="ToPlayPauseIcon" 
                                         IfFalse="{x:Static fonts:FontAwesomeSolid.Play}"
                                         IfTrue="{x:Static fonts:FontAwesomeSolid.Pause}"/>
@@ -192,12 +196,33 @@
                     StepValue="1"
                     StepValueContinuously="True"/>
                 <StackLayout Orientation="Horizontal">
-                    <Label Text="Fast trimming"/>
+                    <Label Text="Trimming mode"/>
                     <Switch IsToggled="{Binding FastTrim}"/>
+                    <Label 
+                        IsVisible="{Binding FastTrim}"
+                        MaxLines="2"
+                        LineBreakMode="WordWrap"
+                        Text="Fast, but not accurate. Video may start 1 second before selected time."/>
+                    <Label 
+                        IsVisible="{Binding FastTrim, Converter={StaticResource InvertedBool}}" 
+                        Text="Slow and frame accurate"/>
                 </StackLayout>
                 <StackLayout Orientation="Horizontal">
-                    <Label Text="Save as gif"/>
-                    <Switch IsToggled="{Binding SaveToGif}"/>
+                    <Button Text="Choose subtitles" Command="{Binding ChooseSubtitlesCommand}"/>
+                    <Button Text="Clear subtitles" Command="{Binding ClearSubtitlesCommand}"/>
+                </StackLayout>
+                <Label 
+                    Text="{Binding FileSubtitlesPath}"
+                    IsVisible="{Binding FileSubtitlesPath, Converter={StaticResource TextToVisibility}}"/>
+                <StackLayout Orientation="Horizontal">
+                    <Label Text="Hardsub"/>
+                    <Switch 
+                        IsToggled="{Binding HardSub}" 
+                        IsEnabled="{Binding FileSubtitlesPath, Converter={StaticResource TextToVisibility}}"/>
+                </StackLayout>
+                <StackLayout Orientation="Vertical">
+                    <Label Text="Filename"/>
+                    <Entry Text="{Binding OutputFileName}"/>
                 </StackLayout>
                 <StackLayout Orientation="Horizontal">
                     <Label Text="File saved to:" Margin="0,0,8,0" WidthRequest="150"/>
@@ -208,8 +233,19 @@
             <Grid BackgroundColor="{StaticResource SemiTransparent}" IsVisible="{Binding NoFileSelected}">
                 <Button Clicked="Open_Clicked" Text="Choose video" HorizontalOptions="Center" VerticalOptions="Center"/>
             </Grid>
-            <ActivityIndicator IsVisible="{Binding IsConverting}" IsRunning="{Binding IsConverting}"
-                VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand" />
+            <controls:ProgressRing
+                IsLoading="{Binding IsConverting}"
+                Color="{StaticResource AccentColor}"
+                Text="{Binding ConvertingVideoText}"
+                TextColor="White"
+                Size="150"/>
+            <filePicker:SimpleFilePicker AllowedFileExtensions="{Binding FilePickerVM.Extensions}"
+                                       InitialFolderPath="{Binding FilePickerVM.StartupPath}"
+                                       FileService="{Binding FilePickerVM.FileService}"
+                                       FileTappedCommand="{Binding FilePickerVM.SubtitleFileTappedCommand}"
+                                       Title="{Binding FilePickerVM.Title}"
+                                       IsOpen="{Binding FilePickerVM.IsOpen, Mode=TwoWay}"/>
+
         </Grid>
     </ContentPage.Content>
 </views:TrimmerContentPage>

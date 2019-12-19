@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace VideoPlayerTrimmer.Services
@@ -10,7 +9,6 @@ namespace VideoPlayerTrimmer.Services
         event EventHandler ConversionStarted;
         event EventHandler ConversionEnded;
         event EventHandler<int> ConversionProgressChanged;
-        Task CovertToVideo(FFmpegToVideoConversionOptions options);
-        Task ConvertToGif(FFmpegToGifConversionOptions options);
+        Task Convert(List<string> commands, TimeSpan start, TimeSpan end);
     }
 }

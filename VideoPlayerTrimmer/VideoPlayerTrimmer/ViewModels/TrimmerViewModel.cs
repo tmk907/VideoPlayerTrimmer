@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using AsyncAwaitBestPractices.MVVM;
 using VideoPlayerTrimmer.Extensions;
 using VideoPlayerTrimmer.FilePicker;
 using VideoPlayerTrimmer.Framework;
@@ -16,14 +18,25 @@ namespace VideoPlayerTrimmer.ViewModels
 {
     public class TrimmerViewModel : BaseViewModel
     {
-        public TrimmerViewModel(IVideoLibrary videoLibrary, MediaPlayerBuilder playerService, ConverterHelper converterHelper)
+        private string filePath;
+        private VideoItem videoItem;
+        private readonly IVideoLibrary _videoLibrary;
+        private readonly ConverterHelper _converterHelper;
+        private readonly IFileService _fileService;
+
+        public TrimmerViewModel(IVideoLibrary videoLibrary, MediaPlayerBuilder playerService, 
+            ConverterHelper converterHelper, IFileService fileService)
         {
             App.DebugLog("");
-            this.videoLibrary = videoLibrary;
-            this.playerService = playerService;
+            _videoLibrary = videoLibrary;
             _converterHelper = converterHelper;
+            _fileService = fileService;
             _converterHelper.ConversionStarted += ConversionStarted;
+            _converterHelper.ConversionProgress += ConversionProgress;
             _converterHelper.ConversionEnded += ConversionEnded;
+
+            FilePickerVM = new FilePickerViewModel(fileService);
+            FilePickerVM.SubtitleFileTappedCommand = new Command<object>(o => SubtitleFileTapped(o));
 
             VlcPlayerHelper = new VlcPlayerHelper(playerService);
             vlcPlayerHelper.PlayerReady += VlcPlayerHelper_PlayerReady;
@@ -33,6 +46,8 @@ namespace VideoPlayerTrimmer.ViewModels
             IncrementPositionCommand = new Command<object>((e) => IncrementPosition(e));
             DecrementPositionCommand = new Command<object>((e) => DecrementPosition(e));
             JumpToStartCommand = new Command(() => JumpToStart());
+            ChooseSubtitlesCommand = new Command(ChooseSubtitles);
+            ClearSubtitlesCommand = new Command(ClearSubtitles);
 
             OffsetOptions = new ObservableCollection<OffsetOption>()
             {
@@ -46,7 +61,7 @@ namespace VideoPlayerTrimmer.ViewModels
             EndPosition = TimeSpan.FromMinutes(1);
             TotalDuration = EndPosition;
         }
-
+        
         private void ConversionStarted()
         {
             Xamarin.Essentials.MainThread.BeginInvokeOnMainThread(() =>
@@ -55,11 +70,21 @@ namespace VideoPlayerTrimmer.ViewModels
             });
         }
 
-        private void ConversionEnded()
+        private void ConversionProgress(int arg)
+        {
+            Xamarin.Essentials.MainThread.BeginInvokeOnMainThread(() =>
+            {
+                IsConverting = true;
+                ConvertingVideoText = $"Converting video {arg}%";
+            });
+        }
+
+        private void ConversionEnded(string outputPath)
         {
             Xamarin.Essentials.MainThread.BeginInvokeOnMainThread(() =>
             {
                 IsConverting = false;
+                //show popup file saved to outputpath
             });
         }
         
@@ -101,6 +126,7 @@ namespace VideoPlayerTrimmer.ViewModels
             {
                 SetProperty(ref startPosition, value);
                 vlcPlayerHelper.SeekTo(startPosition);
+                GenerateOutputFileName();
             }
         }
 
@@ -112,6 +138,7 @@ namespace VideoPlayerTrimmer.ViewModels
             {
                 SetProperty(ref endPosition, value);
                 vlcPlayerHelper.SeekTo(endPosition);
+                GenerateOutputFileName();
             }
         }
 
@@ -153,13 +180,6 @@ namespace VideoPlayerTrimmer.ViewModels
 
         public ObservableCollection<OffsetOption> OffsetOptions { get; }
 
-        private bool saveToGif = false;
-        public bool SaveToGif
-        {
-            get { return saveToGif; }
-            set { SetProperty(ref saveToGif, value); }
-        }
-
         private bool fastTrim = true;
         public bool FastTrim
         {
@@ -174,6 +194,12 @@ namespace VideoPlayerTrimmer.ViewModels
             set { SetProperty(ref isConverting, value); }
         }
 
+        private string outputFileName = "";
+        public string OutputFileName
+        {
+            get { return outputFileName; }
+            set { SetProperty(ref outputFileName, value); }
+        }
 
         private string outputPath;
         public string OutputPath
@@ -182,12 +208,40 @@ namespace VideoPlayerTrimmer.ViewModels
             set { SetProperty(ref outputPath, value); }
         }
 
+
+        private string fileSubtitlesPath;
+        public string FileSubtitlesPath
+        {
+            get { return fileSubtitlesPath; }
+            set { SetProperty(ref fileSubtitlesPath, value); }
+        }
+
+
+        private bool hardSub;
+        public bool HardSub
+        {
+            get { return hardSub; }
+            set { SetProperty(ref hardSub, value); }
+        }
+
+
+        private string convertingVideoText = "Converting video...";
+        public string ConvertingVideoText
+        {
+            get { return convertingVideoText; }
+            set { SetProperty(ref convertingVideoText, value); }
+        }
+
+        public FilePickerViewModel FilePickerVM { get; private set; }
+
         public Command GoToPrevFavSceneCommand { get; }
         public Command GoToNextFavSceneCommand { get; }
         public Command TogglePlayPauseCommand { get; }
         public Command<object> IncrementPositionCommand { get; }
         public Command<object> DecrementPositionCommand { get; }
         public Command JumpToStartCommand { get; }
+        public Command ChooseSubtitlesCommand { get; }
+        public Command ClearSubtitlesCommand { get; }
 
 
         private TimeSpan previewPosition = TimeSpan.Zero;
@@ -347,20 +401,13 @@ namespace VideoPlayerTrimmer.ViewModels
             }
         }
 
-        private string filePath;
-        private VideoItem videoItem;
-        private readonly IVideoLibrary videoLibrary;
-        private readonly MediaPlayerBuilder playerService;
-        private readonly ConverterHelper _converterHelper;
-        private readonly IFileService _fileService;
-        private readonly IFFmpegConverter fFmpegConverter;
-
         private async Task OpenFileAsync()
         {
             NoFileSelected = false;
-            videoItem = await videoLibrary.GetVideoItemAsync(filePath);
+            videoItem = await _videoLibrary.GetVideoItemAsync(filePath);
             TotalDuration = videoItem.Duration;
-            var list = await videoLibrary.GetFavoriteScenes(videoItem.VideoId);
+            GenerateOutputFileName();
+            var list = await _videoLibrary.GetFavoriteScenes(videoItem.VideoId);
             favoriteScenes.AddRange(list);
             //await ffmpegService.Test(filePath);
         }
@@ -371,17 +418,67 @@ namespace VideoPlayerTrimmer.ViewModels
                 $"?{NavigationParameterNames.GoBack}={true}");
         }
 
-        public async Task SaveVideoAsync()
+        public Task ConvertVideoAsync()
         {
-            await _converterHelper.ConvertVideoAsync(new ConversionOptions()
+            return _converterHelper.ConvertVideoAsync(new ConversionOptions()
             {
+                StartPosition = startPosition,
                 EndPosition = endPosition,
-                FastMode = fastTrim,
-                FileNameWithoutExtension = videoItem.FileNameWithoutExtension,
                 FilePath = videoItem.FilePath,
-                SaveAsGif = saveToGif,
-                StartPosition = startPosition
+                OutputFolderPath = GetOutputFolderPath(),
+                OutputFileName = outputFileName,
+                EmbeddedSubtitlesIndex = -1,
+                FileSubtitlesPath = fileSubtitlesPath,
+                HardSub = hardSub,
+                FastMode = fastTrim,
+                FFmpegConversionOptions = new FFmpegConversionOptions()
             });
+        }
+
+        private void GenerateOutputFileName()
+        {
+            if (videoItem == null) return;
+
+            OutputFileName = $"{videoItem.FileNameWithoutExtension} " +
+                $"[{startPosition.ToVideoDuration()}-{endPosition.ToVideoDuration()}]".Replace(':',' ');
+            OutputPath = GetOutputFolderPath();
+        }
+
+        private string GetOutputFolderPath()
+        {
+            var internalMemoryPath = _fileService.GetInternalMemoryRootPath();
+            string folderName = "VideoPlayerTrimmer";
+            string folderPath = Path.Combine(internalMemoryPath, folderName);
+            try
+            {
+                Directory.CreateDirectory(folderPath);
+            }
+            catch (Exception ex)
+            {
+                App.DebugLog(ex.ToString());
+            }
+            return folderPath;
+        }
+
+        private void ChooseSubtitles()
+        {
+            FilePickerVM.StartupPath = videoItem.FolderPath;
+            FilePickerVM.Title = videoItem.FileNameWithoutExtension;
+            FilePickerVM.IsOpen = true;
+        }
+
+        private void SubtitleFileTapped(object item)
+        {
+            var file = item as FileItem;
+            FileSubtitlesPath = file.Path;
+
+            FilePickerVM.IsOpen = false;
+            FastTrim = false;
+        }
+
+        private void ClearSubtitles()
+        {
+            FileSubtitlesPath = "";
         }
     }
 

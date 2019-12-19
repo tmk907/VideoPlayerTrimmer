@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using VideoPlayerTrimmer.Extensions;
@@ -15,6 +16,12 @@ namespace VideoPlayerTrimmer.FilePicker
     [XamlCompilation(XamlCompilationOptions.Compile)]
     public partial class SimpleFilePicker : ContentView
     {
+        private const double FullyOpaque = 1;
+        private const double FullyTransparent = 0;
+        private const uint TogglingVisibilityAnimationDuration = 500;
+
+        private static readonly SemaphoreSlim ToggleVisibilityAnimationSemaphoreSlim = new SemaphoreSlim(1);
+
         public SimpleFilePicker()
         {
             InitializeComponent();
@@ -65,18 +72,6 @@ namespace VideoPlayerTrimmer.FilePicker
         }
 
 
-        public static readonly BindableProperty CloseCommandProperty =
-            BindableProperty.Create(nameof(CloseCommand),
-                                    typeof(ICommand),
-                                    typeof(SimpleFilePicker),
-                                    default(ICommand));
-        public ICommand CloseCommand
-        {
-            get { return (ICommand)GetValue(CloseCommandProperty); }
-            set { SetValue(CloseCommandProperty, value); }
-        }
-
-
         public static readonly BindableProperty FileServiceProperty =
             BindableProperty.Create(nameof(FileService),
                                     typeof(IFileService),
@@ -109,6 +104,29 @@ namespace VideoPlayerTrimmer.FilePicker
         {
             get { return (List<string>)GetValue(AllowedFileExtensionsProperty); }
             set { SetValue(AllowedFileExtensionsProperty, value); }
+        }
+
+
+        public static readonly BindableProperty IsOpenProperty =
+            BindableProperty.Create(nameof(IsOpen),
+                                    typeof(bool),
+                                    typeof(SimpleFilePicker),
+                                    default(bool),
+                                    propertyChanged: IsOpenPropertyChanged);
+        public bool IsOpen
+        {
+            get { return (bool)GetValue(IsOpenProperty); }
+            set { SetValue(IsOpenProperty, value); }
+        }
+
+        private static async void IsOpenPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+        {
+            if (!(bindable is SimpleFilePicker filePicker) || !(newValue is bool isOPen))
+            {
+                return;
+            }
+
+            await ToggleVisibility(filePicker);
         }
 
 
@@ -186,6 +204,35 @@ namespace VideoPlayerTrimmer.FilePicker
             {
                 command.Execute(parameter);
             }
+        }
+
+        private static async Task ToggleVisibility(SimpleFilePicker filePicker)
+        {
+            try
+            {
+                ViewExtensions.CancelAnimations(filePicker);
+
+                await ToggleVisibilityAnimationSemaphoreSlim.WaitAsync();
+                if (filePicker.IsOpen)
+                {
+                    filePicker.IsVisible = true;
+                    await filePicker.FadeTo(FullyOpaque, TogglingVisibilityAnimationDuration, Easing.CubicInOut);
+                }
+                else
+                {
+                    await filePicker.FadeTo(FullyTransparent, TogglingVisibilityAnimationDuration, Easing.CubicInOut);
+                    filePicker.IsVisible = false;
+                }
+            }
+            finally
+            {
+                ToggleVisibilityAnimationSemaphoreSlim.Release();
+            }
+        }
+
+        private void CloseClicked(object sender, EventArgs e)
+        {
+            IsOpen = false;
         }
     }
 }

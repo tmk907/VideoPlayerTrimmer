@@ -33,7 +33,8 @@ namespace VideoPlayerTrimmer.ViewModels
             this.videoLibrary = videoLibrary;
             this.orientationService = orientationService;
             this.statusBarService = statusBarService;
-            FileService = fileService;
+            FilePickerVM = new FilePickerViewModel(fileService);
+            FilePickerVM.SubtitleFileTappedCommand = new Command<object>(o => SubtitleFileTapped(o));
             ToggleFavoriteCommand = new Command(ToggleFavorite);
             ToggleControlsVisibilityCommand = new Command(ToggleControlsVisibility);
             ToggleAudioTracksCommand = new Command(ToggleAudioTracks);
@@ -41,9 +42,7 @@ namespace VideoPlayerTrimmer.ViewModels
             ToggleMediaInfoCommand = new Command(ToggleMediaInfo);
             SelectSubtitlesCommand = new Command<object>(SelectSubtitles, (e) => canChangeSubtitles);
             SelectAudioTrackCommand = new Command<object>(SelectAudioTrack, (e) => canChangeAudioTrack);
-            AddSubtitlesFromFileCommand = new Command(AddSubtitlesFromFile);
-            SubtitleFileTappedCommand = new Command<object>(o => SubtitleFileTapped(o));
-            CloseFilePickerCommand = new Command(() => { IsSubtitleFilePickerVisible = false; });
+            OpenSubtitlesFromFileCommand = new Command(OpenSubtitlesFilePicker);
 
             volumeViewModel = new VolumeViewModel(volumeController);
             brightnessViewModel = new BrightnessViewModel(brightnessController);
@@ -228,7 +227,7 @@ namespace VideoPlayerTrimmer.ViewModels
         public Command ToggleMediaInfoCommand { get; }
         public Command<object> SelectSubtitlesCommand { get; }
         public Command<object> SelectAudioTrackCommand { get; }
-        public Command AddSubtitlesFromFileCommand { get; }
+        public Command OpenSubtitlesFromFileCommand { get; }
 
 
         private long lastPosition = 0;
@@ -430,16 +429,14 @@ namespace VideoPlayerTrimmer.ViewModels
             subtitles.IsSelected = true;
         }
 
-        private void AddSubtitlesFromFile()
+        private void OpenSubtitlesFilePicker()
         {
-            StartupPath = videoItem.FolderPath;
-            IsSubtitleFilePickerVisible = true;
+            FilePickerVM.StartupPath = videoItem.FolderPath;
+            FilePickerVM.Title = videoItem.FileNameWithoutExtension;
+            FilePickerVM.IsOpen = true;
             IsSubtitlesPopupVisible = false;
             IsControlVisible = false;
         }
-
-        public Command<object> SubtitleFileTappedCommand { get; }
-        public Command CloseFilePickerCommand { get; }
 
         private void SubtitleFileTapped(object item)
         {
@@ -448,20 +445,27 @@ namespace VideoPlayerTrimmer.ViewModels
             if (subs == null)
             {
                 subs = new SubtitleFile(file.Path, videoItem.VideoId);
+                using (var fs = System.IO.File.OpenRead(file.Path))
+                {
+                    Ude.CharsetDetector cdet = new Ude.CharsetDetector();
+                    cdet.Feed(fs);
+                    cdet.DataEnd();
+                    if (cdet.Charset != null)
+                    {
+                        App.DebugLog($"Charset: {cdet.Charset}, confidence: {cdet.Confidence}");
+                    }
+                    else
+                    {
+                        App.DebugLog("Detection failed.");
+                    }
+                }
                 videoItem.SubtitleFiles.Add(subs);
             }
             MarkSubtitlesAsSelected(subs);
             var config = BuildStartupConfiguration();
             vlcPlayerHelper.Reset(config);
 
-            IsSubtitleFilePickerVisible = false;
-        }
-
-        private bool isSubtitleFilePickerVisible;
-        public bool IsSubtitleFilePickerVisible
-        {
-            get { return isSubtitleFilePickerVisible; }
-            set { SetProperty(ref isSubtitleFilePickerVisible, value); }
+            FilePickerVM.IsOpen = false;
         }
 
         public List<string> EncodingList { get; } = LibVlcOptions.Encoding.All;
@@ -506,21 +510,7 @@ namespace VideoPlayerTrimmer.ViewModels
             return config;
         }
 
-        private IFileService fileService;
-        public IFileService FileService
-        {
-            get { return fileService; }
-            set { SetProperty(ref fileService, value); }
-        }
-
-        private string startupPath;
-        public string StartupPath
-        {
-            get { return startupPath; }
-            set { SetProperty(ref startupPath, value); }
-        }
-
-        public List<string> Extensions { get; } = new List<string>() { ".srt", ".txt", ".ass" };
+        public FilePickerViewModel FilePickerVM { get; private set; }
 
         private bool isMediaInfoPopupVisible = false;
         public bool IsMediaInfoPopupVisible

@@ -1,0 +1,38 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentView xmlns="http://xamarin.com/schemas/2014/forms" 
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:converters="clr-namespace:VideoPlayerTrimmer.Converters"
+             mc:Ignorable="d"
+             x:Class="VideoPlayerTrimmer.Controls.ProgressRing"
+             x:Name="view"
+             IsVisible="False"
+             Opacity="0"
+             BackgroundColor="#80000000">
+    <ContentView.Resources>
+        <converters:TextToVisibilityConverter x:Key="TextToVisibility"/>
+    </ContentView.Resources>
+  <ContentView.Content>
+        <StackLayout
+            VerticalOptions="Center"
+            Spacing="16"
+            HorizontalOptions="Center">
+            <ActivityIndicator 
+                x:Name="ActivityIndicator"
+                IsRunning="{Binding Source={x:Reference view}, Path=IsLoading}"
+                Color="{Binding Source={x:Reference view}, Path=Color}"
+                WidthRequest="{Binding Source={x:Reference view}, Path=Size}"
+                HeightRequest="{Binding Source={x:Reference view}, Path=Size}"
+                VerticalOptions="Center"
+                HorizontalOptions="Center" />
+            <Label 
+                x:Name="ProgressRingText"
+                IsVisible="{Binding Source={x:Reference view}, Path=Text, Converter={StaticResource TextToVisibility}}"
+                Text="{Binding Source={x:Reference view}, Path=Text}"
+                TextColor="{Binding Source={x:Reference view}, Path=TextColor}"
+                FontSize="{Binding Source={x:Reference view}, Path=FontSize}"
+                HorizontalTextAlignment="Center"/>
+        </StackLayout>
+    </ContentView.Content>
+</ContentView>

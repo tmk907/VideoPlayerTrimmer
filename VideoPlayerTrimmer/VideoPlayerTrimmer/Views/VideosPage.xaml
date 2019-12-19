@@ -81,7 +81,7 @@
                             FontSize="15"
                             Margin="0,2,0,2"
                             TextColor="Black"
-                            Text="{Binding Title}"
+                            Text="{Binding FileName}"
                             VerticalTextAlignment="Start"/>
                     </Grid>
                 </DataTemplate>

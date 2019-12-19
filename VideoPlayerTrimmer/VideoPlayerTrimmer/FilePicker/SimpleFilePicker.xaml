@@ -7,16 +7,19 @@
              xmlns:fonts="clr-namespace:VideoPlayerTrimmer.Fonts"
              mc:Ignorable="d"
              x:Class="VideoPlayerTrimmer.FilePicker.SimpleFilePicker"
-             x:Name="view">
+             x:Name="view"
+             IsVisible="False"
+             Opacity="0"
+             BackgroundColor="#80000000">
     <ContentView.Resources>
         <local:StorageItemToIconConverter x:Key="IconConverter" 
                                           FileIcon="{x:Static fonts:FontAwesomeSolid.File}" 
                                           FolderIcon="{x:Static fonts:FontAwesomeSolid.Folder}"/>
 
         <Color x:Key="TextColorDarkTheme">#FFFFFF</Color>
-        <Color x:Key="TextColorLightTheme">#000000</Color>
+        <Color x:Key="TextColorLightTheme">#22EEEEEE</Color>
 
-        <Color x:Key="BackgroundColorDarkTheme">#000000</Color>
+        <Color x:Key="BackgroundColorDarkTheme">#EE111111</Color>
         <Color x:Key="BackgroundColorLightTheme">#FFFFFF</Color>
 
         <Style TargetType="Label">
@@ -37,7 +40,10 @@
         </Style>
     </ContentView.Resources>
   <ContentView.Content>
-        <Frame HasShadow="True" CornerRadius="2" BackgroundColor="{StaticResource BackgroundColorDarkTheme}" Padding="0">
+        <Frame HasShadow="True" CornerRadius="2" 
+               BackgroundColor="{StaticResource BackgroundColorDarkTheme}" 
+               Margin="32" Padding="0" HeightRequest="500"
+               HorizontalOptions="Center" VerticalOptions="Center">
             <Grid Margin="8,0,8,0">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -65,7 +71,7 @@
                                 Clicked="GoToParentClicked"/>
                         <Button Text="{x:Static fonts:FontAwesomeSolid.Times}"
                                 Style="{StaticResource ButtonStyle}"
-                                Command="{Binding CloseCommand}"/>
+                                Clicked="CloseClicked"/>
                     </StackLayout>
                 </StackLayout>
                 <CollectionView

@@ -42,7 +42,7 @@ namespace VideoPlayerTrimmer.Views
 
         private async void Save_Clicked(object sender, EventArgs e)
         {
-            await ViewModel.SaveVideoAsync();
+            await ViewModel.ConvertVideoAsync();
         }
     }
 }

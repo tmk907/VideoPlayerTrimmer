@@ -51,7 +51,14 @@ namespace VideoPlayerTrimmer.ViewModels
 
             var list = await videoLibrary.GetVideoItemsAsync(Directory, false);
             VideoItems.Clear();
-            VideoItems.AddRange(list.OrderBy(e => e.Title));
+            if (backToTrimmer)
+            {
+                VideoItems.AddRange(list.OrderBy(e => e.Directory).ThenBy(e => e.FileName));
+            }
+            else
+            {
+                VideoItems.AddRange(list.OrderBy(e => e.Title));
+            }
         }
 
         public async Task NavigateToPlayerPage(object item)
