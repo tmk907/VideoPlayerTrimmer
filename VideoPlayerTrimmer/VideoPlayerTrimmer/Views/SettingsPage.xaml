@@ -38,8 +38,8 @@
                                 <Label Text="{Binding CurrentVersion}"/>
                                 <Label Text="Debug" IsVisible="{Binding IsDebug}"/>
                             </StackLayout>
-                            <Entry Text="{Binding MediaOption, Mode=TwoWay}"/>
-                            <Entry Text="{Binding PlayerOption, Mode=TwoWay}"/>
+                            <!--<Entry Text="{Binding MediaOption, Mode=TwoWay}"/>
+                            <Entry Text="{Binding PlayerOption, Mode=TwoWay}"/>-->
                         </StackLayout>
                     </Frame>
                 </StackLayout>

@@ -197,6 +197,17 @@ namespace VideoPlayerTrimmer.ViewModels
 
             VlcPlayerHelper.MediaPlayer.TimeChanged += MediaPlayer_TimeChanged;
             VlcPlayerHelper.MediaPlayer.SnapshotTaken += MediaPlayer_SnapshotTaken;
+            VlcPlayerHelper.AspectRatioChanged += VlcPlayerHelper_AspectRatioChanged;
+        }
+
+        private async void VlcPlayerHelper_AspectRatioChanged(AspectRatio aspectRatio)
+        {
+            //if (System.IO.Directory.Exists("/system/fonts"))
+            //{
+            //    var list = System.IO.Directory.EnumerateFiles("/system/fonts");
+            //}
+            //await AspectRatioLabel.FadeTo(1);
+            //await AspectRatioLabel.FadeTo(0, 2000);
         }
 
         private void UnInitMediaPlayer()
@@ -206,6 +217,7 @@ namespace VideoPlayerTrimmer.ViewModels
             VlcPlayerHelper.MediaPlayer.Pause();
             VlcPlayerHelper.MediaPlayer.TimeChanged -= MediaPlayer_TimeChanged;
             VlcPlayerHelper.MediaPlayer.SnapshotTaken -= MediaPlayer_SnapshotTaken;
+            VlcPlayerHelper.AspectRatioChanged -= VlcPlayerHelper_AspectRatioChanged;
             VlcPlayerHelper.OnDisappearing();
         }
 
@@ -445,20 +457,42 @@ namespace VideoPlayerTrimmer.ViewModels
             if (subs == null)
             {
                 subs = new SubtitleFile(file.Path, videoItem.VideoId);
-                using (var fs = System.IO.File.OpenRead(file.Path))
-                {
-                    Ude.CharsetDetector cdet = new Ude.CharsetDetector();
-                    cdet.Feed(fs);
-                    cdet.DataEnd();
-                    if (cdet.Charset != null)
-                    {
-                        App.DebugLog($"Charset: {cdet.Charset}, confidence: {cdet.Confidence}");
-                    }
-                    else
-                    {
-                        App.DebugLog("Detection failed.");
-                    }
-                }
+                //string charset = "";
+                //using (var fs = System.IO.File.OpenRead(file.Path))
+                //{
+                //    Ude.CharsetDetector cdet = new Ude.CharsetDetector();
+                //    cdet.Feed(fs);
+                //    cdet.DataEnd();
+                //    if (cdet.Charset != null)
+                //    {
+                //        charset = cdet.Charset;
+                //        App.DebugLog($"Charset: {cdet.Charset}, confidence: {cdet.Confidence}");
+                //    }
+                //    else
+                //    {
+                //        App.DebugLog("Detection failed.");
+                //    }
+                //}
+                //if (charset != "")
+                //{
+                //    Encoding enc = Encoding.UTF8;
+                //    try
+                //    {
+                //        enc = Encoding.GetEncoding(charset);
+                //    }
+                //    catch(Exception ex)
+                //    {
+
+                //    }
+                //    if( enc!= Encoding.UTF8)
+                //    {
+                //        string fs2 = System.IO.File.ReadAllText(file.Path, enc);
+                //        var cacheDir = Xamarin.Essentials.FileSystem.CacheDirectory;
+                //        string filePath = System.IO.Path.Combine(cacheDir, file.Name);
+                //        System.IO.File.WriteAllText(filePath, fs2);
+                //        subs = new SubtitleFile(filePath, videoItem.VideoId);
+                //    }
+                //}
                 videoItem.SubtitleFiles.Add(subs);
             }
             MarkSubtitlesAsSelected(subs);

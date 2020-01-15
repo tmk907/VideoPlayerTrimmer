@@ -1,4 +1,5 @@
-﻿using LibVLCSharp.Shared;
+﻿using LibVLCSharp.Forms.Shared;
+using LibVLCSharp.Shared;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -68,6 +69,8 @@ namespace VideoPlayerTrimmer.PlayerControls
             private set => SetProperty(ref libVLC, value);
         }
 
+        public VideoView VideoView { get; set; }
+        public event Action<AspectRatio> AspectRatioChanged;
 
         public void LoadFile(StartupConfiguration startupConfiguration)
         {
@@ -329,104 +332,97 @@ namespace VideoPlayerTrimmer.PlayerControls
 
         private void OnAspectRatioClicked()
         {
-            if (mediaPlayer == null)
+            if (mediaPlayer == null || VideoView == null)
             {
+                App.DebugLog("MediaPlayer or VideoView is null");
                 return;
             }
 
-            //try
-            //{
-            //    var videoView = VideoView;
-            //    if (videoView == null)
-            //    {
-            //        throw new NullReferenceException($"The {nameof(VideoView)} property must be set in order to use the aspect ratio feature.");
-            //    }
+            try
+            {
+                var videoView = VideoView;
+                
+                MediaTrack? mediaTrack;
+                try
+                {
+                    mediaTrack = mediaPlayer.Media?.Tracks?.FirstOrDefault(x => x.TrackType == TrackType.Video);
+                }
+                catch (Exception)
+                {
+                    mediaTrack = null;
+                }
+                if (mediaTrack == null || !mediaTrack.HasValue)
+                {
+                    return;
+                }
 
-            //    MediaTrack? mediaTrack;
-            //    try
-            //    {
-            //        mediaTrack = mediaPlayer.Media?.Tracks?.FirstOrDefault(x => x.TrackType == TrackType.Video);
-            //    }
-            //    catch (Exception)
-            //    {
-            //        mediaTrack = null;
-            //    }
-            //    if (mediaTrack == null || !mediaTrack.HasValue)
-            //    {
-            //        return;
-            //    }
+                ChangeCurrentAspectRatio();
 
-            //    ChangeCurrentAspectRatio();
+                var scalingFactor = Device.Info.ScalingFactor;
+                var displayW = videoView.Width * scalingFactor;
+                var displayH = videoView.Height * scalingFactor;
 
-            //    var scalingFactor = Device.Info.ScalingFactor;
-            //    var displayW = videoView.Width * scalingFactor;
-            //    var displayH = videoView.Height * scalingFactor;
+                switch (_currentAspectRatio)
+                {
+                    case AspectRatio.BestFit:
+                        mediaPlayer.AspectRatio = string.Empty;
+                        mediaPlayer.Scale = 0;
+                        break;
+                    case AspectRatio.FitScreen:
+                    case AspectRatio.Fill:
+                        var videoSwapped = mediaTrack.Value.Data.Video.Orientation == VideoOrientation.LeftBottom ||
+                            mediaTrack.Value.Data.Video.Orientation == VideoOrientation.RightTop;
+                        if (_currentAspectRatio == AspectRatio.FitScreen)
+                        {
+                            var videoW = mediaTrack.Value.Data.Video.Width;
+                            var videoH = mediaTrack.Value.Data.Video.Height;
 
-            //    switch (CurrentAspectRatio)
-            //    {
-            //        case AspectRatio.BestFit:
-            //            mediaPlayer.AspectRatio = string.Empty;
-            //            mediaPlayer.Scale = 0;
-            //            break;
-            //        case AspectRatio.FitScreen:
-            //        case AspectRatio.Fill:
-            //            var videoSwapped = mediaTrack.Value.Data.Video.Orientation == VideoOrientation.LeftBottom ||
-            //                mediaTrack.Value.Data.Video.Orientation == VideoOrientation.RightTop;
-            //            if (CurrentAspectRatio == AspectRatio.FitScreen)
-            //            {
-            //                var videoW = mediaTrack.Value.Data.Video.Width;
-            //                var videoH = mediaTrack.Value.Data.Video.Height;
+                            if (videoSwapped)
+                            {
+                                var swap = videoW;
+                                videoW = videoH;
+                                videoH = swap;
+                            }
+                            if (mediaTrack.Value.Data.Video.SarNum != mediaTrack.Value.Data.Video.SarDen)
+                                videoW = videoW * mediaTrack.Value.Data.Video.SarNum / mediaTrack.Value.Data.Video.SarDen;
 
-            //                if (videoSwapped)
-            //                {
-            //                    var swap = videoW;
-            //                    videoW = videoH;
-            //                    videoH = swap;
-            //                }
-            //                if (mediaTrack.Value.Data.Video.SarNum != mediaTrack.Value.Data.Video.SarDen)
-            //                    videoW = videoW * mediaTrack.Value.Data.Video.SarNum / mediaTrack.Value.Data.Video.SarDen;
+                            var ar = videoW / (float)videoH;
+                            var dar = displayW / (float)displayH;
 
-            //                var ar = videoW / (float)videoH;
-            //                var dar = displayW / (float)displayH;
+                            float scale;
+                            if (dar >= ar)
+                                scale = (float)displayW / videoW; /* horizontal */
+                            else
+                                scale = (float)displayH / videoH; /* vertical */
 
-            //                float scale;
-            //                if (dar >= ar)
-            //                    scale = (float)displayW / videoW; /* horizontal */
-            //                else
-            //                    scale = (float)displayH / videoH; /* vertical */
-
-            //                mediaPlayer.Scale = scale;
-            //                mediaPlayer.AspectRatio = string.Empty;
-            //            }
-            //            else
-            //            {
-            //                mediaPlayer.Scale = 0;
-            //                mediaPlayer.AspectRatio = videoSwapped ? $"{displayH}:{displayW}" : $"{displayW}:{displayH}";
-            //            }
-            //            break;
-            //        case AspectRatio._16_9:
-            //            mediaPlayer.AspectRatio = "16:9";
-            //            mediaPlayer.Scale = 0;
-            //            break;
-            //        case AspectRatio._4_3:
-            //            mediaPlayer.AspectRatio = "4:3";
-            //            mediaPlayer.Scale = 0;
-            //            break;
-            //        case AspectRatio.Original:
-            //            mediaPlayer.AspectRatio = string.Empty;
-            //            mediaPlayer.Scale = 1;
-            //            break;
-            //    }
-
-            //    //AspectRatioLabel.Text = AspectRatioLabels[CurrentAspectRatio];
-            //    //await AspectRatioLabel.FadeTo(1);
-            //    //await AspectRatioLabel.FadeTo(0, 2000);
-            //}
-            //catch (Exception ex)
-            //{
-            //    //TODO
-            //    //ShowErrorMessageBox(ex);
-            //}
+                            mediaPlayer.Scale = scale;
+                            mediaPlayer.AspectRatio = string.Empty;
+                        }
+                        else
+                        {
+                            mediaPlayer.Scale = 0;
+                            mediaPlayer.AspectRatio = videoSwapped ? $"{displayH}:{displayW}" : $"{displayW}:{displayH}";
+                        }
+                        break;
+                    case AspectRatio._16_9:
+                        mediaPlayer.AspectRatio = "16:9";
+                        mediaPlayer.Scale = 0;
+                        break;
+                    case AspectRatio._4_3:
+                        mediaPlayer.AspectRatio = "4:3";
+                        mediaPlayer.Scale = 0;
+                        break;
+                    case AspectRatio.Original:
+                        mediaPlayer.AspectRatio = string.Empty;
+                        mediaPlayer.Scale = 1;
+                        break;
+                }
+                AspectRatioChanged?.Invoke(_currentAspectRatio);
+            }
+            catch (Exception ex)
+            {
+                App.DebugLog(ex.ToString());
+            }
         }
 
         private void ChangeCurrentAspectRatio()

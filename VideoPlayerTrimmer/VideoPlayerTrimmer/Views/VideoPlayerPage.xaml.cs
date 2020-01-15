@@ -14,6 +14,13 @@ namespace VideoPlayerTrimmer.Views
         {
             InitializeComponent();
             NavigationPage.SetHasNavigationBar(this, false);
+            ViewModel.VlcPlayerHelper.VideoView = videoView;
+        }
+
+        protected override void OnDisappearing()
+        {
+            ViewModel.VlcPlayerHelper.VideoView = null;
+            base.OnDisappearing();
         }
     }
 }

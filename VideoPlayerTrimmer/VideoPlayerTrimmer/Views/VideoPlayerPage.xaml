@@ -41,7 +41,7 @@
     <ContentPage.Content>
         <Grid>
             <Grid>
-                <vlc:VideoView MediaPlayer="{Binding VlcPlayerHelper.MediaPlayer}"/>
+                <vlc:VideoView x:Name="videoView" MediaPlayer="{Binding VlcPlayerHelper.MediaPlayer}"/>
                 <player:PlaybackControls
                     IsControlVisible="{Binding IsControlVisible, Mode=TwoWay}"
                     ElapsedTime="{Binding VlcPlayerHelper.ElapsedTime}"
