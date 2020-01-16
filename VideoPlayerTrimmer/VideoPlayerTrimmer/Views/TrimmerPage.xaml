@@ -214,12 +214,12 @@
                 <Label 
                     Text="{Binding FileSubtitlesPath}"
                     IsVisible="{Binding FileSubtitlesPath, Converter={StaticResource TextToVisibility}}"/>
-                <StackLayout Orientation="Horizontal">
+                <!--<StackLayout Orientation="Horizontal">
                     <Label Text="Hardsub"/>
                     <Switch 
                         IsToggled="{Binding HardSub}" 
                         IsEnabled="{Binding FileSubtitlesPath, Converter={StaticResource TextToVisibility}}"/>
-                </StackLayout>
+                </StackLayout>-->
                 <StackLayout Orientation="Vertical">
                     <Label Text="Filename"/>
                     <Entry Text="{Binding OutputFileName}"/>
